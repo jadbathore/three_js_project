@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "projet Three.js",
   "main": "index.js",
+
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -15,5 +16,9 @@
   "bugs": {
     "url": "https://github.com/jadbathore/three_js_project/issues"
   },
-  "homepage": "https://github.com/jadbathore/three_js_project#readme"
+  "homepage": "https://github.com/jadbathore/three_js_project#readme",
+  "dependencies": {
+    "three": "^0.166.1",
+    "vite": "^5.3.3"
+  }
 }
