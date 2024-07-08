@@ -1,11 +1,11 @@
-import * as THREE from 'three'
+
 import { camera } from './cameraSetting.js'
-import { SpotLight } from './light.js';
+import { spotLight } from './light.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+
 
 const renderer = new THREE.WebGLRenderer()
 const scene = new THREE.Scene()
-
 
 renderer.setSize(window.innerWidth,window.innerHeight);
 document.body.appendChild(renderer.domElement)
@@ -21,12 +21,14 @@ const box = new THREE.Mesh(
 )
 scene.add(box);
 
-scene.add(SpotLight);
+scene.add(spotLight);
+
 
 
 function animate()
 {
     box.rotation.y += 0.01
+    
     renderer.render(scene,camera)
 }
 

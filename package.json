@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "description": "projet Three.js",
   "main": "index.js",
-
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "npx vite"
   },
   "repository": {
     "type": "git",
@@ -18,6 +18,9 @@
   },
   "homepage": "https://github.com/jadbathore/three_js_project#readme",
   "dependencies": {
+    "fs": "^0.0.1-security",
+    "mongoose": "^8.4.5",
+    "path": "^0.12.7",
     "three": "^0.166.1",
     "vite": "^5.3.3"
   }
