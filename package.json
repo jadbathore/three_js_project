@@ -2,26 +2,30 @@
   "name": "three_js_project",
   "version": "1.0.0",
   "description": "projet Three.js",
-  "main": "index.js",
+  "main": "/bin/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "npx vite"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jadbathore/three_js_project.git"
+    "url": "https://github.com/jadbathore/three_js_project.git"
   },
   "author": "jad bathore",
+  "bin": {
+    "ThreeCli": "./bin/index.js"
+  },
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/jadbathore/three_js_project/issues"
   },
   "homepage": "https://github.com/jadbathore/three_js_project#readme",
   "dependencies": {
-    "fs": "^0.0.1-security",
-    "mongoose": "^8.4.5",
-    "path": "^0.12.7",
+    "boxen": "^4.2.0",
+    "chalk": "^4.1.2",
+    "figlet": "^1.5.2",
     "three": "^0.166.1",
-    "vite": "^5.3.3"
+    "vite": "^5.3.3",
+    "yargs": "^17.7.2"
   }
 }

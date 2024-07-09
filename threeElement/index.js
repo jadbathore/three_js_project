@@ -16,8 +16,9 @@ orbit.update();
 const box = new THREE.Mesh(
     new THREE.BoxGeometry(1,1,1),
     new THREE.MeshStandardMaterial({
-        color:0xFFFFFF
+        color:0xFFFFFF,
     })
+    
 )
 scene.add(box);
 

@@ -1,6 +1,7 @@
 const fs =  require('fs');
 const mongoose = require('mongoose');
-const { version } = require('punycode');
+const path = require('path')
+
 
 
 mongoose.connect('mongodb://127.0.0.1:27017/versionningThreeJs')
@@ -19,39 +20,29 @@ let compiledfile = '';
 
 
 for(let i = 0;i< file.length;i++){
-    let content = fs.readFileSync(`./threeElement/${file[i]}`,'utf-8');
-    compiledfile += content;
+    let pathfile = path.join(process.cwd(),'threeElement',file[i])
+    // let content = fs.readFileSync(pathfile,'utf-8');
+    // compiledfile += content;
+    fs.watchFile(pathfile, (curr, prev) => {
+        console.log(`the current mtime is: ${curr.mtime}`); 
+        console.log(`the previous mtime was: ${prev.mtime}`);
+      }); 
 }
 
-async function testVersion()
-{
-    const select = await VersionningModel.findOne({'content':compiledfile});
-    if(select === null)
-        {
-            //empty
-            return false;
-        } else {
-            //not-empty
-            return true
-        }
-}
 
-if(testVersion() === false) {
-    let name = versionName;
-    if(versionningfile.length < 1)
-        {
-            
-        } else {
-            
-        }
-        const add = new VersionningModel({
-        versionName:name,
-        content:compiledfile
-        })
-        add.save();
-} else {
-    console.log('dernière version à jour')
-}
+
+// if(testVersion() === false) {
+//     let name = versionName;
+//             const split = versionName.split('_')
+//             name = split[0] + get
+//             const add = new VersionningModel({
+//                 versionName:`versions_${new mongoose.Types.ObjectId().toString()}`,
+//                 content:compiledfile
+//                 })
+//         add.save();
+// } else {
+//     console.log('dernière version à jour')
+// }
 
 
 
