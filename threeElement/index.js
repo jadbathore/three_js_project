@@ -3,7 +3,7 @@ import { camera } from './cameraSetting.js'
 import { spotLight } from './light.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
-
+index='index';
 const renderer = new THREE.WebGLRenderer()
 const scene = new THREE.Scene()
 
@@ -18,11 +18,15 @@ const box = new THREE.Mesh(
     new THREE.MeshStandardMaterial({
         color:0xFFFFFF,
     })
-    
+
 )
 scene.add(box);
 
+
+
+
 scene.add(spotLight);
+
 
 
 

@@ -2,7 +2,7 @@
   "name": "three_js_project",
   "version": "1.0.0",
   "description": "projet Three.js",
-  "main": "/bin/index.js",
+  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "npx vite"
@@ -24,6 +24,7 @@
     "boxen": "^4.2.0",
     "chalk": "^4.1.2",
     "figlet": "^1.5.2",
+    "mongoose": "^8.5.0",
     "three": "^0.166.1",
     "vite": "^5.3.3",
     "yargs": "^17.7.2"
