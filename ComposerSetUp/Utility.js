@@ -9,18 +9,19 @@ const complierFile = path.join(process.cwd(),'versionning','compling.js')
 
 module.exports = class Utility {
 
-    constructor(fileArray,map)
+    constructor(fileDirArray)
     {
-        this.fileArray = this.mapContent(fileArray)
-        this.map = map
+        this.fileDirArray = this.mapContent(fileDirArray)
     }
 
-    mapContent(fileArray) {
+    mapContent(fileArray){
+        
         const mapContent = new Map();
         let ii = 1;
         for(let i = 0;i< fileArray.length;i++)
         {
-            switch(fileArray[i])
+            const basenameFile = path.basename(fileArray[i])
+            switch(basenameFile)
             {
                 case'configImport.js': mapContent.set(0,fileArray[i]);break;
                 case'RendererSetting.js':mapContent.set(1,fileArray[i]);break;
@@ -48,8 +49,7 @@ module.exports = class Utility {
         let compiledContent = '';
         for(let i = 0;i< fileArray.length;i++)
         {
-            let pathfile = path.join(process.cwd(),'threeElement','..',fileArray[i])
-            let content = fs.readFileSync(pathfile,'utf-8');
+            let content = fs.readFileSync(fileArray[i],'utf-8');
             compiledContent += `//file: ${fileArray[i]}\n${content}\n`
         }
         return compiledContent;
@@ -91,19 +91,9 @@ module.exports = class Utility {
                     reject("la complation des donnée à pris trop de temps");
                 },3000)
                 resolve(
-                    this.getContentFile(this.fileArray)
+                    this.getContentFile(this.fileDirArray)
                 );
             },)
-    }
-    InArray(needle,haystack){
-        for(let i = 0;i<haystack.length;i++)
-        {
-            if(haystack[i]==needle)
-            {
-                return true;
-            }
-        }
-        return false;
     }
 
 }
