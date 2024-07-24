@@ -1,9 +1,7 @@
-//file: /Users/jadbathore/Documents/coding/coding_javascript/three_js_project/threeElement/Setting/configImport.js
+//file: configImport.js
 import * as THREE from 'three'
-import { camera } from './cameraSetting.js'
-import { spotLight } from '../asset/light.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-//file: /Users/jadbathore/Documents/coding/coding_javascript/three_js_project/threeElement/Setting/RendererSetting.js
+//file: RendererSetting.js
 const renderer = new THREE.WebGLRenderer()
 const scene = new THREE.Scene()
 
@@ -15,7 +13,7 @@ orbit.update();
 
 
 
-//file: /Users/jadbathore/Documents/coding/coding_javascript/three_js_project/threeElement/Setting/cameraSetting.js
+//file: cameraSetting.js
 
 const camera = new THREE.PerspectiveCamera(
     45,
@@ -26,20 +24,27 @@ const camera = new THREE.PerspectiveCamera(
 
 camera.position.set(10,0,0);
 
-//file: /Users/jadbathore/Documents/coding/coding_javascript/three_js_project/threeElement/asset/light.js
+//file: light.js
 
 const spotLight = new THREE.SpotLight(0xffffff,10000);
 
 
 spotLight.position.set(30,30,0);
 ;
-//file: /Users/jadbathore/Documents/coding/coding_javascript/three_js_project/threeElement/Mesh/mesh.js
+//file: mesh.js
+
+const box = new THREE.Mesh(
+    new THREE.BoxGeometry(1,1,1),
+    new THREE.MeshBasicMaterial({
+        color: 0Xffffff
+    })
+
+)
 
 
+//file: mesh2.js
 
-//file: /Users/jadbathore/Documents/coding/coding_javascript/three_js_project/threeElement/Mesh/mesh2.js
-
-//file: /Users/jadbathore/Documents/coding/coding_javascript/three_js_project/threeElement/animation/animate.js
+//file: animate.js
 function animate()
 {
     box.rotation.y += 0.01
@@ -49,7 +54,7 @@ function animate()
 
 renderer.setAnimationLoop(animate);
 
-//file: /Users/jadbathore/Documents/coding/coding_javascript/three_js_project/threeElement/Setting/resizeSetting.js
+//file: resizeSetting.js
 
 window.addEventListener('resize',()=> {
     camera.aspect= window.innerWidth / window.innerHeight;

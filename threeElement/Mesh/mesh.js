@@ -1,3 +1,10 @@
-import '/versionning/linkFile'
+const {THREE} = require('../../versionning/')
 
-const re = 'test1'
+const box = new THREE.Mesh(
+    new THREE.BoxGeometry(1,1,1),
+    new THREE.MeshBasicMaterial({
+        color: 0Xffffff
+    })
+
+)
+
