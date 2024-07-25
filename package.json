@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "npx vite"
+    "start": "node ComposerSetUp/Composer.js; npx vite"
   },
   "repository": {
     "type": "git",
@@ -24,9 +24,9 @@
     "boxen": "^4.2.0",
     "chalk": "^4.1.2",
     "figlet": "^1.5.2",
+    "http": "^0.0.1-security",
     "mongoose": "^8.5.0",
     "three": "^0.166.1",
-    "vite": "^5.3.3",
     "yargs": "^17.7.2"
   }
 }

@@ -8,8 +8,7 @@ const scene = new THREE.Scene()
 renderer.setSize(window.innerWidth,window.innerHeight);
 document.body.appendChild(renderer.domElement)
 
-const orbit = new OrbitControls(camera,renderer.domElement)
-orbit.update();
+
 
 
 
@@ -23,10 +22,12 @@ const camera = new THREE.PerspectiveCamera(
 );
 
 camera.position.set(10,0,0);
-
+const orbit = new OrbitControls(camera,renderer.domElement)
+orbit.update();
 //file: light.js
 
 const spotLight = new THREE.SpotLight(0xffffff,10000);
+
 
 
 spotLight.position.set(30,30,0);
@@ -38,12 +39,22 @@ const box = new THREE.Mesh(
     new THREE.MeshBasicMaterial({
         color: 0Xffffff
     })
-
 )
+
+scene.add(box)
+
 
 
 //file: mesh2.js
 
+const sphere = new THREE.Mesh(
+    new THREE.SphereGeometry(1,1,1),
+    new THREE.MeshBasicMaterial({
+        color:0xffffff
+    })
+)
+
+scene.add(sphere)
 //file: animate.js
 function animate()
 {

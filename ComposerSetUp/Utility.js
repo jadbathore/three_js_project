@@ -88,36 +88,50 @@ module.exports = class Utility {
             console.log(`${err}\n${new Date(Date.now()).toString()}`)
         }   
     }
-    repopulatelinkFile()
-    {
-        const pathtolinkFile = path.join(process.cwd(),'versionning','linkFile.js')
-        const pathtoCompiler = path.join(process.cwd(),'versionning','compling.js')
-        const contentCompiler = fs.readFileSync(pathtoCompiler,'utf-8')
 
-        try {
-            fs.access(pathtolinkFile,constants.F_OK,async(err)=>{
-                if(err != null)
-                {
-                    await fs.promises.appendFile(pathtolinkFile,contentCompiler)
-                        .then(()=>{console.log(chalk.green('le fichier linkFile à été crée'))})
-                        .catch((error)=>{console.log(error)})
-                } else {
-                    let writer = fs.createWriteStream(pathtolinkFile, { 
-                        flags: 'w'
-                    }); 
-                    fs.truncate(pathtolinkFile,0,(err)=>{ 
+    async repopulatelinkFile()
+    {
+        let time = new Date(Date.now()).toString()
+
+        const linkFile = path.join(process.cwd(),'versionning','linkFile.js')
+            await this.complilerContentPromise()
+            .then(()=>{
+                setTimeout(()=>{
+                    fs.truncate(linkFile, 0,(err)=>{ 
                         if (err){ 
                             throw new Error(`erreur truncate ${time} \n${err}`);
-                        }})
-                    writer.write(this.getContentFile(this.fileDirArray.slice(1)))
-                    // writer.write(exportsScript)
-                } 
-            }) 
-        } catch (err) {
-            console.log(`${err}\n${new Date(Date.now()).toString()}`)
-        }
+                        }}
+                    );
+                    const compileContent = this.getContentFile(this.fileDirArray.slice(1))
+                    let content = "const THREE = require('three')\n"
+                    content += compileContent
+                    content += this.getExportScript(this.getContentFile(this.fileDirArray.slice(1)))
+                    fs.appendFile(linkFile,content,(err)=>{ 
+                        if (err){ 
+                            throw new Error(`erreur compilation linkfile ${time} \n${err}`);
+                        }
+                        console.log(chalk.green(`fichier link mise à jour ${time}`))
+                    })
+                },500)
+            }).catch((err)=>{
+                console.log(`${err}\n${new Date(Date.now()).toString()}`)
+            })
     }
-   
+
+    getExportScript(content)
+    {
+        const regexgetConst = /(?<=[c][o][n][s][t].)[^{][A-z]*/g; 
+        const regexgetfunction = /(?<=[f][u][n][c][t][i][o][n].)[A-z]*/g; 
+        const allConstinfile = content.match(regexgetConst)
+        const allfuncinfile = content.match(regexgetfunction)
+        const allinfile = allConstinfile.concat(allfuncinfile)
+        let exportsScript = 'exports.THREE = THREE\n'
+        for(let i = 0; i < allinfile.length; i++)
+        {
+            exportsScript+=`module.exports = {${allinfile[i]}}\n`
+        }
+        return exportsScript;
+    }
 
     complilerContentPromise() 
     {
@@ -129,6 +143,7 @@ module.exports = class Utility {
                 resolve(
                     this.getContentFile(this.fileDirArray)
                 );
+                
             },)
     }
 

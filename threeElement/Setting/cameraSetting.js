@@ -7,3 +7,5 @@ const camera = new THREE.PerspectiveCamera(
 );
 
 camera.position.set(10,0,0);
+const orbit = new OrbitControls(camera,renderer.domElement)
+orbit.update();
