@@ -1,20 +1,32 @@
-const http = require("http") 
-const chalk = require('chalk');
-const boxen = require('boxen');
-const path = require('path');
-const fs = require('fs').promises;
+import express from 'express';
+import chalk from 'chalk';
+import boxen from 'boxen';
+import path from 'path';
+import fs from "fs";
+
+
+
+const app = express();
 const port = 3000;
 
-const server = http.createServer((req,res)=>{
-    fs.readFile(path.join(process.cwd(),'index.html'))
-    .then((data) => {
-        res.setHeader("Content-Type","text/html");
-        res.writeHead(200);
-        res.end(data)
-    })
-});
+app.set('view engine','ejs')
+app.set('views',path.join(process.cwd(),'viewer'))
+app.use(express.static(path.join(process.cwd(),'public')))
 
-server.listen(port,()=>{
+app.get('/',(req,res)=>{
+    res.render('index')
+})
+
+
+async function callCompiler()
+{
+    const {composer} =  await import('../CompilerSetUp/Compiler.js')
+    return composer()
+}
+
+callCompiler()
+    .then(()=>{
+        app.listen(port,()=>{
         console.log(chalk.green(
                     boxen(`server is running on port : ${port}`,
                 {
@@ -23,8 +35,7 @@ server.listen(port,()=>{
                 }
                 ))
                 + '\n')
-})
+            })
+    })
 
-// .listen(port,()=>{
-//    
-// })
+

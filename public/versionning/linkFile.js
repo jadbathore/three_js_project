@@ -39,7 +39,7 @@ const box = new THREE.Mesh(
 )
 
 scene.add(box)
-
+;
 
 
 //file: mesh2.js
@@ -50,7 +50,12 @@ const sphere = new THREE.Mesh(
         color:0xffffff
     })
 )
-
+const mesh = new THREE.Mesh(
+    new THREE.SphereGeometry(1,1,1),
+    new THREE.MeshBasicMaterial({
+        color:0xffffff
+    })
+)
 scene.add(sphere)
 //file: animate.js
 function animate()
@@ -77,4 +82,5 @@ module.exports = {orbit}
 module.exports = {spotLight}
 module.exports = {box}
 module.exports = {sphere}
+module.exports = {mesh}
 module.exports = {animate}

@@ -29,7 +29,6 @@ orbit.update();
 const spotLight = new THREE.SpotLight(0xffffff,10000);
 
 
-
 spotLight.position.set(30,30,0);
 ;
 //file: mesh.js
@@ -42,7 +41,7 @@ const box = new THREE.Mesh(
 )
 
 scene.add(box)
-
+;
 
 
 //file: mesh2.js
@@ -53,7 +52,12 @@ const sphere = new THREE.Mesh(
         color:0xffffff
     })
 )
-
+const mesh = new THREE.Mesh(
+    new THREE.SphereGeometry(1,1,1),
+    new THREE.MeshBasicMaterial({
+        color:0xffffff
+    })
+)
 scene.add(sphere)
 //file: animate.js
 function animate()

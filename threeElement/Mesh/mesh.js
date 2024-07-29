@@ -8,5 +8,5 @@ const box = new THREE.Mesh(
 )
 
 scene.add(box)
-
+;
 

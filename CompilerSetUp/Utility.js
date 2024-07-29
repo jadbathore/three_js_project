@@ -1,13 +1,13 @@
-const chalk = require('chalk');
-const path = require('path');
-const fs = require('fs');
+import chalk from 'chalk';
+import path from 'path';
+import fs from 'fs';
 
 
 
 
-const complierFile = path.join(process.cwd(),'versionning','compling.js')
+const complierFile = path.join(process.cwd(),'public','versionning','compling.js')
 
-module.exports = class Utility {
+export default class Utility {
 
     constructor(fileDirArray)
     {
@@ -66,7 +66,7 @@ module.exports = class Utility {
     async repopulateComposer()
     {
         try {
-            let time = new Date(Date.now()).toString()
+            let time = new Date(Date.now()).toString();
             fs.truncate(complierFile, 0,(err)=>{ 
                 if (err){ 
                     throw new Error(`erreur truncate ${time} \n${err}`);
@@ -93,7 +93,7 @@ module.exports = class Utility {
     {
         let time = new Date(Date.now()).toString()
 
-        const linkFile = path.join(process.cwd(),'versionning','linkFile.js')
+        const linkFile = path.join(process.cwd(),'public','versionning','linkFile.js')
             await this.complilerContentPromise()
             .then(()=>{
                 setTimeout(()=>{
