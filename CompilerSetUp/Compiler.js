@@ -1,58 +1,47 @@
-import * as chalk from 'chalk';
+import chalk from 'chalk';
 import fs from 'fs';
 import path from 'path';
 import Utility from './Utility.js';
-import { loadConfigFile } from 'rollup/loadConfigFile';
-import rollup from '../rollup.config.js';
+import {loadConfigFile} from 'rollup/loadConfigFile'
+import {rollup,watch} from 'rollup';
 
-// load the config file next to the current script;
-// the provided config object has the same effect as passing "--format es"
-// on the command line and will override the format of all outputs
-loadConfigFile(path.resolve(__dirname, 'rollup.config.js'), {
+loadConfigFile(path.resolve(process.cwd(), 'rollup.config.js'), {
 	format: 'es'
 }).then(async ({ options, warnings }) => {
-	// "warnings" wraps the default `onwarn` handler passed by the CLI.
-	// This prints all warnings up to this point:
-	console.log(`We currently have ${warnings.count} warnings`);
-
-	// This prints all deferred warnings
+	console.log(chalk.keyword('orange')(`Nous avons ${warnings.count} avertissement de la part de rollup`));
 	warnings.flush();
-
-	// options is an array of "inputOptions" objects with an additional
-	// "output" property that contains an array of "outputOptions".
-	// The following will generate all outputs for all inputs, and write
-	// them to disk the same way the CLI does it:
 	for (const optionsObj of options) {
-		const bundle = await rollup.rollup(optionsObj);
+		const bundle = await rollup(optionsObj);
 		await Promise.all(optionsObj.output.map(bundle.write));
 	}
-
-
+    watch(options)
+    console.log(chalk.green('le fichier dist est connecté avec succée !'))
 });
 
 const mapFile = new Map();
-
 fs.readdirSync('./threeElement/',{withFileTypes:true}).filter(dir => dir.isDirectory()).map(
     (dir)=>{
         const arry = fs.readdirSync(path.join(process.cwd(),'threeElement',dir.name))
         mapFile.set(dir.name,arry)
     })
     ;
-
 const allFile = []
-
 for (const [key, value] of mapFile) {
     for (const file of value)
     {
-        const pathFile  = path.join(process.cwd(),'threeElement',key,file)
+        const pathFile = path.join(process.cwd(),'threeElement',key,file)
         allFile.push(pathFile);
     }
 }
 
 
 
+const pathtoAsset = path.join(process.cwd(),'public','asset')
+const assetDir = fs.readdirSync(pathtoAsset)
+
+const UtilityClass = new Utility(allFile,assetDir);
+
 export const composer = () =>{
-    const UtilityClass = new Utility(allFile);
     UtilityClass.repopulateComposer()
     UtilityClass.repopulatelinkFile()
     for(let i = 0;i< UtilityClass.fileDirArray.length;i++){

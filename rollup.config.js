@@ -1,6 +1,5 @@
 import resolve from '@rollup/plugin-node-resolve'
-import watch  from 'rollup-plugin-watch'
-
+import commonjs from '@rollup/plugin-commonjs'
 export default{
     input:'public/versionning/compling.js',
     output:{
@@ -9,8 +8,6 @@ export default{
     },
     plugins:[
         resolve(),
-        watch({
-            dir:"public/versionning/"
-        })
+        commonjs()
     ]
 }

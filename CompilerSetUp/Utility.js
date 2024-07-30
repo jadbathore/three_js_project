@@ -9,9 +9,10 @@ const complierFile = path.join(process.cwd(),'public','versionning','compling.js
 
 export default class Utility {
 
-    constructor(fileDirArray)
+    constructor(fileDirArray,assetDirArray)
     {
         this.fileDirArray = this.mapContent(fileDirArray)
+        this.assetDirArray = assetDirArray
     }
 
     mapContent(fileArray){
@@ -26,10 +27,10 @@ export default class Utility {
                 case'configImport.js': mapContent.set(0,fileArray[i]);break;
                 case'RendererSetting.js':mapContent.set(1,fileArray[i]);break;
                 case'cameraSetting.js': mapContent.set(2,fileArray[i]);break;
-                case'light.js': mapContent.set(3,fileArray[i]);break;
+                
                 case'animate.js': mapContent.set(fileArray.length - 2,fileArray[i]);break;
                 case'resizeSetting.js':mapContent.set(fileArray.length - 1,fileArray[i]);break;
-                default: mapContent.set(3+ii,fileArray[i]);
+                default: mapContent.set(2+ii,fileArray[i]);
                 ii++;
                 break;
             }
@@ -46,8 +47,8 @@ export default class Utility {
 
     getContentFile(fileArray)
     {
-        let compiledContent = '';
-        const regexremove = /^((?!const.{.)[\s\S])*$/gm
+        let compiledContent = `const ${this.getAssetPathConst()}`;
+        const regexremove = /^((?!const.{.*.}.[=].require)[\s\S])*$/gm
         const regexfound = /\b(const.{.*)/g
         for(let i = 0;i< fileArray.length;i++)
         {
@@ -130,7 +131,25 @@ export default class Utility {
         {
             exportsScript+=`module.exports = {${allinfile[i]}}\n`
         }
+        exportsScript+= `module.exports.${this.getAssetPathConst()}`
         return exportsScript;
+    }
+
+    getAssetPathConst()
+    {
+        let content = 'img = {\n'
+        for(let i = 0; i<this.assetDirArray.length;i++)
+        {
+            if(path.basename(this.assetDirArray[i]).includes('.png'))
+            {
+                content+= `${path.basename(this.assetDirArray[i],'.png')}:'${path.join('asset',this.assetDirArray[i])}',\n`;
+            } else if(path.basename(this.assetDirArray[i]).includes('.jpg')) {
+                content+= `${path.basename(this.assetDirArray[i],'.jpg')}:'${path.join('asset',this.assetDirArray[i])}',\n`;
+            }
+
+        }
+        content+= '}\n'
+        return content
     }
 
     complilerContentPromise() 
@@ -138,7 +157,7 @@ export default class Utility {
         return new Promise((resolve,reject)=>
             {
                 setTimeout(()=>{
-                    reject("la complation des donnée à pris trop de temps");
+                    reject("la compilation des donnée à pris trop de temps");
                 },3000)
                 resolve(
                     this.getContentFile(this.fileDirArray)
@@ -146,5 +165,4 @@ export default class Utility {
                 
             },)
     }
-
 }

@@ -1,17 +1,17 @@
 #! /usr/bin/env node
-const yargs = require("yargs")
-const chalk  = require("chalk");
-const figlet = require("figlet")
-const mongoose = require('mongoose');
-const path = require('path');
-const boxen = require('boxen')
-const fs =  require('fs');
+import { usage as _usage, exit, showHelp } from "yargs";
+import { keyword, green } from "chalk";
+import { textSync } from "figlet";
+import { connect, Schema, model, Types } from 'mongoose';
+import { join } from 'path';
+import boxen from 'boxen';
+import { readFileSync } from 'fs';
 
 
 
 
-mongoose.connect('mongodb://127.0.0.1:27017/versionningThreeJs')
-const mongooseSchema = mongoose.Schema(
+connect('mongodb://127.0.0.1:27017/versionningThreeJs')
+const mongooseSchema = Schema(
     {
         versionName:String,
         date:{type:Date,default:Date.now},
@@ -19,22 +19,21 @@ const mongooseSchema = mongoose.Schema(
     }
 )
 
-const VersionningModel = new mongoose.model('versions',mongooseSchema);
-const usage = chalk.keyword('violet')('\nUsage: ThreeCli <command>')
-yargs 
-.usage(usage)
+const VersionningModel = new model('versions',mongooseSchema);
+const usage = keyword('violet')('\nUsage: ThreeCli <command>')
+_usage(usage)
 .command('SaveElement', 'make a get HTTP request',()=>
 {
-    const pathfile = path.join(process.cwd(),'versionning','compling.js')
-    const content = fs.readFileSync(pathfile,'utf-8');
-    const versionName = `versions_${new mongoose.Types.ObjectId().toString()}`
+    const pathfile = join(process.cwd(),'public','versionning','compling.js')
+    const content = readFileSync(pathfile,'utf-8');
+    const versionName = `versions_${new Types.ObjectId().toString()}`
     const add = new VersionningModel({
         versionName:versionName,
         content:content
         })
         add.save();
-        console.log('\n' + chalk.keyword('violet')('element sauvegardé versionning/compling.js :') + '\n\n' +
-            chalk.green(
+        console.log('\n' + keyword('violet')('element sauvegardé versionning/compling.js :') + '\n\n' +
+            green(
             boxen(`version: '${versionName}' \ntime: '${new Date(Date.now()).toString()}'`,
             {
                 padding: 1,
@@ -43,7 +42,7 @@ yargs
             ))
             + '\n'
         );
-        yargs.exit();
+        exit();
 })
 
 
@@ -56,11 +55,11 @@ const argv = require('yargs/yargs')(process.argv.slice(2)).argv;
 const filePaths = argv._
 if (filePaths.length == 0) {
     console.log(
-        chalk.green(
-        figlet.textSync('ThreeCLI', { horizontalLayout: 'full' })
+        green(
+        textSync('ThreeCLI', { horizontalLayout: 'full' })
         )
     );
-    yargs.showHelp()
+    showHelp()
 } else {
     return true 
 }
