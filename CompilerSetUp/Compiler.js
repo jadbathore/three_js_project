@@ -33,22 +33,34 @@ for (const [key, value] of mapFile) {
         allFile.push(pathFile);
     }
 }
-
-
-
 const pathtoAsset = path.join(process.cwd(),'public','asset')
-const assetDir = fs.readdirSync(pathtoAsset)
 
-const UtilityClass = new Utility(allFile,assetDir);
+const mapAsset = new Map();
+fs.readdirSync(pathtoAsset,{withFileTypes:true}).filter(dir => dir.isDirectory()).map(
+    (dir)=>{
+        const arry = fs.readdirSync(path.join(process.cwd(),'public','asset',dir.name))
+        mapAsset.set(dir.name,arry)
+    })
+    ;
 
+
+const UtilityClass = new Utility(allFile,mapAsset);
+
+
+console.log(UtilityClass.fileDirArray)
 export const composer = () =>{
+
     UtilityClass.repopulateComposer()
     UtilityClass.repopulatelinkFile()
+    
+    
     for(let i = 0;i< UtilityClass.fileDirArray.length;i++){
-        fs.watch(UtilityClass.fileDirArray[i], async(event, file) => {
+
+        fs.watch(UtilityClass.fileDirArray[i],async(event, file) => {
             switch (event)
             {
-                case 'change': await UtilityClass.repopulateComposer(); 
+                case 'change': 
+                await UtilityClass.repopulateComposer(); 
                 await UtilityClass.repopulatelinkFile();
                 break;
                 case 'rename': console.log(chalk.keyword('orange')('⚠️ do not change name or remove some file during the process ⚠️'));break;

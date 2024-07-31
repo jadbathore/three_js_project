@@ -33750,14 +33750,14 @@ class OrbitControls extends EventDispatcher {
 }
 
 const img = {
-earth_nightmap:'asset/earth_nightmap.jpg',
-earthbump:'asset/earthbump.jpg',
-earthmap1k:'asset/earthmap1k.jpg',
-earthspecular:'asset/earthspecular.jpg',
-fair_clouds_8k:'asset/fair_clouds_8k.jpg',
-moonbump4k:'asset/moonbump4k.jpg',
-moonmap4k:'asset/moonmap4k.jpg',
-singleStar:'asset/singleStar.png',
+earth_nightmap:'asset/img/earth_nightmap.jpg',
+earthbump:'asset/img/earthbump.jpg',
+earthmap1k:'asset/img/earthmap1k.jpg',
+earthspecular:'asset/img/earthspecular.jpg',
+fair_clouds_8k:'asset/img/fair_clouds_8k.jpg',
+moonbump4k:'asset/img/moonbump4k.jpg',
+moonmap4k:'asset/img/moonmap4k.jpg',
+singleStar:'asset/img/singleStar.png',
 };
 //file: RendererSetting.js
 

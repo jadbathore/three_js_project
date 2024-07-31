@@ -5,14 +5,15 @@ import fs from 'fs';
 
 
 
+
 const complierFile = path.join(process.cwd(),'public','versionning','compling.js')
 
 export default class Utility {
 
-    constructor(fileDirArray,assetDirArray)
+    constructor(fileDirArray,mapAsset)
     {
         this.fileDirArray = this.mapContent(fileDirArray)
-        this.assetDirArray = assetDirArray
+        this.mapAsset = mapAsset
     }
 
     mapContent(fileArray){
@@ -27,7 +28,6 @@ export default class Utility {
                 case'configImport.js': mapContent.set(0,fileArray[i]);break;
                 case'RendererSetting.js':mapContent.set(1,fileArray[i]);break;
                 case'cameraSetting.js': mapContent.set(2,fileArray[i]);break;
-                
                 case'animate.js': mapContent.set(fileArray.length - 2,fileArray[i]);break;
                 case'resizeSetting.js':mapContent.set(fileArray.length - 1,fileArray[i]);break;
                 default: mapContent.set(2+ii,fileArray[i]);
@@ -47,7 +47,12 @@ export default class Utility {
 
     getContentFile(fileArray)
     {
-        let compiledContent = `const ${this.getAssetPathConst()}`;
+        let compiledContent = '';
+        const getAsset = this.getAssetPathConst()
+        for(let i = 0; i<getAsset.length;i++)
+        {
+            compiledContent+=`const ${getAsset[i]}\n`
+        }
         const regexremove = /^((?!const.{.*.}.[=].require)[\s\S])*$/gm
         const regexfound = /\b(const.{.*)/g
         for(let i = 0;i< fileArray.length;i++)
@@ -131,25 +136,45 @@ export default class Utility {
         {
             exportsScript+=`module.exports = {${allinfile[i]}}\n`
         }
-        exportsScript+= `module.exports.${this.getAssetPathConst()}`
+        const getAsset = this.getAssetPathConst()
+        for(let i = 0; i<getAsset.length;i++)
+        {
+            exportsScript+=`module.exports.${getAsset[i]}\n`
+        }
         return exportsScript;
     }
 
     getAssetPathConst()
     {
-        let content = 'img = {\n'
-        for(let i = 0; i<this.assetDirArray.length;i++)
-        {
-            if(path.basename(this.assetDirArray[i]).includes('.png'))
+        const arraycontent = []
+        for(const [key, value] of this.mapAsset)
             {
-                content+= `${path.basename(this.assetDirArray[i],'.png')}:'${path.join('asset',this.assetDirArray[i])}',\n`;
-            } else if(path.basename(this.assetDirArray[i]).includes('.jpg')) {
-                content+= `${path.basename(this.assetDirArray[i],'.jpg')}:'${path.join('asset',this.assetDirArray[i])}',\n`;
+                if(key === 'img')
+                {
+                    let content = `${key} = {\n`
+                    for (const file of value)
+                    {
+                        if(path.basename(file).includes('.png'))
+                            {
+                                content+= `${path.basename(file,'.png')}:'${path.join('asset','img',file)}',\n`;
+                            } else if(path.basename(file).includes('.jpg')) {
+                                content+= `${path.basename(file,'.jpg')}:'${path.join('asset','img',file)}',\n`;
+                            }
+                    };
+                    content+= '}\n'
+                    arraycontent.push(content)
+                } else if (key === 'gltf'){
+                    let content = `${key} = {\n`
+                    for(const file of value)
+                    {
+                        content+= `${path.basename(file,'.gltf')}:'${path.join('asset','gltf',file)}',\n`;
+                    }
+                    content+= '}\n'
+                    arraycontent.push(content)
+                }
             }
+            return arraycontent
 
-        }
-        content+= '}\n'
-        return content
     }
 
     complilerContentPromise() 
@@ -165,4 +190,5 @@ export default class Utility {
                 
             },)
     }
+
 }

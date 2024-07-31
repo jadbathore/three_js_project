@@ -9,4 +9,4 @@ function animate()
     moonRotation.rotateY(0.00514)
 }
 
-renderer.setAnimationLoop(animate);
+renderer.setAnimationLoop(animate);;

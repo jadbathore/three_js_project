@@ -1,4 +1,4 @@
-const {THREE, scene } = require('../../public/versionning/linkFile')
+const {THREE, scene,geo } = require('../../public/versionning/linkFile')
 
 
 function getFresnelMat({rimHex = 0x0088ff,facingHax = 0x000000} = {})
