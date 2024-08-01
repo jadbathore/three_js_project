@@ -33759,6 +33759,9 @@ moonbump4k:'asset/img/moonbump4k.jpg',
 moonmap4k:'asset/img/moonmap4k.jpg',
 singleStar:'asset/img/singleStar.png',
 };
+
+
+
 //file: RendererSetting.js
 
 
@@ -33785,12 +33788,15 @@ camera.position.set(2,2.5,-5);
 
 const orbit = new OrbitControls(camera,renderer.domElement);
 orbit.update();
+//file: loader.js
+const loader = new TextureLoader();
+
 //file: earthGroup.js
 
 const earthGroup = new Group();
 earthGroup.rotation.z = -23.4 * Math.PI / 180;
 scene.add(earthGroup);
-const loader = new TextureLoader();
+
 const geo = new IcosahedronGeometry(1,12);
 const earthMesh = new Mesh(
     geo,
@@ -33982,6 +33988,9 @@ function animate()
 }
 
 renderer.setAnimationLoop(animate);
+
+
+
 
 //file: resizeSetting.js
 

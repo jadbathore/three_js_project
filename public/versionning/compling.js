@@ -16,7 +16,10 @@ singleStar:'asset/img/singleStar.png',
 
 //file: configImport.js
 import * as THREE from 'three'
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
+
+
+
 //file: RendererSetting.js
 
 
@@ -43,12 +46,15 @@ camera.position.set(2,2.5,-5);
 
 const orbit = new OrbitControls(camera,renderer.domElement)
 orbit.update();
+//file: loader.js
+const loader = new THREE.TextureLoader();
+
 //file: earthGroup.js
 
 const earthGroup = new THREE.Group();
 earthGroup.rotation.z = -23.4 * Math.PI / 180
 scene.add(earthGroup);
-const loader = new THREE.TextureLoader();
+
 const geo = new THREE.IcosahedronGeometry(1,12);
 const earthMesh = new THREE.Mesh(
     geo,
@@ -243,10 +249,16 @@ function animate()
 
 renderer.setAnimationLoop(animate);
 
+
+
+
 //file: resizeSetting.js
 
 window.addEventListener('resize',()=> {
     camera.aspect= window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth,window.innerHeight)
-    });
+    })
+
+
+

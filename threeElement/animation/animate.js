@@ -9,4 +9,9 @@ function animate()
     moonRotation.rotateY(0.00514)
 }
 
-renderer.setAnimationLoop(animate);;
+renderer.setAnimationLoop(animate);
+
+
+
+
+const {gltf,img,renderer,scene,camera,orbit,earthGroup,loader,earthMesh,lightMesh,couldsMat,cloudMesh,moonRotation,moonMesh,getFresnelMat,getStarfield,randomSpherePoint,animate,THREE} = require('../../public/versionning/linkFile.js')

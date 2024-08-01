@@ -1,6 +1,8 @@
 import chalk from 'chalk';
 import path from 'path';
-import fs from 'fs';
+import fs, { appendFile } from 'fs';
+
+
 
 
 
@@ -28,9 +30,10 @@ export default class Utility {
                 case'configImport.js': mapContent.set(0,fileArray[i]);break;
                 case'RendererSetting.js':mapContent.set(1,fileArray[i]);break;
                 case'cameraSetting.js': mapContent.set(2,fileArray[i]);break;
+                case'loader.js':mapContent.set(3,fileArray[i]);break;
                 case'animate.js': mapContent.set(fileArray.length - 2,fileArray[i]);break;
                 case'resizeSetting.js':mapContent.set(fileArray.length - 1,fileArray[i]);break;
-                default: mapContent.set(2+ii,fileArray[i]);
+                default: mapContent.set(3+ii,fileArray[i]);
                 ii++;
                 break;
             }
@@ -123,26 +126,86 @@ export default class Utility {
                 console.log(`${err}\n${new Date(Date.now()).toString()}`)
             })
     }
+    getAllExportName(content)
+    {
+        const regexgetConst = /(?<=[c][o][n][s][t].)[^{][A-z]*/g; 
+        const regexgetfunction = /(?<=[f][u][n][c][t][i][o][n].)[A-z]*/g; 
+        const getAllFunction = /(function)+.*[^]*.?\/*[}][^(function)+]/gm;
+        const allConstinfile = content.match(regexgetConst)
+        const alltheFunction = content.match(getAllFunction)
+        let contentfunc = ''
+        for(let i = 0; i < alltheFunction.length; i++)
+        {
+            contentfunc += alltheFunction[i]
+        }
+        const allconstinFunc = contentfunc.match(regexgetConst)
+        const diferrence = allConstinfile.filter((element)=> !allconstinFunc.includes(element))
+        const allfuncinfile = content.match(regexgetfunction)
+        const allinfile = diferrence.concat(allfuncinfile)
+        return allinfile;
+    }
+
+    addimportScript(file)
+    {
+        const forbiden = []
+        forbiden.push(path.join(process.cwd(),'threeElement','Setting','configImport.js'))
+        forbiden.push(path.join(process.cwd(),'threeElement','Setting','resizeSetting.js'))
+        if(!forbiden.includes(file))
+        {
+            const regexmatchRequire = /(const.{.*.}.[=].require)+.*/g
+            const test = fs.readFileSync(file,'utf-8').match(regexmatchRequire)
+            const text = this.getImportStript()
+            if(test === null)
+            {
+                fs.appendFile(file,text,(err)=>{ 
+                    if (err) 
+                    { 
+                        throw new Error(`erreur import Script`);
+                    }
+                })
+                console.log(chalk.keyword('yellow')(`the import statement as been added to '${file}' `))
+            }
+        }
+    }
 
     getExportScript(content)
     {
         const regexgetConst = /(?<=[c][o][n][s][t].)[^{][A-z]*/g; 
         const regexgetfunction = /(?<=[f][u][n][c][t][i][o][n].)[A-z]*/g; 
+        const getAllFunction = /(function)+.*[^]*.?\/*[}][^(function)+]/gm;
         const allConstinfile = content.match(regexgetConst)
+        const alltheFunction = content.match(getAllFunction)
+        let contentfunc = ''
+        for(let i = 0; i < alltheFunction.length; i++)
+        {
+            contentfunc += alltheFunction[i]
+        }
+        const allconstinFunc = contentfunc.match(regexgetConst)
+        const diferrence = allConstinfile.filter((element)=> !allconstinFunc.includes(element))
         const allfuncinfile = content.match(regexgetfunction)
-        const allinfile = allConstinfile.concat(allfuncinfile)
+        const allinfile = diferrence.concat(allfuncinfile)
         let exportsScript = 'exports.THREE = THREE\n'
         for(let i = 0; i < allinfile.length; i++)
         {
             exportsScript+=`module.exports = {${allinfile[i]}}\n`
         }
-        const getAsset = this.getAssetPathConst()
-        for(let i = 0; i<getAsset.length;i++)
-        {
-            exportsScript+=`module.exports.${getAsset[i]}\n`
-        }
         return exportsScript;
     }
+
+
+    getImportStript(){
+        const theConst = this.getAllExportName(this.getContentFile(this.fileDirArray))
+        let importScript = '\nconst {'
+        for(let i = 0;i< theConst.length;i++)
+        {
+            importScript += `${theConst[i]},`
+        }
+        importScript+= `THREE} = require('../../public/versionning/linkFile.js')\n`
+        return importScript
+    }
+
+
+
 
     getAssetPathConst()
     {
@@ -187,8 +250,6 @@ export default class Utility {
                 resolve(
                     this.getContentFile(this.fileDirArray)
                 );
-                
             },)
     }
-
 }

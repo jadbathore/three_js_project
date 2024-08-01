@@ -41,12 +41,15 @@ camera.position.set(2,2.5,-5);
 
 const orbit = new OrbitControls(camera,renderer.domElement)
 orbit.update();
+//file: loader.js
+const loader = new THREE.TextureLoader();
+
 //file: earthGroup.js
 
 const earthGroup = new THREE.Group();
 earthGroup.rotation.z = -23.4 * Math.PI / 180
 scene.add(earthGroup);
-const loader = new THREE.TextureLoader();
+
 const geo = new THREE.IcosahedronGeometry(1,12);
 const earthMesh = new THREE.Mesh(
     geo,
@@ -241,13 +244,19 @@ function animate()
 
 renderer.setAnimationLoop(animate);
 
+
+
+
 //file: resizeSetting.js
 
 window.addEventListener('resize',()=> {
     camera.aspect= window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth,window.innerHeight)
-    });
+    })
+
+
+
 exports.THREE = THREE
 module.exports = {gltf}
 module.exports = {img}
@@ -255,51 +264,15 @@ module.exports = {renderer}
 module.exports = {scene}
 module.exports = {camera}
 module.exports = {orbit}
-module.exports = {earthGroup}
 module.exports = {loader}
-module.exports = {geo}
+module.exports = {earthGroup}
 module.exports = {earthMesh}
 module.exports = {lightMesh}
 module.exports = {couldsMat}
 module.exports = {cloudMesh}
 module.exports = {moonRotation}
 module.exports = {moonMesh}
-module.exports = {uniforms}
-module.exports = {vs}
-module.exports = {fs}
-module.exports = {fresnelMat}
-module.exports = {fresnel}
-module.exports = {glowmesh}
-module.exports = {raduis}
-module.exports = {u}
-module.exports = {v}
-module.exports = {theta}
-module.exports = {phi}
-module.exports = {verts}
-module.exports = {colors}
-module.exports = {positions}
-module.exports = {geo}
-module.exports = {mat}
-module.exports = {points}
-module.exports = {star}
-module.exports = {sunLight}
 module.exports = {getFresnelMat}
 module.exports = {getStarfield}
 module.exports = {randomSpherePoint}
 module.exports = {animate}
-module.exports.gltf = {
-Bull:'asset/gltf/Bull.gltf',
-Deer:'asset/gltf/Deer.gltf',
-}
-
-module.exports.img = {
-earth_nightmap:'asset/img/earth_nightmap.jpg',
-earthbump:'asset/img/earthbump.jpg',
-earthmap1k:'asset/img/earthmap1k.jpg',
-earthspecular:'asset/img/earthspecular.jpg',
-fair_clouds_8k:'asset/img/fair_clouds_8k.jpg',
-moonbump4k:'asset/img/moonbump4k.jpg',
-moonmap4k:'asset/img/moonmap4k.jpg',
-singleStar:'asset/img/singleStar.png',
-}
-

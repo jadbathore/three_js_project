@@ -45,17 +45,13 @@ fs.readdirSync(pathtoAsset,{withFileTypes:true}).filter(dir => dir.isDirectory()
 
 
 const UtilityClass = new Utility(allFile,mapAsset);
-
-
-console.log(UtilityClass.fileDirArray)
+for(let i = 0;i< UtilityClass.fileDirArray.length;i++){
+    UtilityClass.addimportScript(UtilityClass.fileDirArray[i])
+}
 export const composer = () =>{
-
     UtilityClass.repopulateComposer()
     UtilityClass.repopulatelinkFile()
-    
-    
     for(let i = 0;i< UtilityClass.fileDirArray.length;i++){
-
         fs.watch(UtilityClass.fileDirArray[i],async(event, file) => {
             switch (event)
             {
