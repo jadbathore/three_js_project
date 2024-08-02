@@ -46,3 +46,5 @@ function getStarfield({numStar = 500} = {})
 
 const star = getStarfield({numStar:2000});
 scene.add(star);
+
+

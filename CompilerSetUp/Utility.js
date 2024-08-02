@@ -60,7 +60,7 @@ export default class Utility {
         const regexfound = /\b(const.{.*)/g
         for(let i = 0;i< fileArray.length;i++)
         {
-            let content = fs.readFileSync(fileArray[i],'utf-8');
+            let content = fs.readFileSync(fileArray[i],'utf-8').trim();
             if(content.match(regexfound) === null)
             {
                 compiledContent += `//file: ${path.basename(fileArray[i])}\n${content}\n`
@@ -114,7 +114,7 @@ export default class Utility {
                     const compileContent = this.getContentFile(this.fileDirArray.slice(1))
                     let content = "const THREE = require('three')\n"
                     content += compileContent
-                    content += this.getExportScript(this.getContentFile(this.fileDirArray.slice(1)))
+                    content += this.getExportScript(this.getAllExportName(this.getContentFile(this.fileDirArray.slice(1))))
                     fs.appendFile(linkFile,content,(err)=>{ 
                         if (err){ 
                             throw new Error(`erreur compilation linkfile ${time} \n${err}`);
@@ -168,30 +168,29 @@ export default class Utility {
         }
     }
 
-    getExportScript(content)
+    getExportScript(constArray)
     {
-        const regexgetConst = /(?<=[c][o][n][s][t].)[^{][A-z]*/g; 
-        const regexgetfunction = /(?<=[f][u][n][c][t][i][o][n].)[A-z]*/g; 
-        const getAllFunction = /(function)+.*[^]*.?\/*[}][^(function)+]/gm;
-        const allConstinfile = content.match(regexgetConst)
-        const alltheFunction = content.match(getAllFunction)
-        let contentfunc = ''
-        for(let i = 0; i < alltheFunction.length; i++)
-        {
-            contentfunc += alltheFunction[i]
-        }
-        const allconstinFunc = contentfunc.match(regexgetConst)
-        const diferrence = allConstinfile.filter((element)=> !allconstinFunc.includes(element))
-        const allfuncinfile = content.match(regexgetfunction)
-        const allinfile = diferrence.concat(allfuncinfile)
+        // const regexgetConst = /(?<=[c][o][n][s][t].)[^{][A-z]*/g; 
+        // const regexgetfunction = /(?<=[f][u][n][c][t][i][o][n].)[A-z]*/g; 
+        // const getAllFunction = /(function)+.*[^]*.?\/*[}][^(function)+]/gm;
+        // const allConstinfile = content.match(regexgetConst)
+        // const alltheFunction = content.match(getAllFunction)
+        // let contentfunc = ''
+        // for(let i = 0; i < alltheFunction.length; i++)
+        // {
+        //     contentfunc += alltheFunction[i]
+        // }
+        // const allconstinFunc = contentfunc.match(regexgetConst)
+        // const diferrence = allConstinfile.filter((element)=> !allconstinFunc.includes(element))
+        // const allfuncinfile = content.match(regexgetfunction)
+        // const allinfile = diferrence.concat(allfuncinfile)
         let exportsScript = 'exports.THREE = THREE\n'
-        for(let i = 0; i < allinfile.length; i++)
+        for(let i = 0; i < constArray.length; i++)
         {
-            exportsScript+=`module.exports = {${allinfile[i]}}\n`
+            exportsScript+=`module.exports = {${constArray[i]}}\n`
         }
         return exportsScript;
     }
-
 
     getImportStript(){
         const theConst = this.getAllExportName(this.getContentFile(this.fileDirArray))
@@ -203,9 +202,6 @@ export default class Utility {
         importScript+= `THREE} = require('../../public/versionning/linkFile.js')\n`
         return importScript
     }
-
-
-
 
     getAssetPathConst()
     {

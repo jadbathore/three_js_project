@@ -23,11 +23,6 @@ const scene = new THREE.Scene()
 renderer.shadowMap.enabled = true;
 renderer.setSize(window.innerWidth,window.innerHeight);
 document.body.appendChild(renderer.domElement)
-
-
-
-
-
 //file: cameraSetting.js
 
 const camera = new THREE.PerspectiveCamera(
@@ -43,6 +38,7 @@ const orbit = new OrbitControls(camera,renderer.domElement)
 orbit.update();
 //file: loader.js
 const loader = new THREE.TextureLoader();
+
 
 //file: earthGroup.js
 
@@ -95,7 +91,6 @@ const cloudMesh = new THREE.Mesh(
 )
 cloudMesh.scale.setScalar(1.01)
 earthGroup.add(cloudMesh);
-
 //file: moon.js
 
 const moonRotation = new THREE.Object3D();
@@ -112,9 +107,6 @@ const moonMesh = new THREE.Mesh(
 moonRotation.add(moonMesh);
 moonMesh.position.x = 8
 moonMesh.castShadow = true
-
-
-
 //file: fresnel.js
 
 
@@ -248,15 +240,11 @@ renderer.setAnimationLoop(animate);
 
 
 //file: resizeSetting.js
-
 window.addEventListener('resize',()=> {
     camera.aspect= window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth,window.innerHeight)
     })
-
-
-
 exports.THREE = THREE
 module.exports = {gltf}
 module.exports = {img}

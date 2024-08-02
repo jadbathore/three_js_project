@@ -2,6 +2,7 @@ import chalk from 'chalk';
 import fs from 'fs';
 import path from 'path';
 import Utility from './Utility.js';
+import { allFile,mapAsset } from './pathUtility.js';
 import {loadConfigFile} from 'rollup/loadConfigFile'
 import {rollup,watch} from 'rollup';
 
@@ -17,32 +18,6 @@ loadConfigFile(path.resolve(process.cwd(), 'rollup.config.js'), {
     watch(options)
     console.log(chalk.green('le fichier dist est connecté avec succée !'))
 });
-
-const mapFile = new Map();
-fs.readdirSync('./threeElement/',{withFileTypes:true}).filter(dir => dir.isDirectory()).map(
-    (dir)=>{
-        const arry = fs.readdirSync(path.join(process.cwd(),'threeElement',dir.name))
-        mapFile.set(dir.name,arry)
-    })
-    ;
-const allFile = []
-for (const [key, value] of mapFile) {
-    for (const file of value)
-    {
-        const pathFile = path.join(process.cwd(),'threeElement',key,file)
-        allFile.push(pathFile);
-    }
-}
-const pathtoAsset = path.join(process.cwd(),'public','asset')
-
-const mapAsset = new Map();
-fs.readdirSync(pathtoAsset,{withFileTypes:true}).filter(dir => dir.isDirectory()).map(
-    (dir)=>{
-        const arry = fs.readdirSync(path.join(process.cwd(),'public','asset',dir.name))
-        mapAsset.set(dir.name,arry)
-    })
-    ;
-
 
 const UtilityClass = new Utility(allFile,mapAsset);
 for(let i = 0;i< UtilityClass.fileDirArray.length;i++){
