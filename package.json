@@ -33,6 +33,7 @@
     "figlet": "^1.5.2",
     "inquirer": "^10.1.6",
     "mongoose": "^8.5.0",
+    "ora": "^8.0.1",
     "path": "^0.12.7",
     "rollup-plugin-esbuild-minify": "^1.1.1",
     "rollup-plugin-watch": "^1.0.4",
