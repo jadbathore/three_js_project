@@ -1,21 +1,22 @@
 #! /usr/bin/env node
 
 import { program } from "commander";
-import inquirer from "inquirer"; 
 import chalk from "chalk";
 import figlet from "figlet";
 import mongoose from 'mongoose';
 import path from 'path';
-import boxen from 'boxen';
 import fs from 'fs';
-import { allFile, basenameFile } from "../CompilerSetUp/pathUtility.js";
+import { allExeceptSetting, allFile, basenameFile } from "../CompilerSetUp/pathUtility.js";
 import commanderHelp from 'commander-help'
 import ora from 'ora'
+import BinUtility from "./BinUtility.js";
+import { clear } from "console";
 
 
 
-
+const BinUtilityClass = new BinUtility()
 mongoose.connect('mongodb://127.0.0.1:27017/versionningThreeJs')
+  
 const mongooseSchema = mongoose.Schema(
     {
         versionName:String,
@@ -36,57 +37,15 @@ const mongooseSchema2 = mongoose.Schema(
 )
 const VersionningModel2 = new mongoose.model('single',mongooseSchema2);
 
-
-
-function successSaveMessage(version,option=null)
-{
-    if(option == null)
+const mongooseSchema3 = mongoose.Schema(
     {
-        console.log('\n' + chalk.keyword('violet')('element compling.js sauvegardé :') + '\n\n' +
-        chalk.green(
-        boxen(`version: '${version}' \ntime: '${new Date(Date.now()).toString()}'`,
-        {
-            padding: 1,
-            height: 2 ,
-        }
-        )));
-
-    } else {
-        const banner = `\n${chalk.keyword('violet')('element sauvegardé :')}\n\n`
-        let content = `version: '${version}' \n`
-        for(let i in option)
-        {
-            content += `${i}: ${option[i]}\n`
-        }
-        content+= `time:'${new Date(Date.now()).toString()}'`
-        console.log(banner + chalk.green(boxen(content,
-        {
-            padding: 1,
-            height: 2 ,
-        })))
+        UsableName:String,
+        date:{type:Date,default:Date.now},
+        content: {}
     }
-    
-}
-function choiceCallback(message,callback) {
-    inquirer.prompt([
-        {
-            type: "list",
-            name: "choice",
-            message: message,
-            choices: basenameFile,
-        },
-    ]).then((result) => {
-        callback(result)
-    })
-}
-
-function appendFile(path)
-{
-    
-}
-
-
-
+)
+const ReusableModel = new mongoose.model('usable',mongooseSchema3);
+//---------------------------------ThreeCli----------------------------------------------
 program
 .name('ThreeCli')
 .description('Cli three js to render different build')
@@ -95,21 +54,46 @@ program
     commanderHelp(program)
 })
 .version('1.0.0')
-
+//---------------------------------save-------------------------------------------------
 program
 .command('save') 
 .option('-s, --single <file>','save a single file')
-.action((option)=>{
+.option('-u, --usable','save a re-usable file')
+.action(async(option)=>{
+    if(option.single && option.usable == true)
+    {
+        console.log(chalk.keyword('orange')('you can\'t mix option single and usable(usable is to save all file in a reusable manner)'))
+        process.exit()
+    }
     if(!option.single){ 
-    const pathfile = path.join(process.cwd(),'public','versionning','compling.js')
-    const content = fs.readFileSync(pathfile,'utf-8');
-    const versionName = `versions_${new mongoose.Types.ObjectId().toString()}`
-    const add = new VersionningModel({
-        versionName:versionName,
-        content:content
-        })
-        add.save();
-        successSaveMessage(versionName)
+        if(option.usable == true)
+            {
+                const version = `UsableSave_${new mongoose.Types.ObjectId().toString()}`
+                const fileDictonary = {}
+                for(let i = 0;i < allFile.length;i++)
+                {
+                    const content = fs.readFileSync(allFile[i],'utf-8')
+                    fileDictonary[basenameFile[i]] = content
+                }
+                const add = new ReusableModel({
+                    UsableName:version,
+                    content: fileDictonary,
+                    })
+                await add.save()
+                BinUtilityClass.successSaveMessage('fichier usable sauvegarder :',version)
+                process.exit()
+            } else {
+                const pathfile = path.join(process.cwd(),'public','versionning','compling.js')
+                const content = fs.readFileSync(pathfile,'utf-8');
+                const versionName = `versions_${new mongoose.Types.ObjectId().toString()}`
+                const add = new VersionningModel({
+                    versionName:versionName,
+                    content:content
+                    })
+                    await add.save();
+                    BinUtilityClass.successSaveMessage('fichier compiling.js sauvegarder :',versionName)
+                process.exit()
+            }
         } else {
             const versionName = `versions_${new mongoose.Types.ObjectId().toString()}`
             const a = basenameFile.indexOf(option.single)
@@ -121,14 +105,14 @@ program
                     fileName:option.single,
                     content: content
                     })
-                add.save()
+                await add.save()
                 const optionsMessage = {file:option.single}
-                successSaveMessage(versionName,optionsMessage)
+                BinUtilityClass.successSaveMessage(`fichier ${option.single} sauvegarder :`,versionName,optionsMessage)
                 process.exit();
             } else {
                 console.log(chalk.keyword('orange')('fichier non reconnu voici les fichiers accèptable.'))
-                choiceCallback('fichier accetable',(result)=>{
-                    setTimeout(()=>
+                BinUtilityClass.choiceCallback('fichier accetable',basenameFile,(result)=>{
+                    setTimeout(async()=>
                     {
                         const spinner = ora(`Doing ${result.choice}...`).start();
                         spinner.succeed(chalk.green(`ok for ${result.choice}`))
@@ -139,8 +123,8 @@ program
                             fileName: result.choice,
                             content: content
                             })
-                            add.save()
-                            successSaveMessage(versionName,{file:result.choice})
+                            await add.save()
+                            BinUtilityClass.successSaveMessage(`fichier ${result.choice} sauvegarder :`,versionName,{file:result.choice})
                             process.exit();
                     },100)
                     
@@ -150,50 +134,81 @@ program
 })
 .description('save a file in a mongoDB')
 
-
+//---------------------------------fork-------------------------------------------------
 program
 .command('fork')
 .option('-sf, --singlefile <file>','fork a single file')
 .option('-sv ,--fileversion <file>','fork a specific version')
 .action(async(option)=>{
 if(!option.singlefile && !option.fileversion){
-    const test  = await VersionningModel.find().sort({_id: -1}).limit(1);
-    const filename = test[0].versionName + '.js'
-    const pathcreatedFile =  path.join(process.cwd(),'public','versionning',filename)
-    fs.appendFile(pathcreatedFile,test[0].content,(error)=>{
-        error ? console.log(chalk.red(`erreur : ${error}`)) : 
-        console.log(chalk.green('fichier ajouter avec succées ✨')) 
-    });
+    const request  = await VersionningModel.find().sort({_id: -1}).limit(1);
+    BinUtilityClass.appendFileWithMango(request)
+    console.log(chalk.green('element ajouter ✨'))
+    process.exit()
 }
 if(option.singlefile && !option.fileversion){
-    const test  = await VersionningModel2.findOne({fileName:option.singlefile});
-    const filename = test[0].versionName + '.js'
-    const pathcreatedFile =  path.join(process.cwd(),'public','versionning',filename)
-    fs.appendFile(pathcreatedFile,test[0].content,(error)=>{
-        error ? console.log(chalk.red(`erreur : ${error}`)) : 
-        console.log(chalk.green('fichier ajouter avec succées ✨')) 
-    });
+    const request  = await VersionningModel2.findOne({fileName:option.singlefile});
+    if(request === null){
+        const request = await VersionningModel2.find({})
+        const tableChoice = []
+        for(let i = 0; i < request.length; i++ )
+        {
+            let title = request[i].versionName
+            tableChoice.push(title)
+        }
+        BinUtilityClass.choiceCallback(`aucun model avec le nom ${option.singlefile}...`,tableChoice,(result)=> {
+            const spinner = ora(`Doing ${result.choice}...`).start();
+            setTimeout(async() => {
+                const request2  = await VersionningModel2.findOne({versionName:result.choice});
+                spinner.succeed(chalk.blue(`element : '${result.choice}' choisi`))
+                BinUtilityClass.appendFileWithMango(request2,'single')
+                console.log(chalk.green('element ajouter ✨'))
+                process.exit()
+            },100)
+        })
+    } else {
+        BinUtilityClass.appendFileWithMango(request,'single') 
+        process.exit()
+    }
 }
 if(!option.singlefile && option.fileversion){
-    const test  = await VersionningModel2.findOne({fileName:option.singlefile});
-    console.log(test)
+    const request  = await VersionningModel.findOne({version:option.fileversion});
+    if(request === null){
+        const request = await VersionningModel.find({})
+        const tableChoice = []
+        for(let i = 0; i < request.length; i++ )
+        {
+            let title = request[i].versionName
+            tableChoice.push(title)
+        }
+        BinUtilityClass.choiceCallback(`aucun model avec le nom ${option.fileversion}...`,tableChoice,(result)=>{
+            const spinner = ora(`Doing ${result.choice}...`).start();
+            setTimeout(async() => {
+                spinner.succeed(chalk.blue(`element : '${result.choice}' choisi`))
+                const request2  = await VersionningModel.findOne({versionName:result.choice});
+                BinUtilityClass.appendFileWithMango(request2,'singleVersion')
+                console.log(chalk.green('element ajouter ✨'))
+                process.exit()
+            },100)
+        })
+    } else {
+        BinUtilityClass.appendFileWithMango(request)
+        process.exit()
+    }
+}
+if(option.singlefile && option.fileversion){
+    const request  = await VersionningModel.findOne({versionName:versionName});
+    BinUtilityClass.appendFileWithMango(request)
+    process.exit()
 }
 }
 )
 .description('replace a file by a saved version (by default the last version)')
-
-
-
-
-program.helpInformation = function() {
-    return '';
-};
-
-
+//---------------------------------readFile-------------------------------------------------
 
 program.command('readFile').action(
     ()=>{
-        choiceCallback('fichier à lire',(result)=>{
+        BinUtilityClass.choiceCallback('fichier à lire',basenameFile,(result)=>{
             const spinner = ora(`Doing ${result.choice}...`).start();
             setTimeout(() => {
                 spinner.succeed(chalk.blue(`element : '${result.choice}' choisi`))
@@ -203,49 +218,45 @@ program.command('readFile').action(
         })
     }
 ).description('commande de test cli')
-program.on('--help', function() {
+
+//------------------------------------usable------------------------------------------------
+program.command('clear').action(
+    ()=>{
+        console.log(allExeceptSetting)
+        if(allExeceptSetting.length != 1)
+        {
+            for(let i = 0;i< allExeceptSetting.length;i++)
+            {
+                if(path.basename(allExeceptSetting[i]) !== 'animate.js')
+                {
+                    fs.rmSync(allExeceptSetting[i])
+                } else {
+                    fs.truncateSync(allExeceptSetting[i])
+                    const content = 'function animate()\n{\n}\nrenderer.setAnimationLoop(animate);'
+                    fs.appendFileSync(allExeceptSetting[i],content)
+                }
+                console.log(chalk.keyword('yellow')('Dossier ThreeElement nettoyer et prés à l\'emploi 🧹'))
+                process.exit()
+            }
+        } else {
+            console.log(chalk.green('Dossier ThreeElement déja nettoyer 🧹'))
+            process.exit()
+        }
+    }
+)
+//------------------------------------clear------------------------------------------------
+
+
+
+
+program.helpInformation = ()=> {
+    return '';
+};
+
+program.on('--help', () => {
     console.log('\n',chalk.green(figlet.textSync('ThreeCLI', { horizontalLayout: 'full',font:'Colossal'})))
     commanderHelp(program)
 });
 
 program.parse()
-
-
-// const usage = chalk.keyword('violet')('\nUsage: ThreeCli <command>')
-// yargs 
-// .usage(usage)
-// .command('SaveElement', 'make a get HTTP request',()=>
-// {
-//     const pathfile = path.join(process.cwd(),'versionning','compling.js')
-//     const content = fs.readFileSync(pathfile,'utf-8');
-//     const versionName = `versions_${new mongoose.Types.ObjectId().toString()}`
-//     const add = new VersionningModel({
-//         versionName:versionName,
-//         content:content
-//         })
-//         add.save();
-//         console.log('\n' + chalk.keyword('violet')('element sauvegardé versionning/compling.js :') + '\n\n' +
-//             chalk.green(
-//             boxen(`version: '${versionName}' \ntime: '${new Date(Date.now()).toString()}'`,
-//             {
-//                 padding: 1,
-//                 height: 2 ,
-//             }
-//             )));
-//         yargs.exit();
-// })
-// .help(true)
-// .argv;
-// const argv = require('yargs/yargs')(process.argv.slice(2)).argv;
-// const filePaths = argv._
-// if (filePaths.length == 0) {
-//     console.log(
-//         
-//     );
-//     yargs.showHelp()
-// }
-
-
-
-
 

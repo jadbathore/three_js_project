@@ -11,11 +11,16 @@ fs.readdirSync('./threeElement/',{withFileTypes:true}).filter(dir => dir.isDirec
     })
     ;
 const allFile = []
+const allExeceptSetting = []
 for (const [key, value] of mapFile) {
     for (const file of value)
     {
         const pathFile = path.join(process.cwd(),'threeElement',key,file)
         allFile.push(pathFile);
+        if(key != 'Setting')
+        {
+            allExeceptSetting.push(pathFile)
+        }
     }
 }
 
@@ -34,5 +39,5 @@ allFile.forEach((element)=>{
     const base = path.basename(element)
     basenameFile.push(base)
 })
-export {mapAsset,allFile,basenameFile}
+export {mapAsset,allFile,basenameFile,allExeceptSetting}
 

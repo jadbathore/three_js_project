@@ -3,11 +3,6 @@ import path from 'path';
 import fs, { appendFile } from 'fs';
 
 
-
-
-
-
-
 const complierFile = path.join(process.cwd(),'public','versionning','compling.js')
 
 export default class Utility {
@@ -170,20 +165,6 @@ export default class Utility {
 
     getExportScript(constArray)
     {
-        // const regexgetConst = /(?<=[c][o][n][s][t].)[^{][A-z]*/g; 
-        // const regexgetfunction = /(?<=[f][u][n][c][t][i][o][n].)[A-z]*/g; 
-        // const getAllFunction = /(function)+.*[^]*.?\/*[}][^(function)+]/gm;
-        // const allConstinfile = content.match(regexgetConst)
-        // const alltheFunction = content.match(getAllFunction)
-        // let contentfunc = ''
-        // for(let i = 0; i < alltheFunction.length; i++)
-        // {
-        //     contentfunc += alltheFunction[i]
-        // }
-        // const allconstinFunc = contentfunc.match(regexgetConst)
-        // const diferrence = allConstinfile.filter((element)=> !allconstinFunc.includes(element))
-        // const allfuncinfile = content.match(regexgetfunction)
-        // const allinfile = diferrence.concat(allfuncinfile)
         let exportsScript = 'exports.THREE = THREE\n'
         for(let i = 0; i < constArray.length; i++)
         {
