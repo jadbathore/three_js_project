@@ -5,18 +5,15 @@ import chalk from "chalk";
 import figlet from "figlet";
 import mongoose from 'mongoose';
 import path from 'path';
-import fs from 'fs';
-import { allExeceptSetting, allFile, basenameFile } from "../CompilerSetUp/pathUtility.js";
+import fs, { existsSync } from 'fs';
+import { allExeceptSetting, allFile, basenameExecptSetting, basenameFile,importscript } from "../CompilerSetUp/pathUtility.js";
 import commanderHelp from 'commander-help'
 import ora from 'ora'
 import BinUtility from "./BinUtility.js";
-import { clear } from "console";
-
-
 
 const BinUtilityClass = new BinUtility()
 mongoose.connect('mongodb://127.0.0.1:27017/versionningThreeJs')
-  
+
 const mongooseSchema = mongoose.Schema(
     {
         versionName:String,
@@ -40,6 +37,7 @@ const VersionningModel2 = new mongoose.model('single',mongooseSchema2);
 const mongooseSchema3 = mongoose.Schema(
     {
         UsableName:String,
+        name:String,
         date:{type:Date,default:Date.now},
         content: {}
     }
@@ -58,29 +56,30 @@ program
 program
 .command('save') 
 .option('-s, --single <file>','save a single file')
-.option('-u, --usable','save a re-usable file')
+.option('-u, --usable <name>','save a re-usable file')
 .action(async(option)=>{
-    if(option.single && option.usable == true)
+    if(option.single && option.usable)
     {
         console.log(chalk.keyword('orange')('you can\'t mix option single and usable(usable is to save all file in a reusable manner)'))
         process.exit()
     }
     if(!option.single){ 
-        if(option.usable == true)
+        if(option.usable)
             {
                 const version = `UsableSave_${new mongoose.Types.ObjectId().toString()}`
                 const fileDictonary = {}
                 for(let i = 0;i < allFile.length;i++)
                 {
                     const content = fs.readFileSync(allFile[i],'utf-8')
-                    fileDictonary[basenameFile[i]] = content
+                    fileDictonary[allFile[i]] = content
                 }
                 const add = new ReusableModel({
                     UsableName:version,
+                    name:option.usable,
                     content: fileDictonary,
                     })
                 await add.save()
-                BinUtilityClass.successSaveMessage('fichier usable sauvegarder :',version)
+                BinUtilityClass.successSaveMessage('fichier usable sauvegarder :',version,{name:option.usable})
                 process.exit()
             } else {
                 const pathfile = path.join(process.cwd(),'public','versionning','compling.js')
@@ -95,33 +94,46 @@ program
                 process.exit()
             }
         } else {
-            const versionName = `versions_${new mongoose.Types.ObjectId().toString()}`
+            const hash = new mongoose.Types.ObjectId().toString()
+            const versionName = `versions_${hash}`
             const a = basenameFile.indexOf(option.single)
             if(a !== -1)
             {
                 const content = fs.readFileSync(allFile[a],'utf-8')
+                const allConstArray = BinUtilityClass.getAllExportName(content)
+                let remplacement = {}
+                for(let i=0;i<allConstArray.length;i++)
+                {
+                    remplacement[allConstArray[i]] = `${allConstArray[i]}_${hash}`
+                }
                 const add = new VersionningModel2({
                     versionName:versionName,
                     fileName:option.single,
-                    content: content
+                    content: BinUtilityClass.replaceMultiple(content,remplacement)
                     })
                 await add.save()
                 const optionsMessage = {file:option.single}
                 BinUtilityClass.successSaveMessage(`fichier ${option.single} sauvegarder :`,versionName,optionsMessage)
                 process.exit();
             } else {
-                console.log(chalk.keyword('orange')('fichier non reconnu voici les fichiers accèptable.'))
-                BinUtilityClass.choiceCallback('fichier accetable',basenameFile,(result)=>{
+                console.log(chalk.keyword('orange')('fichier non reconnu voici les fichiers acceptable.'))
+                BinUtilityClass.choiceCallback('fichier accetable',basenameExecptSetting,(result)=>{
                     setTimeout(async()=>
                     {
                         const spinner = ora(`Doing ${result.choice}...`).start();
                         spinner.succeed(chalk.green(`ok for ${result.choice}`))
                         const choicesindex = basenameFile.indexOf(result.choice)
                         const content = fs.readFileSync(allFile[choicesindex],'utf-8')
+                        const allConstArray = BinUtilityClass.getAllExportName(content)
+                        let remplacement = {}
+                        for(let i=0;i<allConstArray.length;i++)
+                        {
+                            remplacement[allConstArray[i]] = `${allConstArray[i]}_${hash}`
+                        }
                         const add = new VersionningModel2({
                             versionName:versionName,
                             fileName: result.choice,
-                            content: content
+                            content: BinUtilityClass.replaceMultiple(content,remplacement)
                             })
                             await add.save()
                             BinUtilityClass.successSaveMessage(`fichier ${result.choice} sauvegarder :`,versionName,{file:result.choice})
@@ -204,6 +216,7 @@ if(option.singlefile && option.fileversion){
 }
 )
 .description('replace a file by a saved version (by default the last version)')
+
 //---------------------------------readFile-------------------------------------------------
 
 program.command('readFile').action(
@@ -217,46 +230,80 @@ program.command('readFile').action(
             },100)
         })
     }
-).description('commande de test cli')
+).description('testCommandCli')
 
 //------------------------------------usable------------------------------------------------
+
+program.command('usable').action(
+    async()=>{
+        const request = await ReusableModel.find({})
+        const nameArray = []
+        for(let i = 0; i < request.length; i++)
+        {
+            nameArray.push(request[i].name)
+        }
+        BinUtilityClass.choiceCallback('liste des docs usable...',nameArray,(result)=>{
+            const spinner = ora(`Doing ${result.choice}...`).start();
+            setTimeout(async() => {
+                spinner.succeed(chalk.green(`element : '${result.choice}' choisi`))
+                const request = await ReusableModel.findOne({name:result.choice})
+                for (const key in request.content) {
+                    if(existsSync(key)){
+                        fs.truncateSync(key)
+                        fs.appendFileSync(key,request.content[key])
+                    } else {
+                        fs.appendFileSync(key,request.content[key])
+                    }
+                }
+                console.log(chalk.green('tous les fichiers utilisable on été rechargé avec succée ✨'));
+            },100)
+        })
+    }
+).description('re-use a usable pre-save version')
+
+//------------------------------------clear------------------------------------------------
+
 program.command('clear').action(
     ()=>{
-        console.log(allExeceptSetting)
-        if(allExeceptSetting.length != 1)
+        if(allExeceptSetting.length > 1)
         {
             for(let i = 0;i< allExeceptSetting.length;i++)
             {
                 if(path.basename(allExeceptSetting[i]) !== 'animate.js')
                 {
-                    fs.rmSync(allExeceptSetting[i])
+                    fs.rmSync(allExeceptSetting[i],{recursive:true})
                 } else {
                     fs.truncateSync(allExeceptSetting[i])
                     const content = 'function animate()\n{\n}\nrenderer.setAnimationLoop(animate);'
                     fs.appendFileSync(allExeceptSetting[i],content)
                 }
-                console.log(chalk.keyword('yellow')('Dossier ThreeElement nettoyer et prés à l\'emploi 🧹'))
-                process.exit()
+                
             }
+            console.log(chalk.keyword('yellow')('Dossier ThreeElement nettoyer et prés à l\'emploi 🧹'))
+            process.exit()
         } else {
-            console.log(chalk.green('Dossier ThreeElement déja nettoyer 🧹'))
+            console.log(chalk.green('Dossier ThreeElement déja nettoyer'))
             process.exit()
         }
     }
-)
-//------------------------------------clear------------------------------------------------
+).description('clear directory "threeElement" leave only the Setting and the animate function truncated')
 
-
-
+//------------------------------------importscript------------------------------------------------
+program.command('importScripts').action(
+    ()=>{
+        importscript()
+        process.exit()
+    }
+).description('add import script to all ThreeElement file who\'s not already as some import script()this import script will not be read by the compiler')
 
 program.helpInformation = ()=> {
     return '';
 };
 
 program.on('--help', () => {
-    console.log('\n',chalk.green(figlet.textSync('ThreeCLI', { horizontalLayout: 'full',font:'Colossal'})))
+    console.log('\n',chalk.green(figlet.textSync('ThreeCli', { horizontalLayout: 'full',font:'Colossal'})))
     commanderHelp(program)
+    process.exit()
 });
 
 program.parse()
-

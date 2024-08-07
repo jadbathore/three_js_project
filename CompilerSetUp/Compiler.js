@@ -19,15 +19,18 @@ loadConfigFile(path.resolve(process.cwd(), 'rollup.config.js'), {
     console.log(chalk.green('le fichier dist est connecté avec succée !'))
 });
 
-
-
-
-
 const UtilityClass = new Utility(allFile,mapAsset);
-for(let i = 0;i< UtilityClass.fileDirArray.length;i++){
-    UtilityClass.addimportScript(UtilityClass.fileDirArray[i])
-}
-export const composer = () =>{
+
+
+for(let i = 0;i< UtilityClass.fileDirArray.length;i++)
+    {
+        UtilityClass.addimportScript(UtilityClass.fileDirArray[i])
+    }
+
+
+export const composer = () =>
+{
+    
     UtilityClass.repopulateComposer()
     UtilityClass.repopulatelinkFile()
     for(let i = 0;i< UtilityClass.fileDirArray.length;i++){

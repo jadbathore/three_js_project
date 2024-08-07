@@ -1,6 +1,7 @@
 import chalk from 'chalk';
 import path from 'path';
-import fs, { appendFile } from 'fs';
+import fs from 'fs'
+
 
 
 const complierFile = path.join(process.cwd(),'public','versionning','compling.js')
@@ -109,12 +110,12 @@ export default class Utility {
                     const compileContent = this.getContentFile(this.fileDirArray.slice(1))
                     let content = "const THREE = require('three')\n"
                     content += compileContent
-                    content += this.getExportScript(this.getAllExportName(this.getContentFile(this.fileDirArray.slice(1))))
+                    content += this.getExportScript(this.getAllExportName(this.getContentFile(this.fileDirArray)))
                     fs.appendFile(linkFile,content,(err)=>{ 
                         if (err){ 
                             throw new Error(`erreur compilation linkfile ${time} \n${err}`);
                         }
-                        console.log(chalk.green(`fichier link mise à jour ${time}`))
+                    console.log(chalk.green(`fichier link mise à jour ${time}`))
                     })
                 },500)
             }).catch((err)=>{
@@ -123,7 +124,7 @@ export default class Utility {
     }
     getAllExportName(content)
     {
-        const regexgetConst = /(?<=[c][o][n][s][t].)[^{][A-z]*/g; 
+        const regexgetConst = /(?<=[c][o][n][s][t].)[^{][A-z0-9]*/g; 
         const regexgetfunction = /(?<=[f][u][n][c][t][i][o][n].)[A-z]*/g; 
         const getAllFunction = /(function)+.*[^]*.?\/*[}][^(function)+]/gm;
         const allConstinfile = content.match(regexgetConst)
@@ -145,20 +146,23 @@ export default class Utility {
         const forbiden = []
         forbiden.push(path.join(process.cwd(),'threeElement','Setting','configImport.js'))
         forbiden.push(path.join(process.cwd(),'threeElement','Setting','resizeSetting.js'))
+
         if(!forbiden.includes(file))
         {
             const regexmatchRequire = /(const.{.*.}.[=].require)+.*/g
             const test = fs.readFileSync(file,'utf-8').match(regexmatchRequire)
-            const text = this.getImportStript()
             if(test === null)
             {
+                const text = this.getImportStript()
                 fs.appendFile(file,text,(err)=>{ 
                     if (err) 
                     { 
                         throw new Error(`erreur import Script`);
                     }
                 })
-                console.log(chalk.keyword('yellow')(`the import statement as been added to '${file}' `))
+                return console.log(chalk.green(`the import statement as been added to '${file}' `))
+            } else {
+                return false 
             }
         }
     }

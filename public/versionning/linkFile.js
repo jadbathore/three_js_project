@@ -232,6 +232,7 @@ function animate()
     renderer.render(scene,camera)
     moonMesh.rotateY(0.02)
     moonRotation.rotateY(0.00514)
+    
 }
 
 renderer.setAnimationLoop(animate);

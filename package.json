@@ -37,8 +37,7 @@
     "path": "^0.12.7",
     "rollup-plugin-esbuild-minify": "^1.1.1",
     "rollup-plugin-watch": "^1.0.4",
-    "three": "^0.166.1",
-    "yargs": "^17.7.2"
+    "three": "^0.166.1"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^26.0.1",

@@ -1,5 +1,8 @@
 import fs from 'fs'
 import path from 'path';
+import Utility from './Utility.js';
+import chalk from 'chalk';
+
 
 
 
@@ -39,5 +42,26 @@ allFile.forEach((element)=>{
     const base = path.basename(element)
     basenameFile.push(base)
 })
-export {mapAsset,allFile,basenameFile,allExeceptSetting}
+const basenameExecptSetting = []
+allExeceptSetting.forEach((element)=>{
+    const base = path.basename(element)
+    basenameExecptSetting.push(base)
+})
+
+const UtilityClass = new Utility(allFile,mapAsset);
+
+const importscript = () =>
+{
+    for(let i = 0;i< allFile.length;i++)
+    {
+        if(UtilityClass.addimportScript(allFile[i]) == false)
+        {
+            console.log(chalk.keyword('yellow')('script import n\'est nécessaire pour le fichier'+allFile[i]))
+        }
+    } 
+    
+
+}
+
+export {mapAsset,allFile,basenameFile,allExeceptSetting,basenameExecptSetting,importscript}
 
