@@ -274,7 +274,7 @@ program.command('clear').action(
                     fs.rmSync(allExeceptSetting[i],{recursive:true})
                 } else {
                     fs.truncateSync(allExeceptSetting[i])
-                    const content = 'function animate()\n{\n}\nrenderer.setAnimationLoop(animate);'
+                    const content = 'function animate()\n{\nrenderer.render(scene,camera)\n}\nrenderer.setAnimationLoop(animate);'
                     fs.appendFileSync(allExeceptSetting[i],content)
                 }
                 

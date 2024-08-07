@@ -74,29 +74,8 @@ export default class BinUtility {
             return fs.appendFileSync(pathcreatedFile,mangoRequest[0].content);
         }
     }
-    getAllExportName(content)
-    {
-        const regexgetConst = /(?<=[c][o][n][s][t].)[^{][A-z]*/g; 
-        const regexgetfunction = /(?<=[f][u][n][c][t][i][o][n].)[A-z]*/g; 
-        const getAllFunction = /(function)+.*[^]*.?\/*[}][^(function)+]/gm;
-        const allConstinfile = content.match(regexgetConst)
-        const alltheFunction = content.match(getAllFunction)
-        if(alltheFunction !== null)
-        {
-            let contentfunc = ''
-            for(let i = 0; i < alltheFunction.length; i++)
-            {
-                contentfunc += alltheFunction[i]
-            }
-            const allconstinFunc = contentfunc.match(regexgetConst)
-            const diferrence = allConstinfile.filter((element)=> !allconstinFunc.includes(element))
-            const allfuncinfile = content.match(regexgetfunction)
-            const allinfile = diferrence.concat(allfuncinfile)
-            return allinfile;
-        } else {
-            return allConstinfile;
-        }
-    }
+    
+    
     
     replaceMultiple(str, replacements) {
         for (let [oldStr, newStr] of Object.entries(replacements)) {

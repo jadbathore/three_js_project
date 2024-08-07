@@ -34,17 +34,20 @@ export const composer = () =>
     UtilityClass.repopulateComposer()
     UtilityClass.repopulatelinkFile()
     for(let i = 0;i< UtilityClass.fileDirArray.length;i++){
-        fs.watch(UtilityClass.fileDirArray[i],async(event, file) => {
-            switch (event)
-            {
-                case 'change': 
-                await UtilityClass.repopulateComposer(); 
-                await UtilityClass.repopulatelinkFile();
-                break;
-                case 'rename': console.log(chalk.keyword('orange')('⚠️ do not change name or remove some file during the process ⚠️'));break;
-                default : return;
-            }
-            console.log(chalk.keyword('violet')(`the file ${file} as been ${event} 🔮`))
-        }); 
+        if(UtilityClass.fileDirArray[i] !== undefined)
+        {
+            fs.watch(UtilityClass.fileDirArray[i],async(event, file) => {
+                switch (event)
+                {
+                    case 'change': 
+                    await UtilityClass.repopulateComposer(); 
+                    await UtilityClass.repopulatelinkFile();
+                    break;
+                    case 'rename': console.log(chalk.keyword('orange')('⚠️ do not change name or remove some file during the process ⚠️'));break;
+                    default : return;
+                }
+                console.log(chalk.keyword('violet')(`the file ${file} as been ${event} 🔮`))
+            }); 
+        }
     }
 }

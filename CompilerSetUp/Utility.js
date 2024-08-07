@@ -1,6 +1,7 @@
 import chalk from 'chalk';
 import path from 'path';
 import fs from 'fs'
+import boxen from 'boxen';
 
 
 
@@ -26,10 +27,11 @@ export default class Utility {
                 case'configImport.js': mapContent.set(0,fileArray[i]);break;
                 case'RendererSetting.js':mapContent.set(1,fileArray[i]);break;
                 case'cameraSetting.js': mapContent.set(2,fileArray[i]);break;
-                case'loader.js':mapContent.set(3,fileArray[i]);break;
+                // case'loader.js':mapContent.set(3,fileArray[i]);break;
                 case'animate.js': mapContent.set(fileArray.length - 2,fileArray[i]);break;
                 case'resizeSetting.js':mapContent.set(fileArray.length - 1,fileArray[i]);break;
-                default: mapContent.set(3+ii,fileArray[i]);
+                case undefined: break;
+                default: mapContent.set(2+ii,fileArray[i]);
                 ii++;
                 break;
             }
@@ -56,12 +58,20 @@ export default class Utility {
         const regexfound = /\b(const.{.*)/g
         for(let i = 0;i< fileArray.length;i++)
         {
-            let content = fs.readFileSync(fileArray[i],'utf-8').trim();
-            if(content.match(regexfound) === null)
+            if(fileArray[i] !== undefined)
             {
-                compiledContent += `//file: ${path.basename(fileArray[i])}\n${content}\n`
-            } else {
-                compiledContent += `//file: ${path.basename(fileArray[i])}\n${content.match(regexremove).join('')}\n`
+                let content = fs.readFileSync(fileArray[i],'utf-8');
+                if(content !== null)
+                {
+                    if(content.match(regexfound) === null)
+                        {
+                            compiledContent += `//file: ${path.basename(fileArray[i])}\n${content.trim()}\n`
+                        } else {
+                            compiledContent += `//file: ${path.basename(fileArray[i])}\n${content.match(regexremove).join('').trim()}\n`
+                        }
+                } else {
+                    compiledContent += `//file: ${path.basename(fileArray[i])}\n${boxen('fichier vide', {padding: 1})}\n`
+                }
             }
         }
         return compiledContent;
@@ -124,46 +134,72 @@ export default class Utility {
     }
     getAllExportName(content)
     {
-        const regexgetConst = /(?<=[c][o][n][s][t].)[^{][A-z0-9]*/g; 
+        const regexgetConst = /(?<=[c][o][n][s][t].)[^{][A-z]*/g; 
         const regexgetfunction = /(?<=[f][u][n][c][t][i][o][n].)[A-z]*/g; 
         const getAllFunction = /(function)+.*[^]*.?\/*[}][^(function)+]/gm;
         const allConstinfile = content.match(regexgetConst)
         const alltheFunction = content.match(getAllFunction)
-        let contentfunc = ''
-        for(let i = 0; i < alltheFunction.length; i++)
+        if(alltheFunction !== null)
         {
-            contentfunc += alltheFunction[i]
+            let contentfunc = ''
+            for(let i = 0; i < alltheFunction.length; i++)
+            {
+                contentfunc += alltheFunction[i]
+            }
+            const allconstinFunc = contentfunc.match(regexgetConst)
+            if(allconstinFunc !== null)
+            {
+                const diferrence = allConstinfile.filter((element)=> !allconstinFunc.includes(element))
+                const allfuncinfile = content.match(regexgetfunction)
+                const allinfile = diferrence.concat(allfuncinfile)
+                return allinfile;
+            } else {
+                const allfuncinfile = content.match(regexgetfunction)
+                const allinfile = allConstinfile.concat(allfuncinfile)
+                return  allinfile
+            }
+        } else {
+            return allConstinfile;
         }
-        const allconstinFunc = contentfunc.match(regexgetConst)
-        const diferrence = allConstinfile.filter((element)=> !allconstinFunc.includes(element))
-        const allfuncinfile = content.match(regexgetfunction)
-        const allinfile = diferrence.concat(allfuncinfile)
-        return allinfile;
     }
 
-    addimportScript(file)
+    addimportScript(file)                                          
     {
         const forbiden = []
         forbiden.push(path.join(process.cwd(),'threeElement','Setting','configImport.js'))
         forbiden.push(path.join(process.cwd(),'threeElement','Setting','resizeSetting.js'))
-
+        forbiden.push(undefined)
         if(!forbiden.includes(file))
         {
-            const regexmatchRequire = /(const.{.*.}.[=].require)+.*/g
-            const test = fs.readFileSync(file,'utf-8').match(regexmatchRequire)
-            if(test === null)
-            {
-                const text = this.getImportStript()
-                fs.appendFile(file,text,(err)=>{ 
-                    if (err) 
-                    { 
-                        throw new Error(`erreur import Script`);
+            const content = fs.readFileSync(file,'utf-8')
+            if(content !== null)
+            {   
+                const regexmatchRequire = /(const.{.*.}.[=].require)+.*/g
+                const test = content.match(regexmatchRequire)
+                if(test === null)
+                    {
+                        const text = this.getImportStript()
+                        fs.appendFile(file,text,(err)=>{ 
+                            if (err) 
+                            { 
+                                throw new Error(`erreur import Script`);
+                            }
+                        })
+                        return console.log(chalk.green(`the import statement as been added to '${file}' `))
+                    } else {
+                        return false 
                     }
-                })
-                return console.log(chalk.green(`the import statement as been added to '${file}' `))
             } else {
-                return false 
+                const text = "const {THREE,scene,camera} = require('../../public/versionning/linkFile.js')\n"
+                        fs.appendFile(file,text,(err)=>{ 
+                            if (err) 
+                            { 
+                                throw new Error(`erreur import Script`);
+                            }
+                        })
+                        return console.log(chalk.green(`the import statement as been added to '${file}' `))
             }
+            
         }
     }
 
