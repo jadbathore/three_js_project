@@ -27,11 +27,11 @@ export default class Utility {
                 case'configImport.js': mapContent.set(0,fileArray[i]);break;
                 case'RendererSetting.js':mapContent.set(1,fileArray[i]);break;
                 case'cameraSetting.js': mapContent.set(2,fileArray[i]);break;
-                // case'loader.js':mapContent.set(3,fileArray[i]);break;
+                case'loader.js':mapContent.set(3,fileArray[i]);break;
                 case'animate.js': mapContent.set(fileArray.length - 2,fileArray[i]);break;
                 case'resizeSetting.js':mapContent.set(fileArray.length - 1,fileArray[i]);break;
                 case undefined: break;
-                default: mapContent.set(2+ii,fileArray[i]);
+                default: mapContent.set(3+ii,fileArray[i]);
                 ii++;
                 break;
             }
@@ -65,12 +65,12 @@ export default class Utility {
                 {
                     if(content.match(regexfound) === null)
                         {
-                            compiledContent += `//file: ${path.basename(fileArray[i])}\n${content.trim()}\n`
+                            compiledContent += `//----------------------|${path.basename(fileArray[i])}|----------------------------------\n${content.trim()}\n`
                         } else {
-                            compiledContent += `//file: ${path.basename(fileArray[i])}\n${content.match(regexremove).join('').trim()}\n`
+                            compiledContent += `//----------------------|${path.basename(fileArray[i])}|----------------------------------\n${content.match(regexremove).join('').trim()}\n`
                         }
                 } else {
-                    compiledContent += `//file: ${path.basename(fileArray[i])}\n${boxen('fichier vide', {padding: 1})}\n`
+                    compiledContent += `//----------------------|${path.basename(fileArray[i])}|--------------------------------\n${boxen('fichier vide', {padding: 1})}\n`
                 }
             }
         }

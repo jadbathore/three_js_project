@@ -5,7 +5,7 @@ import chalk from "chalk";
 import figlet from "figlet";
 import mongoose from 'mongoose';
 import path from 'path';
-import fs, { existsSync } from 'fs';
+import fs, { appendFile, appendFileSync, existsSync } from 'fs';
 import { allExeceptSetting, allFile, basenameExecptSetting, basenameFile,importscript } from "../CompilerSetUp/pathUtility.js";
 import commanderHelp from 'commander-help'
 import ora from 'ora'
@@ -215,7 +215,7 @@ if(option.singlefile && option.fileversion){
 }
 }
 )
-.description('replace a file by a saved version (by default the last version)')
+.description('append a file by a saved version (by default the last version)')
 
 //---------------------------------readFile-------------------------------------------------
 
@@ -247,6 +247,11 @@ program.command('usable').action(
             setTimeout(async() => {
                 spinner.succeed(chalk.green(`element : '${result.choice}' choisi`))
                 const request = await ReusableModel.findOne({name:result.choice})
+                for(let i = 0;i<allFile.length;i++)
+                    {
+                        fs.rmSync(allFile[i],{recursive:true})
+                    }
+                        
                 for (const key in request.content) {
                     if(existsSync(key)){
                         fs.truncateSync(key)
@@ -255,7 +260,13 @@ program.command('usable').action(
                         fs.appendFileSync(key,request.content[key])
                     }
                 }
+                const loader = path.join(process.cwd(),'threeElement','loader','loader.js')
+                if(!existsSync(loader))
+                {
+                    appendFileSync(loader,'const loader = new THREE.TextureLoader();')
+                }
                 console.log(chalk.green('tous les fichiers utilisable on été rechargé avec succée ✨'));
+                process.exit()
             },100)
         })
     }
@@ -269,13 +280,16 @@ program.command('clear').action(
         {
             for(let i = 0;i< allExeceptSetting.length;i++)
             {
-                if(path.basename(allExeceptSetting[i]) !== 'animate.js')
+                if(path.basename(allExeceptSetting[i]) !== 'animate.js' && path.basename(allExeceptSetting[i]) !== 'loader.js')
                 {
                     fs.rmSync(allExeceptSetting[i],{recursive:true})
                 } else {
-                    fs.truncateSync(allExeceptSetting[i])
-                    const content = 'function animate()\n{\nrenderer.render(scene,camera)\n}\nrenderer.setAnimationLoop(animate);'
-                    fs.appendFileSync(allExeceptSetting[i],content)
+                    if(path.basename(allExeceptSetting[i]) == 'animate.js')
+                    {
+                        fs.truncateSync(allExeceptSetting[i])
+                        const content = 'function animate()\n{\nrenderer.render(scene,camera)\n}\nrenderer.setAnimationLoop(animate);'
+                        fs.appendFileSync(allExeceptSetting[i],content)
+                    }
                 }
                 
             }
@@ -299,6 +313,7 @@ program.command('importScripts').action(
 program.helpInformation = ()=> {
     return '';
 };
+//------------------------------------setting------------------------------------------------
 
 program.on('--help', () => {
     console.log('\n',chalk.green(figlet.textSync('ThreeCli', { horizontalLayout: 'full',font:'Colossal'})))
