@@ -1,8 +1,8 @@
 import chalk from 'chalk';
 import path from 'path';
 import fs from 'fs'
+import mongoose from 'mongoose';
 import boxen from 'boxen';
-
 
 
 const complierFile = path.join(process.cwd(),'public','versionning','compling.js')
@@ -15,8 +15,8 @@ export default class Utility {
         this.mapAsset = mapAsset
     }
 
-    mapContent(fileArray){
-        
+    mapContent(fileArray)
+    {
         const mapContent = new Map();
         let ii = 1;
         for(let i = 0;i< fileArray.length;i++)
@@ -43,10 +43,46 @@ export default class Utility {
             array.push(mapGet);
         }
         return array;
+    }
+
+    replaceContent(text,wordConst=null,VariableRaw=null)
+    {
+            const originalhash = new mongoose.Types.ObjectId().toString()
+            
+            if(wordConst != null)
+            {
+                for(let i=0;i<wordConst.length;i++)
+                    {
+                        
+                        // text.replaceAll(wordConst[i],`${wordConst[i]}_${originalhash}`)
+                        text = text.split(wordConst[i]).join(`${wordConst[i]}_${originalhash}`);
+                        // console.log(text)
+                    }
+            }
+            if(VariableRaw != null)
+            {
+                for(let i=0;i<VariableRaw.length;i++)
+                    {
+                        text = text.split(VariableRaw[i]).join(VariableRaw[i].slice(4));
+                    }
+            }
+            return text
+    }
+
+    checkdouble(array)
+    {
+        const setformarray = new Set(array)
+        if (array.length !== setformarray.size)
+        {
+            const toCompensed = array.length - setformarray.size
+            return toCompensed;
+        } else {
+            return false;
         }
+    }
     
 
-    getContentFile(fileArray)
+    getContentFile(fileArray,options=null )
     {
         let compiledContent = '';
         const getAsset = this.getAssetPathConst()
@@ -56,27 +92,92 @@ export default class Utility {
         }
         const regexremove = /^((?!const.{.*.}.[=].require)[\s\S])*$/gm
         const regexfound = /\b(const.{.*)/g
-        for(let i = 0;i< fileArray.length;i++)
+        if(options == null)
         {
-            if(fileArray[i] !== undefined)
+            const matchregexRaw = /(let)+[^{][A-z]*.*/g;
+            const matchregexWord = /(?<=let.)[^{][A-z]*/g;
+            const matchregexConstRaw = /(const.) [^{][A-z]*/g;
+            const matchregexConstWord = /(?<=const.)[^{][A-z]*/g;
+
+            let totalDeclaration = [];
+            for(let i = 0;i<fileArray.length;i++)
             {
-                let content = fs.readFileSync(fileArray[i],'utf-8');
-                if(content !== null)
+                if(fileArray[i] !== undefined)
                 {
-                    if(content.match(regexfound) === null)
+                    let content = fs.readFileSync(fileArray[i],'utf-8')
+                    const allVariableRaw = content.match(matchregexRaw)
+                    // const allVariableRawConst = content.match(matchregexConstRaw)
+                    const allVariableword = content.match(matchregexWord);
+                    const allVariablewordConst = content.match(matchregexConstWord);
+                    if(allVariableword !== null)
+                    {
+                        totalDeclaration = totalDeclaration.concat(allVariableword)
+                    } 
+                    if(allVariablewordConst !== null)
+                    {
+                        totalDeclaration = totalDeclaration.concat(allVariablewordConst)
+                    }
+                    if(content !== null)
+                    {
+                        if(this.checkdouble(totalDeclaration) == false)
                         {
-                            compiledContent += `//----------------------|${path.basename(fileArray[i])}|----------------------------------\n${content.trim()}\n`
+                            if(content.match(regexfound) === null)
+                                {
+                                    compiledContent += `//----------------------|${path.basename(fileArray[i])}|----------------------------------\n${content.trim()}\n`
+                                } else {
+                                    compiledContent += `//----------------------|${path.basename(fileArray[i])}|----------------------------------\n${content.match(regexremove).join('').trim()}\n`
+                                }
                         } else {
-                            compiledContent += `//----------------------|${path.basename(fileArray[i])}|----------------------------------\n${content.match(regexremove).join('').trim()}\n`
+                            if(content.match(regexfound) === null)
+                                {
+                                    compiledContent += `//----------------------|${path.basename(fileArray[i])}|----------------------------------\n${this.replaceContent(content,allVariablewordConst,allVariableRaw).trim()}\n`
+                                } else {
+                                    const text = content.match(regexremove).join('').trim()
+                                    const transform = this.replaceContent(text,allVariablewordConst,allVariableRaw)
+                                    // console.log(transform)
+                                    compiledContent += `//----------------------|${path.basename(fileArray[i])}|----------------------------------\n${transform}\n`
+                                }
+                                // totalDeclaration.length += this.checkdouble(totalDeclaration)
+                                // console.log("B :",totalDeclaration)
+                                // console.log(regexremove)
+                                // const test = content.match(regexremove).join('').trim()
+                                // console.log(test)
+                                // console.log(allVariablewordConst,allVariableword,allVariableRaw)
+                                // compiledContent += `//----------------------|${path.basename(fileArray[i])}|----------------------------------\n${this.replaceContent(content,allVariablewordConst,allVariableRaw)}\n`        
                         }
-                } else {
-                    compiledContent += `//----------------------|${path.basename(fileArray[i])}|--------------------------------\n${boxen('fichier vide', {padding: 1})}\n`
+                    } else {
+                        compiledContent += `//----------------------|${path.basename(fileArray[i])}|--------------------------------\n//${'fichier vide'}\n`
+                    }
                 }
             }
+            // console.log(compiledContent)
+
+            return compiledContent;
+        } else if(options == 'normal'){
+            for(let i = 0;i< fileArray.length;i++)
+                {
+                    if(fileArray[i] !== undefined)
+                    {
+                        let content = fs.readFileSync(fileArray[i],'utf-8')
+                        if(content !== null)
+                        {
+                            if(content.match(regexfound) === null)
+                            {
+                                compiledContent += `//----------------------|${path.basename(fileArray[i])}|----------------------------------\n${content.trim()}\n`
+                            } else {
+                                compiledContent += `//----------------------|${path.basename(fileArray[i])}|----------------------------------\n${content.match(regexremove).join('').trim()}\n`
+                            }
+                        } else {
+                            compiledContent += `//----------------------|${path.basename(fileArray[i])}|--------------------------------\n//'fichier vide'\n`
+                        }
+                    }
+                }
+                return compiledContent;
+        }else {
+            throw new Error(`option ${options} non reconnu`)
         }
-        return compiledContent;
     }
-    
+
 
     async repopulateComposer()
     {
@@ -87,7 +188,8 @@ export default class Utility {
                     throw new Error(`erreur truncate ${time} \n${err}`);
                 }}
             );
-            await this.complilerContentPromise().then((data)=>{
+            await this.complilerContentPromise(this.fileDirArray).then((data)=>{
+                // const final = this.replaceContent(data)
                 fs.appendFile(complierFile,data,(error)=>{
                     if(error)
                         {
@@ -101,40 +203,40 @@ export default class Utility {
             )
         } catch(err){
             console.log(`${err}\n${new Date(Date.now()).toString()}`)
+            console.log(err.line)
         }   
     }
 
     async repopulatelinkFile()
     {
-        let time = new Date(Date.now()).toString()
-
+        const time = new Date(Date.now()).toString()
         const linkFile = path.join(process.cwd(),'public','versionning','linkFile.js')
-            await this.complilerContentPromise()
-            .then(()=>{
+            await this.complilerContentPromise(this.fileDirArray.slice(1,this.fileDirArray.length-1))
+            .then((data)=>{
                 setTimeout(()=>{
-                    fs.truncate(linkFile, 0,(err)=>{ 
+                    fs.truncate(linkFile,0,(err)=>{ 
                         if (err){ 
                             throw new Error(`erreur truncate ${time} \n${err}`);
                         }}
                     );
-                    const compileContent = this.getContentFile(this.fileDirArray.slice(1))
                     let content = "const THREE = require('three')\n"
-                    content += compileContent
-                    content += this.getExportScript(this.getAllExportName(this.getContentFile(this.fileDirArray)))
+                    content += data
+                    content += this.getExportScript(this.getAllExportName(data))
                     fs.appendFile(linkFile,content,(err)=>{ 
-                        if (err){ 
+                        if(err){ 
                             throw new Error(`erreur compilation linkfile ${time} \n${err}`);
                         }
                     console.log(chalk.green(`fichier link mise à jour ${time}`))
                     })
                 },500)
             }).catch((err)=>{
-                console.log(`${err}\n${new Date(Date.now()).toString()}`)
+                console.log(chalk.red(`${err} \n${new Date(Date.now()).toString()}`))
             })
     }
+
     getAllExportName(content)
     {
-        const regexgetConst = /(?<=[c][o][n][s][t].)[^{][A-z]*/g; 
+        const regexgetConst = /(?<=[c][o][n][s][t].)[^{][A-z0-9]*/g; 
         const regexgetfunction = /(?<=[f][u][n][c][t][i][o][n].)[A-z]*/g; 
         const getAllFunction = /(function)+.*[^]*.?\/*[}][^(function)+]/gm;
         const allConstinfile = content.match(regexgetConst)
@@ -257,16 +359,23 @@ export default class Utility {
 
     }
 
-    complilerContentPromise() 
+    complilerContentPromise(array) 
     {
         return new Promise((resolve,reject)=>
             {
                 setTimeout(()=>{
                     reject("la compilation des donnée à pris trop de temps");
                 },3000)
-                resolve(
-                    this.getContentFile(this.fileDirArray)
-                );
+                const content = this.getContentFile(array,'normal')
+                const declaration = this.getAllExportName(content)
+
+                if(this.checkdouble(declaration) == false)
+                {
+                    // console.log(chalk.keyword('orange')('plusieur déclaration on été difini avec le meme nom \n la compilation ce fait quand meme mais la déclaration à été hacher sous un nom diférent'))
+                    resolve(content);
+                } else {
+                    resolve(this.getContentFile(array))
+                }
             },)
     }
 }
