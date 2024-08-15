@@ -1,4 +1,4 @@
-const {THREE} = require('../../public/versionning/linkFile')
+const {THREE,OrbitControls} = require('../../public/versionning/linkFile')
 
 const camera = new THREE.PerspectiveCamera(
     45,
@@ -7,7 +7,7 @@ const camera = new THREE.PerspectiveCamera(
     1000
 );
 
-camera.position.set(10,10,-5);
+camera.position.set(-10,10,10);
 
 const orbit = new OrbitControls(camera,renderer.domElement)
 orbit.update();

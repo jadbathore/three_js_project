@@ -2,7 +2,6 @@ import chalk from 'chalk';
 import path from 'path';
 import fs from 'fs'
 import mongoose from 'mongoose';
-import boxen from 'boxen';
 
 
 const complierFile = path.join(process.cwd(),'public','versionning','compling.js')
@@ -53,10 +52,7 @@ export default class Utility {
             {
                 for(let i=0;i<wordConst.length;i++)
                     {
-                        
-                        // text.replaceAll(wordConst[i],`${wordConst[i]}_${originalhash}`)
                         text = text.split(wordConst[i]).join(`${wordConst[i]}_${originalhash}`);
-                        // console.log(text)
                     }
             }
             if(VariableRaw != null)
@@ -106,7 +102,6 @@ export default class Utility {
                 {
                     let content = fs.readFileSync(fileArray[i],'utf-8')
                     const allVariableRaw = content.match(matchregexRaw)
-                    // const allVariableRawConst = content.match(matchregexConstRaw)
                     const allVariableword = content.match(matchregexWord);
                     const allVariablewordConst = content.match(matchregexConstWord);
                     if(allVariableword !== null)
@@ -134,24 +129,14 @@ export default class Utility {
                                 } else {
                                     const text = content.match(regexremove).join('').trim()
                                     const transform = this.replaceContent(text,allVariablewordConst,allVariableRaw)
-                                    // console.log(transform)
                                     compiledContent += `//----------------------|${path.basename(fileArray[i])}|----------------------------------\n${transform}\n`
-                                }
-                                // totalDeclaration.length += this.checkdouble(totalDeclaration)
-                                // console.log("B :",totalDeclaration)
-                                // console.log(regexremove)
-                                // const test = content.match(regexremove).join('').trim()
-                                // console.log(test)
-                                // console.log(allVariablewordConst,allVariableword,allVariableRaw)
-                                // compiledContent += `//----------------------|${path.basename(fileArray[i])}|----------------------------------\n${this.replaceContent(content,allVariablewordConst,allVariableRaw)}\n`        
+                                }  
                         }
                     } else {
                         compiledContent += `//----------------------|${path.basename(fileArray[i])}|--------------------------------\n//${'fichier vide'}\n`
                     }
                 }
             }
-            // console.log(compiledContent)
-
             return compiledContent;
         } else if(options == 'normal'){
             for(let i = 0;i< fileArray.length;i++)
@@ -219,7 +204,7 @@ export default class Utility {
                             throw new Error(`erreur truncate ${time} \n${err}`);
                         }}
                     );
-                    let content = "const THREE = require('three')\n"
+                    let content = `//generate with configImport.js\n${this.getImportCommunJsScript()}`
                     content += data
                     content += this.getExportScript(this.getAllExportName(data))
                     fs.appendFile(linkFile,content,(err)=>{ 
@@ -307,7 +292,19 @@ export default class Utility {
 
     getExportScript(constArray)
     {
-        let exportsScript = 'exports.THREE = THREE\n'
+        let exportsScript = ''
+        for(const [key,value] of Object.entries(this.getConfigUtilty()))
+        {
+            if(!key.includes(","))
+            {
+                exportsScript += `exports.${key} = ${key}\n`
+            } else {
+                const alldeclaration = key.split(',')
+                alldeclaration.forEach((element)=>{
+                    exportsScript += `exports.${element} = ${element}\n`
+                })
+            }
+        }
         for(let i = 0; i < constArray.length; i++)
         {
             exportsScript+=`module.exports = {${constArray[i]}}\n`
@@ -322,7 +319,7 @@ export default class Utility {
         {
             importScript += `${theConst[i]},`
         }
-        importScript+= `THREE} = require('../../public/versionning/linkFile.js')\n`
+        importScript+= `} = require('../../public/versionning/linkFile.js')\n`
         return importScript
     }
 
@@ -345,18 +342,48 @@ export default class Utility {
                     };
                     content+= '}\n'
                     arraycontent.push(content)
-                } else if (key === 'gltf'){
+                } else {
                     let content = `${key} = {\n`
                     for(const file of value)
-                    {
-                        content+= `${path.basename(file,'.gltf')}:'${path.join('asset','gltf',file)}',\n`;
-                    }
-                    content+= '}\n'
-                    arraycontent.push(content)
+                        {
+                            content+= `${path.basename(file,`.${key}`)}:'${path.join('asset',key,file)}',\n`;
+                        }
+                        content += '}\n'
+                        arraycontent.push(content)
                 }
             }
             return arraycontent
+    }
 
+    getConfigUtilty(){
+        const configFile = path.join(process.cwd(),'threeElement','Setting','configImport.js')
+        const contentConfig = fs.readFileSync(configFile,'utf-8')
+        const regexDeclaration = /(?:(?=(?<=import.{.))[A-z,\s]*|(?!import.{.)((?<=import.*.as.)[A-z]*))/g
+        const regexpathimport = /(?<=from.')[A-z/.-]*/g
+        const elementDict = {}
+        const declaration = contentConfig.match(regexDeclaration)
+        const importpath = contentConfig.match(regexpathimport)
+        for(let i = 0;i<declaration.length;i++)
+        {
+            elementDict[declaration[i].trim()] = importpath[i]
+        }
+        return elementDict;
+    }
+
+    getImportCommunJsScript()
+    {
+        let content = ''
+        const configUtility = this.getConfigUtilty()
+        for(const [key,value] of Object.entries(configUtility))
+        {
+            if(!key.includes(','))
+            {
+                content += `const ${key} = require('${value}')\n`;
+            } else {
+                content += `const {${key}} = require('${value}')\n`;
+            }
+        }
+        return content
     }
 
     complilerContentPromise(array) 
@@ -371,7 +398,6 @@ export default class Utility {
 
                 if(this.checkdouble(declaration) == false)
                 {
-                    // console.log(chalk.keyword('orange')('plusieur déclaration on été difini avec le meme nom \n la compilation ce fait quand meme mais la déclaration à été hacher sous un nom diférent'))
                     resolve(content);
                 } else {
                     resolve(this.getContentFile(array))

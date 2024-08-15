@@ -24,6 +24,7 @@
   "dependencies": {
     "@types/three": "^0.167.0",
     "boxen": "^4.2.0",
+    "cannon-es": "^0.20.0",
     "chalk": "^4.1.2",
     "commander": "^12.1.0",
     "commander-help": "^1.0.1",
