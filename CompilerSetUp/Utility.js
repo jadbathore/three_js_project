@@ -13,7 +13,26 @@ export default class Utility {
         this.fileDirArray = this.mapContent(fileDirArray)
         this.mapAsset = mapAsset
     }
-
+    /*
+    français:
+        permet de organise l'ordre des entré pour que le compilateur effectue sa fonction de manière souhaite 
+        1.  configImport.js 
+        2.  RendererSetting.js 
+        3.  cameraSetting.js
+        4.  loader.js
+        5.  n'importe quel element autre + autre 
+        6.  animate.js
+        7.  resizing.js
+    English:
+        allows to organize the order of inputs so that the compiler performs its function in the desired way
+        1. configImport.js
+        2. RendererSetting.js
+        3. cameraSetting.js
+        4. loader.js
+        5. any other element + other
+        6. animate.js
+        7. resizing.js
+    */
     mapContent(fileArray)
     {
         const mapContent = new Map();
@@ -42,8 +61,13 @@ export default class Utility {
             array.push(mapGet);
         }
         return array;
-    }
-
+    }   
+    /*
+    français:
+        remplacer par un hash distin tout nom donné pour évite des confits de nommage de constant ou de variable lors de la compilation
+    english:
+        replace any given name with a distinct hash to avoid constant or variable naming conflicts during compilation
+    */
     replaceContent(text,wordConst=null,VariableRaw=null)
     {
             const originalhash = new mongoose.Types.ObjectId().toString()
@@ -64,21 +88,46 @@ export default class Utility {
             }
             return text
     }
-
+    /*
+    français:
+        verifier si in y a un double dans un array puis si c'est le cas les retournes dans une autre array
+    English:
+        check if there is a double in an array then if so return them in another array
+    */
     checkdouble(array)
     {
         const setformarray = new Set(array)
         if (array.length !== setformarray.size)
         {
-            const toCompensed = array.length - setformarray.size
-            return toCompensed;
+            let testArray = []
+            let doubleWord = []
+            for(let i = 0;i<array.length;i++)
+            {
+                if(testArray.includes(array[i]))
+                {
+                    doubleWord.push(array[i])
+                    array.length -= i
+                } else {
+                    testArray.push(array[i])
+                }
+            }
+            return doubleWord;
         } else {
             return false;
         }
     }
     
-
-    getContentFile(fileArray,options=null )
+    /*
+    français:
+        fonction importante permetant de formatter le contenu deux options :
+        - option "normal" compilation classique sans hash (il n'y a pas eu d'erreur de nommage)
+        - ou compilation suivant la logique de remplacement des constants en doublons
+    English:
+        important function to format the content two options:
+        - "normal" option classic compilation without hash (there was no naming error)
+        - or compilation following the logic of replacing duplicate constants
+    */
+    getContentFile(fileArray,options=null)
     {
         let compiledContent = '';
         const getAsset = this.getAssetPathConst()
@@ -92,7 +141,6 @@ export default class Utility {
         {
             const matchregexRaw = /(let)+[^{][A-z]*.*/g;
             const matchregexWord = /(?<=let.)[^{][A-z]*/g;
-            const matchregexConstRaw = /(const.) [^{][A-z]*/g;
             const matchregexConstWord = /(?<=const.)[^{][A-z]*/g;
 
             let totalDeclaration = [];
@@ -114,7 +162,8 @@ export default class Utility {
                     }
                     if(content !== null)
                     {
-                        if(this.checkdouble(totalDeclaration) == false)
+                        const double = this.checkdouble(totalDeclaration)
+                        if(double === false)
                         {
                             if(content.match(regexfound) === null)
                                 {
@@ -128,7 +177,7 @@ export default class Utility {
                                     compiledContent += `//----------------------|${path.basename(fileArray[i])}|----------------------------------\n${this.replaceContent(content,allVariablewordConst,allVariableRaw).trim()}\n`
                                 } else {
                                     const text = content.match(regexremove).join('').trim()
-                                    const transform = this.replaceContent(text,allVariablewordConst,allVariableRaw)
+                                    const transform = this.replaceContent(text,double,allVariableRaw)
                                     compiledContent += `//----------------------|${path.basename(fileArray[i])}|----------------------------------\n${transform}\n`
                                 }  
                         }
@@ -162,8 +211,14 @@ export default class Utility {
             throw new Error(`option ${options} non reconnu`)
         }
     }
-
-
+    /*
+    français:
+        permet de compléte le dossier public/versionning/compiling.js automatiquement 
+        est asynchrone du fait que il attent que la promesse complilerContentPromise() retourne ce qu'il faut selon la situation donnée 
+    English:
+        allows to complete the public/versioning/compiling.js folder automatically
+        is asynchronous because it waits for the promise compilerContentPromise() to return what is needed according to the given situation
+    */
     async repopulateComposer()
     {
         try {
@@ -188,10 +243,18 @@ export default class Utility {
             )
         } catch(err){
             console.log(`${err}\n${new Date(Date.now()).toString()}`)
-            console.log(err.line)
         }   
     }
-
+    /*
+    français:
+        permet de compléte le dossier public/versionning/linkFile.js automatiquement 
+        est asynchrone du fait que il attent que la promesse complilerContentPromise() 
+        retourne ce qu'il faut selon la situation donnée
+    English:
+        allows to complete the public/versioning/linkFile.js folder automatically
+        is asynchronous because it waits for the promise compileContentPromise() 
+        to return what is needed according to the given situation
+    */
     async repopulatelinkFile()
     {
         const time = new Date(Date.now()).toString()
@@ -219,6 +282,12 @@ export default class Utility {
             })
     }
 
+    /*
+    français:
+        trouve toute les constant a exporté plus tard 
+    French:
+        find all the constants to export later
+    */
     getAllExportName(content)
     {
         const regexgetConst = /(?<=[c][o][n][s][t].)[^{][A-z0-9]*/g; 
@@ -249,7 +318,12 @@ export default class Utility {
             return allConstinfile;
         }
     }
-
+    /*
+    français:
+        ajoute u script d'import  
+    English:
+        add an import script
+    */
     addimportScript(file)                                          
     {
         const forbiden = []
@@ -289,7 +363,12 @@ export default class Utility {
             
         }
     }
-
+    /*
+    français:
+        formate un script d'export utile pour le fichier linkFile.js
+    English:
+        formats a useful export script for the linkFile.js file
+    */
     getExportScript(constArray)
     {
         let exportsScript = ''
@@ -312,6 +391,12 @@ export default class Utility {
         return exportsScript;
     }
 
+    /*
+    français:
+        formate un script d'import utile permettant l'utlisation des constant précedament trouver par la method getAllExportName()
+    English:
+        format a useful import script allowing the use of constants previously found by the getAllExportName() method
+    */
     getImportStript(){
         const theConst = this.getAllExportName(this.getContentFile(this.fileDirArray))
         let importScript = '\nconst {'
@@ -323,6 +408,28 @@ export default class Utility {
         return importScript
     }
 
+    /*
+    français:
+        formatte un dictonnaire utile à linkFile de tout les access 
+        exemple :
+        const glb = {
+            donus:'asset/glb/donus.glb',
+            earth:'asset/glb/earth.glb',
+        }
+        (du fait que le serveur express utlise un static le chemin utliser est le précedent 'asset(vrai chemin: public/asset)/...')
+            puis est réutilisable de cette manière : glb.donus (c'est dans la liste de l'import script de base)
+            l'ajout est automatique donc si il en faut plus crée un dossier qui à le nom de l'extention (exemple : glb => gun.glb)
+    English:
+        formats a dictionary useful to linkFile of all accesses
+        example:
+        const glb = {
+            donus:'asset/glb/donus.glb',
+            earth:'asset/glb/earth.glb',
+        }
+        (because the express server uses a static the path used is the previous 'asset(true path: public/asset)/...')
+        then is reusable in this way: glb.donus (it is in the list of the basic import script)
+        the addition is automatic so if more is needed creates a folder that has the name of the extension (example: hdr => gun.hdr)
+    */
     getAssetPathConst()
     {
         const arraycontent = []
@@ -354,7 +461,15 @@ export default class Utility {
             }
             return arraycontent
     }
-
+    
+    /*
+    français:
+        récupère du dossier threeElement/Setting/configImport.js 
+        les élements uile tel que les nom ainsi que les chemin d'importation externe
+    english:
+        retrieves from the three Element/Setting/config Import.js folder the useful 
+        elements such as the name and the external import path
+    */ 
     getConfigUtilty(){
         const configFile = path.join(process.cwd(),'threeElement','Setting','configImport.js')
         const contentConfig = fs.readFileSync(configFile,'utf-8')
@@ -370,6 +485,14 @@ export default class Utility {
         return elementDict;
     }
 
+    /*
+    français:
+        formate un script CommunJs en partant de la base du dossier configImport.js(qui lui est en module-es)
+        utilsant l'importation comme moyen d'accédés au module externe ajouté tel que three, ou canon-es par exemple.
+    English:
+        formats a CommunJs script starting from the base of the configImport.js folder (which is in module-es)
+        using the import as a means of accessing the added external module such as three, or canon-es for example.
+    */ 
     getImportCommunJsScript()
     {
         let content = ''
@@ -386,6 +509,18 @@ export default class Utility {
         return content
     }
 
+    /*
+    français:
+        promesse utilisé par les fonctions 'repopulate' en fait selon la situation :
+        - est rejeté (cela a pris tromp de temps)
+        - est résolu par contre il y à des doublons et donc des données utlisant un hashage sur certain élément et envoyer
+        - est résolu il n'y a pas de doublon des donnée 'normal' son envoyer 
+    English:
+        promise used by 'repopulate' functions actually depending on the situation:
+        - is rejected (it took too long)
+        - is resolved however there are duplicates and therefore data using a hash on certain element and send
+        - is resolved there is no duplicate of data 'normal' its send
+    */ 
     complilerContentPromise(array) 
     {
         return new Promise((resolve,reject)=>

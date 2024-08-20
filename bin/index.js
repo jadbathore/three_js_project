@@ -11,6 +11,20 @@ import commanderHelp from 'commander-help'
 import ora from 'ora'
 import BinUtility from "./BinUtility.js";
 
+/*
+francais :
+    code du cli 
+english:
+    cli code
+*/
+
+
+/*
+francais :
+    delaration des table à utlisé durant les differentes actions
+english:
+    development of tables to be used during the different actions
+*/
 const BinUtilityClass = new BinUtility()
 mongoose.connect('mongodb://127.0.0.1:27017/versionningThreeJs')
 
@@ -44,6 +58,12 @@ const mongooseSchema3 = mongoose.Schema(
 )
 const ReusableModel = new mongoose.model('usable',mongooseSchema3);
 //---------------------------------ThreeCli----------------------------------------------
+/*
+français : 
+    déclaration de ThreeCli pour permettre à commanderhelp d'afficher correctement les descriptions
+english:
+threeCli declaration to allow commanderhelp to display descriptions correctly
+*/
 program
 .name('ThreeCli')
 .description('Cli three js to render different build')
@@ -53,17 +73,33 @@ program
 })
 .version('1.0.0')
 //---------------------------------save-------------------------------------------------
+/*
+français : 
+    déclaration de la commande save pour permettre à enregister sur base de donné mongoDB en different format 
+    format :
+        - "raw" c'est à dire prend le fichier public/versionning/compling.js et l'enregiste avec un nom haché spécial
+        - "single" prend un fichier <file> hash toute les constants pour évité tout conflit de nom
+        - "usable" prend tout les fichiers dans le threeElement les enregiste dans une dictionnaire réutlisable 
+English:
+    declaration of the save command to allow saving on mongoDB database in different format
+    format :
+        - "raw" i.e. take the file public/versionning/compling.js and save it with a special hashed name
+        - "single" take a file <file> hash all the constants to avoid any name conflict
+        - "usable" take all the files in the threeElement save them in a reusable dictionary
+*/
 program
 .command('save') 
 .option('-s, --single <file>','save a single file')
 .option('-u, --usable <name>','save a re-usable file')
 .action(async(option)=>{
+    //option -s + -u
     if(option.single && option.usable)
     {
         console.log(chalk.keyword('orange')('you can\'t mix option single and usable(usable is to save all file in a reusable manner)'))
         process.exit()
     }
     if(!option.single){ 
+        //option -u 
         if(option.usable)
             {
                 const version = `UsableSave_${new mongoose.Types.ObjectId().toString()}`
@@ -93,6 +129,7 @@ program
                     BinUtilityClass.successSaveMessage('fichier compiling.js sauvegarder :',versionName)
                 process.exit()
             }
+            //option -s
         } else {
             const hash = new mongoose.Types.ObjectId().toString()
             const versionName = `versions_${hash}`
@@ -115,6 +152,7 @@ program
                 const optionsMessage = {file:option.single}
                 BinUtilityClass.successSaveMessage(`fichier ${option.single} sauvegarder :`,versionName,optionsMessage)
                 process.exit();
+                //no option
             } else {
                 console.log(chalk.keyword('orange')('fichier non reconnu voici les fichiers acceptable.'))
                 BinUtilityClass.choiceCallback('fichier accetable',basenameExecptSetting,(result)=>{
@@ -145,19 +183,34 @@ program
         }
 })
 .description('save a file in a mongoDB')
-
 //---------------------------------fork-------------------------------------------------
+/*
+français : 
+    déclaration de la commande fork permet de réutliser les élements dans précedament enregisté
+    format :
+        - "raw" le fork un fichier versionning.js
+        - "singlefile" fork un fichier dans la table single et le l'ajoute a un dossier crée nommé 'AppendElement
+        - "sv" fork un version en particulier
+English:
+    declaration of the fork command allows to reuse the elements in previously saved
+    format :
+        - "raw" fork a file versionning.js
+        - "singlefile" fork a file in the single table and add it to a created folder named 'AppendElement
+        - "sv" fork a particular version
+*/
 program
 .command('fork')
 .option('-sf, --singlefile <file>','fork a single file')
 .option('-sv ,--fileversion <file>','fork a specific version')
 .action(async(option)=>{
+    // no option
 if(!option.singlefile && !option.fileversion){
     const request  = await VersionningModel.find().sort({_id: -1}).limit(1);
     BinUtilityClass.appendFileWithMango(request)
     console.log(chalk.green('element ajouter ✨'))
     process.exit()
 }
+// -sf
 if(option.singlefile && !option.fileversion){
     const request  = await VersionningModel2.findOne({fileName:option.singlefile});
     if(request === null){
@@ -183,6 +236,7 @@ if(option.singlefile && !option.fileversion){
         process.exit()
     }
 }
+// -sv
 if(!option.singlefile && option.fileversion){
     const request  = await VersionningModel.findOne({version:option.fileversion});
     if(request === null){
@@ -208,6 +262,7 @@ if(!option.singlefile && option.fileversion){
         process.exit()
     }
 }
+// -sf + -sv
 if(option.singlefile && option.fileversion){
     const request  = await VersionningModel.findOne({versionName:versionName});
     BinUtilityClass.appendFileWithMango(request)
@@ -218,7 +273,12 @@ if(option.singlefile && option.fileversion){
 .description('append a file by a saved version (by default the last version)')
 
 //---------------------------------readFile-------------------------------------------------
-
+/*
+français :
+    commande de test l'api inquerer permettant de questionner l'utilisateur en cas d'erreur 
+English:
+    test command the inquerer api to question the user in case of error 
+*/
 program.command('readFile').action(
     ()=>{
         BinUtilityClass.choiceCallback('fichier à lire',basenameFile,(result)=>{
@@ -233,7 +293,14 @@ program.command('readFile').action(
 ).description('testCommandCli')
 
 //------------------------------------usable------------------------------------------------
-
+/*
+français:
+    commande usable permettant de supprimé tout les élément du ThreeElement (excepter les setting) 
+    pour les remplacé par une version usable précedament sauvegardé 
+English:
+    usable command to delete all elements of the ThreeElement (except the settings)
+    to replace them with a previously saved usable version
+*/
 program.command('usable').action(
     async()=>{
         const request = await ReusableModel.find({})
@@ -273,7 +340,12 @@ program.command('usable').action(
 ).description('re-use a usable pre-save version')
 
 //------------------------------------clear------------------------------------------------
-
+/*
+français:
+    supprime les elements de threeElements
+English:
+    removes elements from threeElements
+*/
 program.command('clear').action(
     ()=>{
         if(allExeceptSetting.length > 1)
@@ -303,6 +375,14 @@ program.command('clear').action(
 ).description('clear directory "threeElement" leave only the Setting and the animate function truncated')
 
 //------------------------------------importscript------------------------------------------------
+/*
+français :
+    import un script d'import des constants depuis linkfile ce qui permet de réutlisé des element d'autre fichier et 
+    égalment d'utlise les importation faite dans le fichier threeElement/Setting/configImport
+English:
+    import a constant import script from linkfile which allows to reuse elements from other files and
+    also to use the imports made in the threeElement/Setting/configImport file
+*/
 program.command('importScripts').action(
     ()=>{
         importscript()
@@ -314,7 +394,12 @@ program.helpInformation = ()=> {
     return '';
 };
 //------------------------------------setting------------------------------------------------
-
+/*
+français:
+    affichage des commandes utlisable grâce a commande import 
+English:
+    display of commands usable through import command
+*/
 program.on('--help', () => {
     console.log('\n',chalk.green(figlet.textSync('ThreeCli', { horizontalLayout: 'full',font:'Colossal'})))
     commanderHelp(program)

@@ -2,10 +2,16 @@ import chalk from 'chalk';
 import fs from 'fs';
 import path from 'path';
 import Utility from './Utility.js';
-import { allFile,mapAsset } from './pathUtility.js';
+import { allFile,mapAsset, mapFile } from './pathUtility.js';
 import {loadConfigFile} from 'rollup/loadConfigFile'
 import {rollup,watch} from 'rollup';
 
+/*
+français :
+    fait fonctionner l'a connection entre rollup et le compiling.js avec l'option watch qui vas regarder les changement effectuer sur compling
+English:
+    makes the connection between rollup and compiling.js work with the watch option which will watch the changes made on compiling
+*/
 loadConfigFile(path.resolve(process.cwd(), 'rollup.config.js'), {
 	format: 'es'
 }).then(async ({ options, warnings }) => {
@@ -21,33 +27,83 @@ loadConfigFile(path.resolve(process.cwd(), 'rollup.config.js'), {
 
 const UtilityClass = new Utility(allFile,mapAsset);
 
-
-for(let i = 0;i< UtilityClass.fileDirArray.length;i++)
-    {
-        UtilityClass.addimportScript(UtilityClass.fileDirArray[i])
-    }
-
-
+/*
+français: 
+    composer permet la compilation des donnée du threeElement en un seul fichier
+English:
+    composer allows the compilation of the data of the threeElement into a single file
+*/
 export const composer = () =>
 {
-    
     UtilityClass.repopulateComposer()
     UtilityClass.repopulatelinkFile()
-    for(let i = 0;i< UtilityClass.fileDirArray.length;i++){
-        if(UtilityClass.fileDirArray[i] !== undefined)
+    
+    for(const [key,value] of mapFile )
         {
-            fs.watch(UtilityClass.fileDirArray[i],async(event, file) => {
-                switch (event)
+            if(key !== undefined)
                 {
-                    case 'change': 
-                    await UtilityClass.repopulateComposer(); 
-                    await UtilityClass.repopulatelinkFile();
-                    break;
-                    case 'rename': console.log(chalk.keyword('orange')('⚠️ do not change name or remove some file during the process ⚠️'));break;
-                    default : return;
+                    /*
+                    français: 
+                        syntaxe effectuer en accort avec la documentation de fs:node 
+                        chaque abort controller est relier à un dossier par exemple tout les dossier mesh sont relier au meme abort contrôler 
+                        c'est pour cela que c'est possible de supprimé un fichier durant l'activation du server mais c'est tout de même déconseiller 
+                        par contre on peux ajouté sans problème des fichiers (mais pas des dossiers).
+                    English:
+                        syntax performed in accordance with the fs:node documentation
+                        each abort controller is linked to a folder for example all mesh folders are linked to the same abort controller
+                        this is why it is possible to delete a file during server activation but it is still not recommended
+                        on the other hand we can add files without problem (but not folders).
+                    */
+                    const ac = new AbortController()
+                    const { signal } = ac;
+                    (
+                        async () => {
+                            try {
+                                const watcher = fs.promises.watch(path.join(process.cwd(),'threeElement',key),{signal})
+                                for await(const event of watcher)
+                                {
+                                    switch(event.eventType)
+                                    {
+                                        case 'change':
+                                            console.log(chalk.keyword('violet')(`the file ${event.filename} as been ${event.eventType} 🔮`))
+                                            UtilityClass.addimportScript(path.join(process.cwd(),'threeElement',key,event.filename))
+                                            await UtilityClass.repopulateComposer();
+                                            await UtilityClass.repopulatelinkFile();
+                                        break;
+                                        case 'rename' : 
+                                        //if the file is remove
+                                        if(value.includes(event.filename))
+                                        {
+                                            const testor = fs.readdirSync(path.join(process.cwd(),'threeElement',key))
+                                            if(!testor.includes(event.filename))
+                                            {
+                                                ac.abort();
+                                                UtilityClass.fileDirArray.splice(UtilityClass.fileDirArray.indexOf(path.join(process.cwd(),'threeElement',key,event.filename)),1)
+                                                value.splice(value.indexOf(event.filename),1)
+                                                console.log(chalk.keyword('violet')(`the file ${event.filename} is now unwatch and delete 🔮`));
+                                            } else {
+                                                console.log(chalk.keyword('violet')(`the file ${event.filename} as been change 🔮`));
+                                                await UtilityClass.repopulateComposer();
+                                                await UtilityClass.repopulatelinkFile();
+                                            }
+                                        //the file is added
+                                        } else {
+                                            console.log(chalk.keyword('violet')(`the file ${event.filename} is now added 🔮`));
+                                            UtilityClass.fileDirArray.push(path.join(process.cwd(),'threeElement',key,event.filename))
+                                            UtilityClass.fileDirArray = UtilityClass.mapContent(UtilityClass.fileDirArray)
+                                            value.push(event.filename)
+                                            UtilityClass.addimportScript(path.join(process.cwd(),'threeElement',key,event.filename))
+                                        }
+                                        break;
+                                    }
+                                }
+                            } catch(err) {
+                                if(err.name === 'AbortError')
+                                    return;
+                                console.log(err)
+                            }
+                        }
+                    )();
                 }
-                console.log(chalk.keyword('violet')(`the file ${file} as been ${event} 🔮`))
-            }); 
+            }
         }
-    }
-}

@@ -4,8 +4,30 @@ import Utility from './Utility.js';
 import chalk from 'chalk';
 
 
+/*
+français:
+    pathUtility.js permet d'avoir tous le nom et chemin de fichier utile
+english:
+    pathUtility.js allows to have all the useful file name and path
+*/
 
 
+/*
+français:
+    map du dossier threeElement les clé sons nom de dossier et les valeur son des array de nom
+    exemple :
+        (
+            setting => [configImport.js,resizing.js...]
+            mesh => [cube.js,cube2.js]
+        )
+English:
+    map of the folder threeElement the keys are folder name and the values ​​are arrays of names
+    example:
+    (
+        setting => [configImport.js,resizing.js...]
+        mesh => [cube.js,cube2.js]
+    )
+*/
 const mapFile = new Map();
 fs.readdirSync('./threeElement/',{withFileTypes:true}).filter(dir => dir.isDirectory()).map(
     (dir)=>{
@@ -37,11 +59,13 @@ fs.readdirSync(pathtoAsset,{withFileTypes:true}).filter(dir => dir.isDirectory()
     })
     ;
 
+    //array of the basename 
 const basenameFile = []
 allFile.forEach((element)=>{
     const base = path.basename(element)
     basenameFile.push(base)
 })
+// same but excepting the setting name
 const basenameExecptSetting = []
 allExeceptSetting.forEach((element)=>{
     const base = path.basename(element)
@@ -63,5 +87,5 @@ const importscript = () =>
 
 }
 
-export {mapAsset,allFile,basenameFile,allExeceptSetting,basenameExecptSetting,importscript}
+export {mapFile,mapAsset,allFile,basenameFile,allExeceptSetting,basenameExecptSetting,importscript}
 

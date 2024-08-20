@@ -7,7 +7,18 @@ import fs from 'fs';
 
 
 export default class BinUtility {
-
+/*
+français : 
+    formate un message selon plusieur  option :
+    - sans c'est juste le nom + le temps
+    - avec c'est nom + version + dictonnaire utlisant chaque option
+    comme paramètre
+English:
+    formats a message according to several options:
+    - without it's just the name + the time
+    - with it's name + version + dictionary using each option
+    as a parameter
+*/
     successSaveMessage(bannerMessage,version,option=null)
     {
         if(option == null)
@@ -36,6 +47,16 @@ export default class BinUtility {
         }
     }
 
+/*
+français : 
+    utlise l'api inquierer pour formatter un call back celui ci sera un choix
+    par exemple je me suis trompé sur le nom du fichier je retourne cette method
+    avec comme paramètre un fonction callback qui me permettra de géré l'erreur
+English:
+    use the inquierer api to format a callback this will be a choice
+    for example if I made a mistake on the name of the file I return this method
+    with as parameter a callback function which will allow me to manage the error
+*/
     choiceCallback(message,arraychoice,callback) {
         inquirer.prompt([
             {
@@ -48,7 +69,12 @@ export default class BinUtility {
             callback(result)
         })
     }
-
+/*
+français : 
+    gere les differentes requetes consernant l'ajout 
+English:
+    handles the various requests concerning the addition
+*/
     appendFileWithMango(mangoRequest,option = null)
     {
         const createdPath = path.join(process.cwd(),'threeElement','AppendElement')
@@ -75,8 +101,12 @@ export default class BinUtility {
         }
     }
     
-    
-    
+/*
+français :
+    permet le remplacement des donné (utlisé pour le hashage des constantes)
+English:
+    allows data replacement (used for hashing constants)
+*/
     replaceMultiple(str, replacements) {
         for (let [oldStr, newStr] of Object.entries(replacements)) {
             str = str.split(oldStr).join(newStr);

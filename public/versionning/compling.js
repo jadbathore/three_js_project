@@ -26,6 +26,7 @@ singleStar:'asset/img/singleStar.png',
 //----------------------|configImport.js|----------------------------------
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { RGBELoader } from 'three/examples/jsm/Addons.js';
 import * as CANNON from 'cannon-es';
 //----------------------|RendererSetting.js|----------------------------------
 const renderer = new THREE.WebGLRenderer({antialias:true})
@@ -46,7 +47,33 @@ camera.position.set(-10,10,10);
 const orbit = new OrbitControls(camera,renderer.domElement)
 orbit.update();
 //----------------------|loader.js|----------------------------------
-
+const loader = new RGBELoader();
+loader.load(hdr.NaturalStudio,(texture)=>{
+    texture.mapping = THREE.EquirectangularReflectionMapping;
+    // scene.background = texture;
+    // scene.environment = texture;
+    const sphere_66c3770bdbbd0e2d3bfd0137 =  new THREE.Mesh(
+        new THREE.SphereGeometry(3,50,50),
+        new THREE.MeshStandardMaterial({
+            roughness:0,
+            metalness:0.5,
+            color: 0x41c63c,
+            envMap:texture
+        })
+    )
+    scene.add(sphere_66c3770bdbbd0e2d3bfd0137);;
+    const sphere_66c3770bdbbd0e2d3bfd01372 =  new THREE.Mesh(
+        new THREE.SphereGeometry(3,50,50),
+        new THREE.MeshStandardMaterial({
+            roughness:0,
+            metalness:0.5,
+            color: 0x433cc6,
+            envMap:texture
+        })
+    )
+    scene.add(sphere_66c3770bdbbd0e2d3bfd01372);
+    sphere_66c3770bdbbd0e2d3bfd01372.position.x = -10
+});
 //----------------------|ground.js|----------------------------------
 const world = new CANNON.World({gravity:new CANNON.Vec3(0,-9.81,0)})
 
@@ -66,14 +93,14 @@ const groundBody = new CANNON.Body(
         material:groundphyMat
     });
 groundBody.quaternion.setFromEuler(-Math.PI / 2,0,0);
-world.addBody(groundBody);
+world.addBody(groundBody);;
 //----------------------|light.js|----------------------------------
 const dirLight = new THREE.DirectionalLight(0xFFFFFFF,0.8)
 scene.add(dirLight);
 dirLight.position.set(0,50,0);
 dirLight.castShadow = true;
 dirLight.shadow.mapSize.width = 1024;
-dirLight.shadow.mapSize.height = 1024;
+dirLight.shadow.mapSize.height = 1024;;
 //----------------------|mouseEvent.js|----------------------------------
 const mouse = new THREE.Vector2();
 const intersectPoint = new THREE.Vector3();
@@ -123,6 +150,8 @@ window.addEventListener('click',()=>{
 })
 const timestep = 1/60;
 //----------------------|wordasset.js|----------------------------------
+
+//----------------------|bj.js|----------------------------------
 
 //----------------------|animate.js|----------------------------------
 function animate()

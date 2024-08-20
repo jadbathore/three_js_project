@@ -16,7 +16,7 @@ const groundBody = new CANNON.Body(
         material:groundphyMat
     });
 groundBody.quaternion.setFromEuler(-Math.PI / 2,0,0);
-world.addBody(groundBody);
+world.addBody(groundBody);;
 
 
 

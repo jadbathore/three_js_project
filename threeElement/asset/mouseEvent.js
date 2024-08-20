@@ -46,4 +46,4 @@ window.addEventListener('click',()=>{
     bodies.push(sphereBody);
 })
 const timestep = 1/60;
-const {THREE,} = require('../../public/versionning/linkFile.js')
+const {THREE,CANNON} = require('../../public/versionning/linkFile.js')

@@ -1,0 +1,2 @@
+
+const {glb,gltf,hdr,img,renderer,scene,camera,orbit,loader,sphere_66c376e5dbbd0e2d3bfd0134,sphere_66c376e5dbbd0e2d3bfd01342,world,groundGeo,groundphyMat,groundMaterial,ground,groundBody,dirLight,mouse,intersectPoint,planeNormal,plane,raycaster,meshes,bodies,sphereGeometry,sphereMat,sphere,spherephyMaterial,sphereBody,planeSpherecontactmat,timestep,animate,} = require('../../public/versionning/linkFile.js')
