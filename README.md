@@ -22,7 +22,31 @@ dynamique par exemple.
 ### Système de hachage
 <p>
   Le projet possède un moyen de hachage dynamique pour chaque constant ce qui évite l'éventualité de double mention de constante.
+  Ce hashage s'effectue durant un "save"(action cli : ThreeCli save -s <file>) 
 </p>
 
 <img width="581" alt="Capture d’écran 2024-08-08 à 11 21 02" src="https://github.com/user-attachments/assets/5ca631ca-5f1b-4ad9-92be-5ef0b3453e8a">
+
+  ### exemple :
+  Le hash ce fait également automatiquement quand on fait l'erreur de déclaré 2 fois la même constante :
+```
+  //document a.js
+
+      const sphere = new THREE.Mesh(...)
+      scene.add(sphere)
+
+  //document b.js
+
+      const sphere = "b"
+      console.log(sphere)
+
+  //document compling.js (après compilation des deux documents)
+
+      ---a.js---
+      const sphere = new THREE.Mesh(...)
+      ---b.js---
+      const sphere_66c3770bdbbd0e2d3bfd0137 = "b"
+      console.log(sphere_66c3770bdbbd0e2d3bfd0137)
+```
+  
 
