@@ -1,8 +1,6 @@
 //generate with configImport.js
 const THREE = require('three')
 const OrbitControls = require('three/examples/jsm/controls/OrbitControls.js')
-const RGBELoader = require('three/examples/jsm/Addons.js')
-const CANNON = require('cannon-es')
 const glb = {
 donus:'asset/glb/donus.glb',
 earth:'asset/glb/earth.glb',
@@ -42,135 +40,201 @@ const camera = new THREE.PerspectiveCamera(
     1000
 );
 
-camera.position.set(-10,10,10);
+camera.position.set(2,2.5,-5);
 
 const orbit = new OrbitControls(camera,renderer.domElement)
 orbit.update();
 //----------------------|loader.js|----------------------------------
-const loader = new RGBELoader();
-loader.load(hdr.NaturalStudio,(texture)=>{
-    texture.mapping = THREE.EquirectangularReflectionMapping;
-    // scene.background = texture;
-    // scene.environment = texture;
-    const sphere_66c3770bdbbd0e2d3bfd0138 =  new THREE.Mesh(
-        new THREE.SphereGeometry(3,50,50),
-        new THREE.MeshStandardMaterial({
-            roughness:0,
-            metalness:0.5,
-            color: 0x41c63c,
-            envMap:texture
-        })
+const loader = new THREE.TextureLoader();
+//----------------------|earthGroup.js|----------------------------------
+const earthGroup = new THREE.Group();
+earthGroup.rotation.z = -23.4 * Math.PI / 180
+scene.add(earthGroup);
+
+const geo = new THREE.IcosahedronGeometry(1,12);
+const earthMesh = new THREE.Mesh(
+    geo,
+    new THREE.MeshPhongMaterial(
+        {
+            bumpMap: loader.load(img.earthbump),
+            specularMap: loader.load(img.earthspecular),
+            map: loader.load(img.earthmap1k),
+            bumpScale:7,
+            shininess:13.0,
+            specular: 0xFFFFFF,
+            opacity:2,
+        blending: THREE.AdditiveBlending,
+
+        }
     )
-    scene.add(sphere_66c3770bdbbd0e2d3bfd0138);;
-    const sphere_66c3770bdbbd0e2d3bfd01382 =  new THREE.Mesh(
-        new THREE.SphereGeometry(3,50,50),
-        new THREE.MeshStandardMaterial({
-            roughness:0,
-            metalness:0.5,
-            color: 0x433cc6,
-            envMap:texture
-        })
-    )
-    scene.add(sphere_66c3770bdbbd0e2d3bfd01382);
-    sphere_66c3770bdbbd0e2d3bfd01382.position.x = -10
+)
+earthGroup.add(earthMesh)
+earthMesh.receiveShadow = true
+const lightMesh = new THREE.Mesh(
+    geo,
+    new THREE.MeshBasicMaterial({
+        lightMap:loader.load(img.earth_nightmap),
+        transparent:true,
+        opacity:0.2,
+        blendAlpha:20,
+        reflectivity:1,
+        lightMapIntensity:10,
+        blending: THREE.AdditiveBlending,
+    })
+)
+earthGroup.add(lightMesh);
+
+const couldsMat = new THREE.MeshBasicMaterial({
+    map: loader.load(img.fair_clouds_8k),
+    transparent:true,
+    opacity:0.1,
+    blending: THREE.AdditiveBlending,
+})
+const cloudMesh = new THREE.Mesh(
+    geo,
+    couldsMat
+)
+cloudMesh.scale.setScalar(1.01)
+earthGroup.add(cloudMesh);
+//----------------------|moon.js|----------------------------------
+const moonRotation = new THREE.Object3D();
+scene.add(moonRotation);
+
+const moonMesh = new THREE.Mesh(
+    new THREE.IcosahedronGeometry(0.27,12),
+    new THREE.MeshPhongMaterial({
+        map: loader.load(img.moonmap4k),
+        bumpMap: loader.load(img.moonbump4k),
+        bumpScale:4,
+    })
+)
+moonRotation.add(moonMesh);
+moonMesh.position.x = 8
+moonMesh.castShadow = true
+//----------------------|fresnel.js|----------------------------------
+function getFresnelMat({rimHex = 0x0088ff,facingHax = 0x000000} = {})
+{
+    const uniforms = {
+        color1: {value: new THREE.Color(rimHex)},
+        color2: {value: new THREE.Color(facingHax)},
+        fresnelBias:{value:0.1},
+        fresnelScale:{value:1.0},
+        fresnelPower:{value:4.0},
+    };
+    const vs = `
+uniform float fresnelBias;
+uniform float fresnelScale;
+uniform float fresnelPower;
+
+varying float vReflectionFactor;
+
+void main() {
+vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
+vec4 worldPosition = modelMatrix * vec4( position, 1.0 );
+
+vec3 worldNormal = normalize( mat3( modelMatrix[0].xyz, modelMatrix[1].xyz, modelMatrix[2].xyz ) * normal );
+
+vec3 I = worldPosition.xyz - cameraPosition;
+
+vReflectionFactor = fresnelBias + fresnelScale * pow( 1.0 + dot( normalize( I ), worldNormal ), fresnelPower );
+
+gl_Position = projectionMatrix * mvPosition;
+}
+`;
+const fs = `
+uniform vec3 color1;
+uniform vec3 color2;
+
+varying float vReflectionFactor;
+
+void main() {
+float f = clamp( vReflectionFactor, 0.0, 1.0 );
+gl_FragColor = vec4(mix(color2, color1, vec3(f)), f);
+}
+`;
+const fresnelMat = new THREE.ShaderMaterial({
+uniforms: uniforms,
+vertexShader: vs,
+fragmentShader: fs,
+transparent: true,
+blending: THREE.AdditiveBlending,
+// wireframe: true,
 });
-//----------------------|ground.js|----------------------------------
-const world = new CANNON.World({gravity:new CANNON.Vec3(0,-9.81,0)})
+return fresnelMat;
+}
 
-const groundGeo = new THREE.PlaneGeometry(10,10);
-const groundphyMat = new CANNON.Material();
-const groundMaterial = new THREE.MeshStandardMaterial({
-    color:0XFFFFFF,
-    side: THREE.DoubleSide
-})
-const ground = new THREE.Mesh(groundGeo,groundMaterial);
-scene.add(ground);
-ground.receiveShadow = true;
-const groundBody = new CANNON.Body(
-    {
-        type: CANNON.Body.STATIC,
-        shape: new CANNON.Box(new CANNON.Vec3(5,5,0.001)),
-        material:groundphyMat
+const fresnel = getFresnelMat();
+const glowmesh = new THREE.Mesh(geo,fresnel);
+scene.add(glowmesh);
+glowmesh.scale.setScalar(1.02)
+//----------------------|getStarField.js|----------------------------------
+function getStarfield({numStar = 500} = {})
+{    
+    function randomSpherePoint() {
+        const raduis = Math.random() * 25 + 25;
+        const u = Math.random();
+        const v = Math.random();
+        const theta = 2 * Math.PI * u;
+        const phi  = Math.acos(2*v-1);
+        let x = raduis * Math.sin(phi) * Math.cos(theta); 
+        let y = raduis * Math.sin(phi) * Math.sin(theta); 
+        let z = raduis * Math.cos(phi); 
+        return {
+            pos: new THREE.Vector3(x,y,z),
+            hue:0.6,
+            minDist: raduis,
+        }
+    }
+    const verts = [];
+    const colors = [];
+    const positions = [];
+    let col;
+    for(let i = 0;i<numStar;i+=1)
+        {
+            let p = randomSpherePoint();
+            const {pos,hue} = p
+            positions.push(p);
+            col = new THREE.Color().setHSL(hue,0.2,Math.random());
+            verts.push(pos.x,pos.y,pos.z);
+            colors.push(col.r,col.g,col.b);
+        }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute("position",new THREE.Float32BufferAttribute(verts,3));
+    geo.setAttribute("color",new THREE.Float32BufferAttribute(colors,3));
+    const mat = new THREE.PointsMaterial({
+        size:0.2,
+        vertexColors:true,
+        map:new THREE.TextureLoader().load(img.singleStar),
+        transparent:true,
     });
-groundBody.quaternion.setFromEuler(-Math.PI / 2,0,0);
-world.addBody(groundBody);;
-//----------------------|light.js|----------------------------------
-const dirLight = new THREE.DirectionalLight(0xFFFFFFF,0.8)
-scene.add(dirLight);
-dirLight.position.set(0,50,0);
-dirLight.castShadow = true;
-dirLight.shadow.mapSize.width = 1024;
-dirLight.shadow.mapSize.height = 1024;;
-//----------------------|mouseEvent.js|----------------------------------
-const mouse = new THREE.Vector2();
-const intersectPoint = new THREE.Vector3();
-const planeNormal = new THREE.Vector3();
-const plane = new THREE.Plane();
-const raycaster = new THREE.Raycaster();
+    const points = new THREE.Points(geo,mat)
+    return points;
+}
 
-window.addEventListener('mousemove',(event)=>{
-    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-    mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
-    planeNormal.copy(camera.position).normalize();
-    plane.setFromNormalAndCoplanarPoint(planeNormal, /*new THREE.Vector3(0,0,0)*/ planeNormal);
-    raycaster.setFromCamera(mouse,camera);
-    raycaster.ray.intersectPlane(plane,intersectPoint);
-})
-
-const meshes = [];
-const bodies = [];
-
-window.addEventListener('click',()=>{
-    const sphereGeometry = new THREE.SphereGeometry(0.125,30,30);
-    const sphereMat =  new THREE.MeshStandardMaterial({
-        color: Math.random() * 0xFFFFFFF,
-        metalness:0,
-        roughness:0
-    })
-    const sphere = new THREE.Mesh(sphereGeometry,sphereMat);
-    scene.add(sphere);
-    sphere.castShadow = true;
-    const spherephyMaterial = new CANNON.Material();
-    const sphereBody = new CANNON.Body({
-        mass:0.3,
-        shape: new CANNON.Sphere(0.125),
-        position: new CANNON.Vec3(intersectPoint.x,intersectPoint.y,intersectPoint.z),
-        material: spherephyMaterial
-    })
-    world.addBody(sphereBody);
-
-    const planeSpherecontactmat = new CANNON.ContactMaterial(
-        groundphyMat,
-        spherephyMaterial,
-        {restitution:0.9}
-    )
-    world.addContactMaterial(planeSpherecontactmat);
-    meshes.push(sphere);
-    bodies.push(sphereBody);
-})
-const timestep = 1/60;
-//----------------------|wordasset.js|----------------------------------
-
-//----------------------|bj.js|----------------------------------
-
+const star = getStarfield({numStar:2000});
+scene.add(star);
+//----------------------|sunlight.js|----------------------------------
+const sunLight = new THREE.DirectionalLight(0xFFFFFF)
+scene.add(sunLight);
+sunLight.position.set(10,0,0);
+sunLight.castShadow = true
+sunLight.shadow.mapSize.width = 1024;
+sunLight.shadow.mapSize.height = 1024;
 //----------------------|animate.js|----------------------------------
 function animate()
 {
-    world.step(timestep);
-    ground.position.copy(groundBody.position);
-    ground.quaternion.copy(groundBody.quaternion);
-    renderer.render(scene,camera);
-    for(let i = 0; i < meshes.length;i++)
-        {
-            meshes[i].position.copy(bodies[i].position);
-            meshes[i].quaternion.copy(bodies[i].quaternion);
-        }
+    earthMesh.rotateY(0.002)
+    lightMesh.rotateY(0.002)
+    cloudMesh.rotateY(0.0025)
+    glowmesh.rotateY(0.002)
+    renderer.render(scene,camera)
+    moonMesh.rotateY(0.02)
+    moonRotation.rotateY(0.00514)
 }
+
 renderer.setAnimationLoop(animate);
 exports.THREE = THREE
 exports.OrbitControls = OrbitControls
-exports.RGBELoader = RGBELoader
-exports.CANNON = CANNON
 module.exports = {glb}
 module.exports = {gltf}
 module.exports = {hdr}
@@ -180,27 +244,14 @@ module.exports = {scene}
 module.exports = {camera}
 module.exports = {orbit}
 module.exports = {loader}
-module.exports = {sphere_66c3770bdbbd0e2d3bfd0138}
-module.exports = {sphere_66c3770bdbbd0e2d3bfd01382}
-module.exports = {world}
-module.exports = {groundGeo}
-module.exports = {groundphyMat}
-module.exports = {groundMaterial}
-module.exports = {ground}
-module.exports = {groundBody}
-module.exports = {dirLight}
-module.exports = {mouse}
-module.exports = {intersectPoint}
-module.exports = {planeNormal}
-module.exports = {plane}
-module.exports = {raycaster}
-module.exports = {meshes}
-module.exports = {bodies}
-module.exports = {sphereGeometry}
-module.exports = {sphereMat}
-module.exports = {sphere}
-module.exports = {spherephyMaterial}
-module.exports = {sphereBody}
-module.exports = {planeSpherecontactmat}
-module.exports = {timestep}
+module.exports = {earthGroup}
+module.exports = {earthMesh}
+module.exports = {lightMesh}
+module.exports = {couldsMat}
+module.exports = {cloudMesh}
+module.exports = {moonRotation}
+module.exports = {moonMesh}
+module.exports = {getFresnelMat}
+module.exports = {getStarfield}
+module.exports = {randomSpherePoint}
 module.exports = {animate}
