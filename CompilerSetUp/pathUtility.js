@@ -28,6 +28,9 @@ English:
         mesh => [cube.js,cube2.js]
     )
 */
+/**
+ * @constant Map of all file key = directory,value = file
+ */
 const mapFile = new Map();
 fs.readdirSync('./threeElement/',{withFileTypes:true}).filter(dir => dir.isDirectory()).map(
     (dir)=>{

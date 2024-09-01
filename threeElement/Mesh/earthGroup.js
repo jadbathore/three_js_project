@@ -1,5 +1,8 @@
 const {THREE, scene,img } = require('../../public/versionning/linkFile')
 
+
+
+
 const earthGroup = new THREE.Group();
 earthGroup.rotation.z = -23.4 * Math.PI / 180
 scene.add(earthGroup);

@@ -146,9 +146,11 @@ export default class Utility {
         const matchregexRaw = /(let)+[^{][A-z]*.*/g;
         const matchregexWord = /(?<=let.)[^{][A-z]*/g;
         const matchregexConstWord = /(?<=const.)[^{][A-z]*/g;
-        const allVariableRaw = text.match(matchregexRaw);
-        const allVariableword = text.match(matchregexWord);
-        const allVariablewordConst = text.match(matchregexConstWord);
+        const regexfunctionall = /(function)+.*[^]*.?\/*[}][^(function)+]/gm;
+        const content = text.split(regexfunctionall).join('\n');
+        const allVariableRaw = content.match(matchregexRaw);
+        const allVariableword = content.match(matchregexWord);
+        const allVariablewordConst = content.match(matchregexConstWord);
         return new Array(allVariableRaw,allVariableword,allVariablewordConst);
     }
 
@@ -236,12 +238,12 @@ export default class Utility {
                         {
                             if(content.match(regexfound) === null)
                             {
-                                compiledContent += `//----------------------|${path.basename(fileArray[i])}|----------------------------------\n${content.trim()}\n`
+                                compiledContent += `//----|${path.basename(fileArray[i])}|----\n${content.trim()}\n//&end\n`
                             } else {
-                                compiledContent += `//----------------------|${path.basename(fileArray[i])}|----------------------------------\n${content.match(regexremove).join('').trim()}\n`
+                                compiledContent += `//----|${path.basename(fileArray[i])}|----\n${content.match(regexremove).join('').trim()}\n//&end\n`
                             }
                         } else {
-                            compiledContent += `//----------------------|${path.basename(fileArray[i])}|--------------------------------\n//'fichier vide'\n`
+                            compiledContent += `//----|${path.basename(fileArray[i])}|----\n//'fichier vide'\n//&end\n`
                         }
                     }
                 }
@@ -288,6 +290,7 @@ export default class Utility {
                 console.log(chalk.green(`fichier ${fileToReplaceBaseName} mise à jour ${time}`))
                 return fs.promises.writeFile(fileToReplace,totaltext)
             } else {
+
                 console.log(chalk.green(`fichier ${fileToReplaceBaseName} mise à jour ${time}`))
                 return fs.promises.writeFile(fileToReplace,this.replaceContent(totaltext,double,allmatcheddecaration[0]))
             }
@@ -469,7 +472,7 @@ export default class Utility {
     français:
         formate un script d'export utile pour le fichier linkFile.js
     */
-   /**
+    /**
     * @public formats a useful export script for the linkFile.js file
     * @param {*} constArray a array of const form get all export script
     * @returns string
@@ -585,6 +588,7 @@ export default class Utility {
     * @returns array
     */
     getConfigUtilty(){
+
         const configFile = path.join(process.cwd(),'threeElement','Setting','configImport.js')
         const contentConfig = fs.readFileSync(configFile,'utf-8')
         const regexDeclaration = /(?:(?=(?<=import.{.))[A-z,\s]*|(?!import.{.)((?<=import.*.as.)[A-z]*))/g

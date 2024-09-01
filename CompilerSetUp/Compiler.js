@@ -71,7 +71,6 @@ export const composer = () =>
                                         case 'change':
                                             console.log(chalk.keyword('violet')(`the file ${event.filename} as been ${event.eventType} 🔮`))
                                             UtilityClass.addimportScript(path.join(process.cwd(),'threeElement',key,event.filename));
-
                                             UtilityClass.lazyRemplacementComposer(complierFile,path.join(process.cwd(),'threeElement',key,event.filename));
                                             UtilityClass.lazyRemplacementComposer(linkFile,path.join(process.cwd(),'threeElement',key,event.filename))
                                         break;

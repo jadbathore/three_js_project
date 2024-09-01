@@ -23,16 +23,18 @@ moonmap4k:'asset/img/moonmap4k.jpg',
 singleStar:'asset/img/singleStar.png',
 }
 
-//----------------------|configImport.js|----------------------------------
+//----|configImport.js|----
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
-//----------------------|RendererSetting.js|----------------------------------
+//&end
+//----|RendererSetting.js|----
 const renderer = new THREE.WebGLRenderer({antialias:true})
 const scene = new THREE.Scene()
 renderer.shadowMap.enabled = true;
 renderer.setSize(window.innerWidth,window.innerHeight);
 document.body.appendChild(renderer.domElement)
-//----------------------|cameraSetting.js|----------------------------------
+//&end
+//----|cameraSetting.js|----
 const camera = new THREE.PerspectiveCamera(
     45,
     window.innerWidth/window.innerHeight,
@@ -44,9 +46,18 @@ camera.position.set(2,2.5,-5);
 
 const orbit = new OrbitControls(camera,renderer.domElement)
 orbit.update();
-//----------------------|loader.js|----------------------------------
+//&end
+
+
+
+
+//----|loader.js|----
 const loader = new THREE.TextureLoader();
-//----------------------|earthGroup.js|----------------------------------
+
+
+
+//&end
+//----|earthGroup.js|----
 const earthGroup = new THREE.Group();
 earthGroup.rotation.z = -23.4 * Math.PI / 180
 scene.add(earthGroup);
@@ -96,7 +107,8 @@ const cloudMesh = new THREE.Mesh(
 )
 cloudMesh.scale.setScalar(1.01)
 earthGroup.add(cloudMesh);
-//----------------------|moon.js|----------------------------------
+//&end
+//----|moon.js|----
 const moonRotation = new THREE.Object3D();
 scene.add(moonRotation);
 
@@ -111,7 +123,8 @@ const moonMesh = new THREE.Mesh(
 moonRotation.add(moonMesh);
 moonMesh.position.x = 8
 moonMesh.castShadow = true
-//----------------------|fresnel.js|----------------------------------
+//&end
+//----|fresnel.js|----
 function getFresnelMat({rimHex = 0x0088ff,facingHax = 0x000000} = {})
 {
     const uniforms = {
@@ -167,7 +180,8 @@ const fresnel = getFresnelMat();
 const glowmesh = new THREE.Mesh(geo,fresnel);
 scene.add(glowmesh);
 glowmesh.scale.setScalar(1.02)
-//----------------------|getStarField.js|----------------------------------
+//&end
+//----|getStarField.js|----
 function getStarfield({numStar = 500} = {})
 {    
     function randomSpherePoint() {
@@ -213,14 +227,16 @@ function getStarfield({numStar = 500} = {})
 
 const star = getStarfield({numStar:2000});
 scene.add(star);
-//----------------------|sunlight.js|----------------------------------
+//&end
+//----|sunlight.js|----
 const sunLight = new THREE.DirectionalLight(0xFFFFFF)
 scene.add(sunLight);
 sunLight.position.set(10,0,0);
 sunLight.castShadow = true
 sunLight.shadow.mapSize.width = 1024;
 sunLight.shadow.mapSize.height = 1024;
-//----------------------|animate.js|----------------------------------
+//&end
+//----|animate.js|----
 function animate()
 {
     earthMesh.rotateY(0.002)
@@ -233,9 +249,11 @@ function animate()
 }
 
 renderer.setAnimationLoop(animate);
-//----------------------|resizeSetting.js|----------------------------------
+//&end
+//----|resizeSetting.js|----
 window.addEventListener('resize',()=> {
     camera.aspect= window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth,window.innerHeight)
     })
+//&end
