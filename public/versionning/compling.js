@@ -33,6 +33,7 @@ const scene = new THREE.Scene()
 renderer.shadowMap.enabled = true;
 renderer.setSize(window.innerWidth,window.innerHeight);
 document.body.appendChild(renderer.domElement)
+THREE.Cache.enabled = false;
 //&end
 //----|cameraSetting.js|----
 const camera = new THREE.PerspectiveCamera(
@@ -47,15 +48,8 @@ camera.position.set(2,2.5,-5);
 const orbit = new OrbitControls(camera,renderer.domElement)
 orbit.update();
 //&end
-
-
-
-
 //----|loader.js|----
 const loader = new THREE.TextureLoader();
-
-
-
 //&end
 //----|earthGroup.js|----
 const earthGroup = new THREE.Group();
@@ -108,7 +102,9 @@ const cloudMesh = new THREE.Mesh(
 cloudMesh.scale.setScalar(1.01)
 earthGroup.add(cloudMesh);
 //&end
+
 //----|moon.js|----
+
 const moonRotation = new THREE.Object3D();
 scene.add(moonRotation);
 
@@ -120,6 +116,7 @@ const moonMesh = new THREE.Mesh(
         bumpScale:4,
     })
 )
+const [a,b] = "z"
 moonRotation.add(moonMesh);
 moonMesh.position.x = 8
 moonMesh.castShadow = true

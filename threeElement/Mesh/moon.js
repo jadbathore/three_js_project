@@ -11,6 +11,7 @@ const moonMesh = new THREE.Mesh(
         bumpScale:4,
     })
 )
+const [a,b] = "z"
 moonRotation.add(moonMesh);
 moonMesh.position.x = 8
 moonMesh.castShadow = true

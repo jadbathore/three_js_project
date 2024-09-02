@@ -2,7 +2,7 @@ import express from 'express';
 import chalk from 'chalk';
 import boxen from 'boxen';
 import path from 'path';
-
+import compression from 'compression';
 const app = express();
 const port = process.env.port || 3000;
 /* 
@@ -23,7 +23,7 @@ English:
     transmits a dynamic import and does what allows the data to be compiled
     then subsequently starts the server
 */
-
+app.use(compression())
 app.set('view engine','ejs')
 app.set('views',path.join(process.cwd(),'viewer'))
 app.use(express.static(path.join(process.cwd(),'public')))

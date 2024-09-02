@@ -88,7 +88,6 @@ export default class Utility {
             
             if(wordConst != null)
             {
-                let message = 'des variable on éte changer du à un nommage ambigu : \n'
                 for(let i=0;i<wordConst.length;i++)
                     {
                         const regex = new RegExp(`${wordConst[i]}+(?![A-z0-9])`,'g')
@@ -294,10 +293,7 @@ export default class Utility {
                 console.log(chalk.green(`fichier ${fileToReplaceBaseName} mise à jour ${time}`))
                 return fs.promises.writeFile(fileToReplace,this.replaceContent(totaltext,double,allmatcheddecaration[0]))
             }
-            
         })
-        
-        
     }
 
     /*
@@ -392,7 +388,7 @@ export default class Utility {
      */
     getAllExportName(content)
     {
-        const regexgetConst = /(?<=[c][o][n][s][t].)[^{][A-z0-9]*/g; 
+        const regexgetConst = /(?<=[c][o][n][s][t].)[^{][^[][A-z0-9]*/g; 
         const regexgetfunction = /(?<=[f][u][n][c][t][i][o][n].)[A-z]*/g; 
         const getAllFunction = /(function)+.*[^]*.?\/*[}][^(function)+]/gm;
         const allConstinfile = content.match(regexgetConst)
@@ -576,7 +572,6 @@ export default class Utility {
             }
             return arraycontent
     }
-    
     /*
     français:
         récupère du dossier threeElement/Setting/configImport.js 
