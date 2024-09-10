@@ -3,6 +3,7 @@ import chalk from 'chalk';
 import boxen from 'boxen';
 import path from 'path';
 import compression from 'compression';
+
 const app = express();
 const port = process.env.port || 3000;
 /* 
@@ -26,13 +27,16 @@ English:
 app.use(compression())
 app.set('view engine','ejs')
 app.set('views',path.join(process.cwd(),'viewer'))
-app.use(express.static(path.join(process.cwd(),'public')))
+app.use(express.static(('public')))
+
+// app.use((req,res,next)=>{
+//     res.writeHead(200,{'Content-Type':'text/html'})
+//     next()
+// })
 
 app.get('/',(req,res)=>{
-    res.render('index')
+res.render('index');
 })
-
-
 
 async function callCompiler()
 {

@@ -179,7 +179,6 @@ export default class Utility {
         }
         const regexremove = /^((?!const.{.*.}.[=].require)[\s\S])*$/gm
         const regexfound = /\b(const.{.*)/g
-        
         if(options == null)
         {
             let totalDeclaration = [];
@@ -219,7 +218,11 @@ export default class Utility {
                                             totalDeclaration.splice(totalDeclaration.indexOf(e),10-9)
                                         })
                                         compiledContent += `//----|${path.basename(fileArray[i])}|----\n${transform}\n//&end\n`
-                                    }  
+                                    } 
+                                    if(path.basename(fileArray[i]) == 'configImport.js')
+                                        {
+                                            compiledContent += '\nconst content = () => {\n'
+                                        } 
                             }
                         } else {
                             compiledContent += `//----|${path.basename(fileArray[i])}|----\n//'fichier vide'\n//&end\n`
@@ -232,6 +235,7 @@ export default class Utility {
                 {
                     if(fileArray[i] !== undefined)
                     {
+                        
                         let content = fs.readFileSync(fileArray[i],'utf-8')
                         if(content !== null)
                         {
@@ -244,6 +248,10 @@ export default class Utility {
                         } else {
                             compiledContent += `//----|${path.basename(fileArray[i])}|----\n//'fichier vide'\n//&end\n`
                         }
+                        if(path.basename(fileArray[i]) == 'configImport.js')
+                            {
+                                compiledContent += '\nconst content = () => {\n'
+                            }
                     }
                 }
                 return compiledContent;
@@ -321,6 +329,8 @@ export default class Utility {
                 }}
             );
             await this.complilerContentPromise(this.fileDirArray).then((data)=>{
+            
+            data += `};\nwindow.onload = () => { content()}`;
                 fs.appendFile(complierFile,data,(error)=>{
                     if(error)
                         {
@@ -388,7 +398,7 @@ export default class Utility {
      */
     getAllExportName(content)
     {
-        const regexgetConst = /(?<=[c][o][n][s][t].)[^{][^[][A-z0-9]*/g; 
+        const regexgetConst = /(?<=const.)[^{[][A-z0-9]*/g; 
         const regexgetfunction = /(?<=[f][u][n][c][t][i][o][n].)[A-z]*/g; 
         const getAllFunction = /(function)+.*[^]*.?\/*[}][^(function)+]/gm;
         const allConstinfile = content.match(regexgetConst)
