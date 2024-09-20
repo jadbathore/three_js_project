@@ -1,0 +1,3 @@
+const {scene,THREE} = require('../../public/versionning/linkFile.js');
+
+const loader = new THREE.TextureLoader();

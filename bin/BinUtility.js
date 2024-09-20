@@ -100,7 +100,26 @@ English:
             return fs.appendFileSync(pathcreatedFile,mangoRequest[0].content);
         }
     }
-    
+    makeAfile(ressource,filetoappend,dir = 'Mesh'){
+        const meshpath = path.join(process.cwd(),'makeFileRessource',dir,ressource)
+        if(fs.existsSync(meshpath))
+        {
+            let data = fs.readFileSync(meshpath,'utf-8');
+            const regex = new RegExp('#name#','g')
+            data = data.split(regex).join(filetoappend);
+            const file = filetoappend + '.js'
+
+            const pathfile = path.join(process.cwd(),'threeElement',dir,file)
+            if(fs.existsSync(pathfile))
+            {
+                console.log(chalk.red(`le fichier ${file} existe déja`));
+            } else {
+                fs.appendFileSync(pathfile,data);
+            }
+        } else {
+            console.log(chalk.red(`la ressource : '${ressource}' n'existe pas`));
+        }
+    }
 /*
 français :
     permet le remplacement des donné (utlisé pour le hashage des constantes)

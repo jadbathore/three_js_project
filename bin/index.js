@@ -5,7 +5,7 @@ import chalk from "chalk";
 import figlet from "figlet";
 import mongoose from 'mongoose';
 import path from 'path';
-import fs, { appendFile, appendFileSync, existsSync } from 'fs';
+import fs, { appendFile, appendFileSync, existsSync, truncateSync } from 'fs';
 import { allExeceptSetting, allFile, basenameExecptSetting, basenameFile,importscript } from "../CompilerSetUp/pathUtility.js";
 import commanderHelp from 'commander-help'
 import ora from 'ora'
@@ -70,6 +70,7 @@ program
 .option("-h, -help", "list helper").action(()=>{
     console.log('\n',chalk.green(figlet.textSync('ThreeCLI', { horizontalLayout: 'full',font:'Colossal'})))
     commanderHelp(program)
+    process.exit();
 })
 .version('1.0.0')
 //---------------------------------save-------------------------------------------------
@@ -354,34 +355,15 @@ program.command('clear').action(
             for(let i = 0;i< allFile.length;i++)
             {
                 fs.truncateSync(allFile[i])
-                let content = "const { THREE } = require('../../public/versionning/linkFile')\n"
-                switch(path.basename(allFile[i]))
+                const fileCoresponding = path.basename(allFile[i]).split('.js').join('.txt');
+                const filecorrespondingpath = path.join(process.cwd(),'makeFileRessource','clearDefault',fileCoresponding)
+                const exist = fs.existsSync(filecorrespondingpath);
+                if(exist)
                 {
-                    case 'animate.js':
-                        const contentAnimate = "const { THREE,scene,camera } = require('../../public/versionning/linkFile')\nfunction animate()\n{\nrenderer.render(scene,camera)\n}\nrenderer.setAnimationLoop(animate);\n";
-                        fs.appendFileSync(allFile[i],contentAnimate)
-                    break;
-                    case 'loader.js':
-                        content += 'const loader = new THREE.TextureLoader();\n'
-                        fs.appendFileSync(allFile[i],content);
-                    break;
-                    case 'configImport.js':
-                        const contentconfig ="import * as THREE from 'three' \nimport { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js' \n";
-                        fs.appendFileSync(allFile[i],contentconfig);
-                    break;
-                    case 'RendererSetting.js':
-                        content += "const renderer = new THREE.WebGLRenderer({antialias:true})\nconst scene = new THREE.Scene()\nrenderer.shadowMap.enabled = true;\nrenderer.setSize(window.innerWidth,window.innerHeight);\ndocument.body.appendChild(renderer.domElement)\n";
-                        fs.appendFileSync(allFile[i],content);
-                    break;
-                    case 'cameraSetting.js':
-                        content += "const camera = new THREE.PerspectiveCamera(\n45,\nwindow.innerWidth/window.innerHeight,\n0.1,\n1000\n);\ncamera.position.set(10,10,5);\nconst orbit = new OrbitControls(camera,renderer.domElement)\norbit.update();\n";
-                        fs.appendFileSync(allFile[i],content);
-                    break;
-                    case 'resizeSetting.js':
-                        const contentresize = "window.addEventListener('resize',()=> {\ncamera.aspect= window.innerWidth / window.innerHeight;\ncamera.updateProjectionMatrix();\nrenderer.setSize(window.innerWidth,window.innerHeight)\n})\n";
-                        fs.appendFileSync(allFile[i],contentresize);
-                    break;
-                    default: fs.rmSync(allFile[i],{recursive:true})
+                    const readable = fs.readFileSync(filecorrespondingpath);
+                    fs.appendFileSync(allFile[i],readable);
+                } else {
+                    fs.rmSync(allFile[i],{recursive:true});
                 }
             }
             console.log(chalk.keyword('yellow')('Dossier ThreeElement nettoyer et prés à l\'emploi 🧹'))
@@ -392,6 +374,23 @@ program.command('clear').action(
         }
     }
 ).description('clear directory "threeElement" leave only the Setting and the animate function truncated')
+//------------------------------------make------------------------------------------------
+
+program.command('make')
+.option('-mC,--mesh_Cube <namefile>','make a mesh cube')
+.option('-mS,--mesh_Sphere <namefile>','make a mesh sphere')
+.option('-lL,--loader_Loader <namefile>','make a loader')
+.option('-aL,--asset_light <namefile>','make a light')
+.action(
+    (option)=>{
+        for (let [key, value] of Object.entries(option)) {
+            const dir = key.split('_')[0]
+            key += ".txt"
+            BinUtilityClass.makeAfile(key,value,dir)
+        }
+        process.exit();
+    }
+).description('make a file')
 
 //------------------------------------importscript------------------------------------------------
 /*
