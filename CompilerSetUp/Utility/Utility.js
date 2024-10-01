@@ -1,9 +1,9 @@
 import chalk from 'chalk';
-import path, { join } from 'path';
-import fs, { Dir, readFile } from 'fs'
+import path from 'path';
+import fs from 'fs'
 import mongoose from 'mongoose';
+import RecursiveMatcher from './RecursiveMatcher.js'
 
-const complierFile = path.join(process.cwd(),'public','versionning','compling.js')
 
 
 
@@ -14,6 +14,21 @@ const complierFile = path.join(process.cwd(),'public','versionning','compling.js
  */
 export default class Utility {
     
+    #complierFile = path.join(process.cwd(),'public','versionning','compling.js')
+    #matchregexRaw = /(let)+[^{][A-z]*.*/g;
+    #matchregexWord = /(?<=let.)[^{][A-z]*/g;
+    // #matchregexConstWord = /(?<=(\bconst\b((\s)+?)))(?!\[)(([A-z])|[A-z]\w+)*/g
+    #matchregexConstWord = /(?<=const.)[^{][A-z]*/g;
+    #matchparamAndConstDelcaration = /((?<=(\bconst\b((\s)+?)))(?!\[)(([A-z])|[A-z]\w+)*|(?<=(\bthis[.]\b))((([A-z])|[A-z]\w+)*)(?=((\s?)+?)[=]))/g;
+    #matchparamDeclaration = /(?<=(\bthis[.]\b))((([A-z])|[A-z]\w+)*)(?=((\s?)+?)[=])/g
+    #regexremove = /^((?!const.{(.*)}.[=].require)[\s\S])*$/gm;
+    #regexfound = /\b(const.{.*)/g;
+    #removeConstDeclaration = /\b(const.)\b/g;
+    #regexgetConst = /(?<=const.)[^{[][A-z0-9]*/g; 
+    #getfunctionName = /(?<=(\b(\t?)function\b((\s)+?)))(([A-z])|([A-z]\w+))(?=(((\s)?)+?)(\((\n*?)([^]*)(\n*?)\))((\n*)?)\{)/g
+    #regexmatchRequire = /(const.{.*.}.[=].require)+.*/g;
+    #regexDeclaration = /(?:(?=(?<=import.{.))[A-z,\s]*|(?!import.{.)((?<=import.*.as.)[A-z]*))/g;
+    #regexpathimport = /(?<=from.')[A-z/.-]*/g;
     /**
      * @param {array} array - fileDirArray is a array of unsorted file
      * @param {Map} Map - mapAsset is a object Map of all the asset(image/gltf...) you might need sorting this way : (dirName => [ file1.js , file2.js] )
@@ -139,18 +154,22 @@ export default class Utility {
     /**
      * @public this method is there to get all the déclaration in a text(string) like the constant and variable 
      * @param {string} string a text string to match all you want 
-     * @returns {array} return a array object reusable like so (const a = thisgetTotaldecaration(text) ; console.log(a[0]))
+     * @returns {Object} return a array object reusable like so (const a = thisgetTotaldecaration(text) ; console.log(a[0]))
      */
-    getTotaldecaration(text){
-        const matchregexRaw = /(let)+[^{][A-z]*.*/g;
-        const matchregexWord = /(?<=let.)[^{][A-z]*/g;
-        const matchregexConstWord = /(?<=const.)[^{][A-z]*/g;
-        const regexfunctionall = /(function)+.*[^]*.?\/*[}][^(function)+]/gm;
-        const content = text.split(regexfunctionall).join('\n');
-        const allVariableRaw = content.match(matchregexRaw);
-        const allVariableword = content.match(matchregexWord);
-        const allVariablewordConst = content.match(matchregexConstWord);
-        return new Array(allVariableRaw,allVariableword,allVariablewordConst);
+    getTotaldeclaration(text){
+        const allVariableRaw = text.match(this.#matchregexRaw);
+        const allVariableword = text.match(this.#matchregexWord);
+        const allVariablewordConst = text.match(this.#matchregexConstWord);
+        const paramAndConstDelcaration = text.match(this.#matchparamAndConstDelcaration);
+        const matchparamDeclaration = text.match(this.#matchparamDeclaration);
+        
+        return {
+            variableRaw:allVariableRaw,
+            variableDeclaration:allVariableword,
+            constant:allVariablewordConst,
+            paramAndConstDelcaration:paramAndConstDelcaration,
+            paramDeclaration:matchparamDeclaration
+        };
     }
 
     /*
@@ -173,12 +192,16 @@ export default class Utility {
     {
         let compiledContent = '';
         const getAsset = this.getAssetPathConst()
-        for(let i = 0; i<getAsset.length;i++)
+        // for (let [oldStr, newStr] of Object.entries(replacements))
+        for(let [key,values] of Object.entries(getAsset))
         {
-            compiledContent+=`const ${getAsset[i]}\n`
+            compiledContent+=`const ${key} = {\n`;
+            for(let [key,value] of Object.entries(values))
+            {
+                compiledContent+=`${key}:'${value}',\n`
+            }
+            compiledContent+=`\n}\n`
         }
-        const regexremove = /^((?!const.{.*.}.[=].require)[\s\S])*$/gm
-        const regexfound = /\b(const.{.*)/g
         if(options == null)
         {
             let totalDeclaration = [];
@@ -187,12 +210,13 @@ export default class Utility {
                 if(fileArray[i] !== undefined)
                 {
                         const content = fs.readFileSync(fileArray[i],'utf-8')
-                        const allmatcheddecaration = this.getTotaldecaration(content)
-                        for(let i = 0;i<allmatcheddecaration.length;i++)
+                        const allmatcheddecaration = this.getTotaldeclaration(content)
+                        // for(let i = 0;i<allmatcheddecaration.length;i++)
+                        for(const [key,value] of Object.entries(allmatcheddecaration))
                         {
-                            if(allmatcheddecaration[i] !== null)
+                            if(value !== null)
                                 {
-                                    totalDeclaration = totalDeclaration.concat(allmatcheddecaration[i])
+                                    totalDeclaration = totalDeclaration.concat(value)
                                 } 
                         }
                         if(content !== null)
@@ -201,18 +225,18 @@ export default class Utility {
                             
                             if(double === false)
                             {
-                                if(content.match(regexfound) === null)
+                                if(content.match(this.#regexfound) === null)
                                     {
                                         compiledContent += `//----|${path.basename(fileArray[i])}|----\n${content.trim()}\n//&end\n`
                                     } else {
-                                        compiledContent += `//----|${path.basename(fileArray[i])}|----\n${content.match(regexremove).join('').trim()}\n//&end\n`
+                                        compiledContent += `//----|${path.basename(fileArray[i])}|----\n${content.match(this.#regexremove).join('').trim()}\n//&end\n`
                                     }
                             } else {
-                                if(content.match(regexfound) === null)
+                                if(content.match(this.#regexfound) === null)
                                     {
                                         compiledContent += `//----|${path.basename(fileArray[i])}|----\n${this.replaceContent(content,double,allmatcheddecaration[0]).trim()}\n//&end\n`
                                     } else {
-                                        const text = content.match(regexremove).join('').trim()
+                                        const text = content.match(this.#regexremove).join('').trim()
                                         const transform = this.replaceContent(text,double,allmatcheddecaration[0])
                                         double.forEach((e)=>{
                                             totalDeclaration.splice(totalDeclaration.indexOf(e),10-9)
@@ -235,15 +259,14 @@ export default class Utility {
                 {
                     if(fileArray[i] !== undefined)
                     {
-                        
-                        let content = fs.readFileSync(fileArray[i],'utf-8')
+                        const content = fs.readFileSync(fileArray[i],'utf-8');
                         if(content !== null)
                         {
-                            if(content.match(regexfound) === null)
+                            if(content.match(this.#regexfound) === null)
                             {
                                 compiledContent += `//----|${path.basename(fileArray[i])}|----\n${content.trim()}\n//&end\n`
                             } else {
-                                compiledContent += `//----|${path.basename(fileArray[i])}|----\n${content.match(regexremove).join('').trim()}\n//&end\n`
+                                compiledContent += `//----|${path.basename(fileArray[i])}|----\n${content.match(this.#regexremove).join('').trim()}\n//&end\n`
                             }
                         } else {
                             compiledContent += `//----|${path.basename(fileArray[i])}|----\n//'fichier vide'\n//&end\n`
@@ -261,49 +284,227 @@ export default class Utility {
     }
 
     /**
+     * @public important function to format the compiler contentin class format
+     * @param {array} array fileArray use a array of file to compile all the ThreeElement dir   
+     * @returns {string} compile file of all the array 
+     */
+    async getComposerContent(fileArray){
+
+        let compiledContent = fs.readFileSync(fileArray[0],'utf-8');
+        compiledContent += '\nclass Content {\n';
+        const getAsset = this.getAssetPathConst();
+        //-----param_asset-----
+        for(let [key,values] of Object.entries(getAsset))
+            {
+                compiledContent+=`static ${key} = {\n`;
+                for(let [key,value] of Object.entries(values))
+                {
+                    compiledContent+=`${key}:'${value}',\n`
+                }
+                compiledContent+=`\n}\n`
+            }
+        //-----constructor-----
+        compiledContent+=`constructor(){\n`
+        for(let i = 1;i< fileArray.length;i++)
+        {
+            const namefile = this.formatName(fileArray[i]);
+            compiledContent += `\ndocument.addEventListener('load',this.${namefile}())`
+        }
+        compiledContent+='\n}\n';
+        //-----methods-----
+        let totalconstant = []; 
+        for(let i = 1;i< fileArray.length;i++)
+            {
+                //TODO:condition retiré les class de la class principale 
+                const contentRaw = fs.readFileSync(fileArray[i],'utf-8');
+                //TODO:****test_de_ResursiveMatcher.Allclass()****
+                // if(contentRaw.match(RecursiveMatcher.ClassStart) !== null){
+                //     console.log(RecursiveMatcher.getAllClass(contentRaw))
+                // }
+                let content = ''
+                const namefile = this.formatName(fileArray[i]);
+                if(fileArray[i] !== undefined)
+                {
+                    content += `${namefile}(){\n`
+                    content += `//----|${path.basename(fileArray[i])}|----\n`;
+                    const constant = this.getTotaldeclaration(contentRaw);
+                    if(constant.constant !== null)
+                    {
+                        constant.constant.forEach((element)=>{
+                            totalconstant.push(element)
+                        })
+                    }
+                    const cleanContent = await this.ContentCleaner(contentRaw,totalconstant)
+                    content += `${cleanContent}\n//&end\n`; 
+                }
+            content += '\n}\n'
+            compiledContent += `\n${content}\n`;
+            }  
+        if(compiledContent.match(this.#regexfound) !== null)
+        {
+            compiledContent = compiledContent.match(this.#regexremove).join('')
+        }
+            Object.keys(getAsset).forEach((e)=>{
+            const regex = new RegExp(`\\b(${e}[.])\\b`,'g')
+            if(compiledContent.match(regex) !== null)
+                {
+                    compiledContent = compiledContent.replace(regex,`Content.${e}.`)
+                }
+        })
+        compiledContent += '\n}\n'
+        compiledContent += `\nwindow.onload = () => {\n\tnew Content()\n}`;
+        return compiledContent.trim();
+    }
+
+    async ContentCleaner(contentRaw,totalconstant){
+        const condition = (contentRaw.match(this.#getfunctionName) !== null)
+        let contentTransform = (condition)? this.replacorForFunctionPromise(contentRaw) : contentRaw;
+        let cleanContent = '';
+        if(contentTransform instanceof Promise)
+            {   
+                cleanContent = await contentTransform.then((dataObj)=>{
+                    let tempsContent = dataObj.cleanText;
+                    totalconstant.forEach((e)=> {
+                        const regex = new RegExp(`\\b(${e})\\b`,'g') 
+                        tempsContent = tempsContent.replace(regex,`this.${e}`)
+                    });
+                    if(tempsContent.match(this.#removeConstDeclaration) !== null)
+                    {
+                        tempsContent = tempsContent.replace(this.#removeConstDeclaration,'')
+                    }
+                    for(const [key,value] of Object.entries(dataObj.data))
+                    {
+                        const regex = new RegExp(`(?<=(\\bfunction\\b((\\s)+?))(\\b${key}\\b)(((\\s)?)+?)(\\((\\n*?)([^]*)(\\n*?)\\))((\\n*)?))\\{(#&@)\\}`,'g')
+                        tempsContent = tempsContent.replace(regex,`\n{${value}}\n`)
+                    }
+                        return tempsContent
+                    }).catch((err)=>{
+                        throw err;
+                    })
+            } else {
+                totalconstant.forEach((e)=>{
+                const regex = new RegExp(`\\b(${e})\\b`,'g') 
+                contentTransform = contentTransform.replace(regex,`this.${e}`)
+                })
+                if(contentTransform.match(this.#removeConstDeclaration) !== null)
+                {
+                    contentTransform = contentTransform.replace(this.#removeConstDeclaration,'')
+                }
+                cleanContent = contentTransform;
+                }
+        return cleanContent;
+    }
+
+    /**
+     * @param {string} pathfile the path file to transform
+     * @throws Error if is not a path file
+     * @return string
+     */
+    formatName(pathfile){
+        if (fs.lstatSync(pathfile).isFile())
+        {
+            return 'file_'+path.basename(pathfile).split('.js').join('');
+        } else {
+            throw new Error(`${pathfile} n'est pas un fichier`);
+        }
+    }
+
+    /**
+     * @param {string} text the path file to transform 
+     * @throws Error if is not a path file
+     * @return promise object of all text to replace the function for 
+     */
+    replacorForFunctionPromise(text){
+        return new Promise((resolve,reject)=>{
+            let ObjectToChange = {}
+            //the to array must always have the same length
+            const values = RecursiveMatcher.getAllFunctionContent(text)
+            let textWithoutFunc = text;
+            values.forEach((e)=>{
+                //special caratere replacement
+                textWithoutFunc = textWithoutFunc.replace(e,'#&@')
+            })
+            const keys = textWithoutFunc.match(this.#getfunctionName);
+            if((values == null) || (keys == null))
+            {
+                reject(`no value or keys matched value:${values} keys:${keys}`)
+            }
+            if(values.length != keys.length){
+                reject('error matching the key and the value doesn\'t have the same length')
+            }
+            for(let i=0;i<values.length;i++){
+                ObjectToChange[keys[i]] = values[i]
+            }
+            resolve({
+                data:ObjectToChange,
+                cleanText:textWithoutFunc
+            });
+        })
+    }
+    /**
      * @public to just replace in the composer unique change the 'repopulate' method re-right all the script this one just replace what you need (in a macOS enviroment the 'repolulate' 
      * fonction might trigget 2 time when it's watched because of the pre-programming enviroment work that way but not with this method)  
-     * @param {string} directory fileToReplace string directory of the file you need to replace 
-     * @param {string} directory fileReplacing string directory  you use to replacing the file
+     * @param {string} directory beginingFile string directory of the file you need to replace 
+     * @param {string} directory endFile string directory  you use to replacing the file
+     * @param {string} option option string directory  you use to replacing the file
      * @returns {fs.promises} fs.promises is return this one will write in the  fileToReplace directory the replacement.
      */
-    lazyRemplacementComposer(fileToReplace,fileReplacing){
+    lazyRemplacement(beginingFile,endFile){
         let time = new Date(Date.now()).toString();
-        const regexremove = /^((?!const.{.*.}.[=].require)[\s\S])*$/gm
-        const regexfound = /\b(const.{.*)/g
-        const fileToReplaceBaseName = path.basename(fileToReplace)
-        const fileReplacingBaseName = path.basename(fileReplacing)
-        const tRegex = new RegExp(`(?=[/][/]----[|](${fileReplacingBaseName})).+?(?<=[/][/](&end))`, "s");
-        fs.promises.readFile(fileToReplace,{encoding:'utf-8'}).then((buffer)=>{
+        const beginingBaseName = path.basename(beginingFile)
+        const endBaseName = path.basename(endFile)
+        const tRegex = this.regexSectionMaker(endBaseName)
+        fs.promises.readFile(beginingFile,{encoding:'utf-8'}).then((buffer)=>{
             const textToreplace = buffer.toString()
-            let replacingContent = fs.readFileSync(fileReplacing,'utf-8');
-            if(replacingContent.match(regexfound) !== null) {
-                replacingContent = replacingContent.match(regexremove).join('')
+            let replacingContent = fs.readFileSync(endFile,'utf-8');
+            if(replacingContent.match(this.#regexfound) !== null) {
+                replacingContent = replacingContent.match(this.#regexremove).join('')
             }
-            const textRemplacement = `\n//----|${fileReplacingBaseName}|----\n${replacingContent}\n//&end`
-            const totaltext = textToreplace.replace(tRegex,textRemplacement)
             let totalDeclaration = [];
-            const allmatcheddecaration = this.getTotaldecaration(totaltext);
-            for(let i = 0;i<allmatcheddecaration.length;i++)
+            const allmatcheddecaration = this.getTotaldeclaration(replacingContent);
+            const textRemplacement = `\n//----|${endBaseName}|----\n${replacingContent}\n//&end`
+            const totaltext = textToreplace.replace(tRegex,textRemplacement)
+            for(const [key,value] of Object.entries(allmatcheddecaration))
                 {
-                    if(allmatcheddecaration[i] !== null)
+                    if(value !== null)
                         {
-                            totalDeclaration = totalDeclaration.concat(allmatcheddecaration[i])
+                            totalDeclaration = totalDeclaration.concat(value)
                         } 
                 }
-            const double = this.checkdouble(totalDeclaration)
-            if(double == false)
-            {
-                console.log(chalk.green(`fichier ${fileToReplaceBaseName} mise à jour ${time}`))
-                return fs.promises.writeFile(fileToReplace,totaltext)
-            } else {
-
-                console.log(chalk.green(`fichier ${fileToReplaceBaseName} mise à jour ${time}`))
-                return fs.promises.writeFile(fileToReplace,this.replaceContent(totaltext,double,allmatcheddecaration[0]))
-            }
+            console.log(chalk.green(`fichier ${beginingBaseName} mise à jour ${time}`))
+            return fs.promises.writeFile(beginingFile,totaltext)
         })
     }
 
+    /**
+     * 
+     * @param {string} beginingFile the begining file (file who's replace)
+     * @param {string} endFile the End file  (file take to replace the begining file)
+     * @returns {fs.promises} fs.promises is return this one will write in the  fileToReplace directory the replacement.
+     */
+    async lazyComposerRemplacement(beginingFile,endFile){
+        let time = new Date(Date.now()).toString();
+        const beginingBaseName = path.basename(beginingFile)
+        const endBaseName = path.basename(endFile)
+        fs.promises.readFile(beginingFile,{encoding:'utf-8'}).then(async (buffer)=>{
+            const tRegex = this.regexSectionMaker(endBaseName)
+            const textToreplace = buffer.toString()
+            const globalDelcaration = this.getTotaldeclaration(buffer.toString().replace(tRegex,'')).paramDeclaration;
+            let replacingContent = fs.readFileSync(endFile,'utf-8');
+            //--------------endfile---------------------
+            if(replacingContent.match(this.#regexfound) !== null) {
+                replacingContent = replacingContent.match(this.#regexremove).join('')
+            }
+            const inFileDecaration = this.getTotaldeclaration(replacingContent).constant;
+            const totalDeclaration = globalDelcaration.concat(inFileDecaration)
+            replacingContent = await this.ContentCleaner(replacingContent,totalDeclaration);
+            //--------------beginingfile---------------------
+            const textRemplacement = `\n//----|${endBaseName}|----\n${replacingContent}\n//&end`
+            const totaltext = textToreplace.replace(tRegex,textRemplacement)
+            console.log(chalk.green(`fichier ${beginingBaseName} mise à jour ${time}`))
+            return fs.promises.writeFile(beginingFile,totaltext)
+        })
+    }
     /*
     français:
         permet de compléte le dossier public/versionning/compiling.js automatiquement 
@@ -312,6 +513,24 @@ export default class Utility {
         allows to complete the public/versioning/compiling.js folder automatically
         it waits for the promise compilerContentPromise() to return what is needed according to the given situation
     */
+    
+    /**
+     * 
+     * @param {string} toSection 
+     * @return make a regex to Cut a section in some text 
+     * @example section must be like this :
+        ```
+        ...
+        //----|loader.js|----
+        const loader = new THREE.TextureLoader();
+        //&end
+        ...
+        ```
+     */
+    regexSectionMaker(toSection)
+    {
+        return new RegExp(`(?=[/][/]----[|](${toSection})).+?(?<=[/][/](&end))`, "s");
+    }
     
     /**
      * @public allows to complete the public/versioning/compiling.js folder automatically
@@ -323,15 +542,16 @@ export default class Utility {
     {
         try {
             let time = new Date(Date.now()).toString();
-            fs.truncate(complierFile, 0,(err)=>{ 
+            fs.truncate(this.#complierFile, 0,(err)=>{ 
                 if (err){ 
                     throw new Error(`erreur truncate ${time} \n${err}`);
                 }}
             );
-            await this.complilerContentPromise(this.fileDirArray).then((data)=>{
+            await this.compilerContentPromise(this.fileDirArray,'composer')
+            .then((data)=>{
             
-            data += `};\nwindow.onload = () => { content()}`;
-                fs.appendFile(complierFile,data,(error)=>{
+            // data += `};\nwindow.onload = () => { content()}`;
+                fs.appendFile(this.#complierFile,data,(error)=>{
                     if(error)
                         {
                             throw new Error(error)
@@ -362,7 +582,7 @@ export default class Utility {
     {
         const time = new Date(Date.now()).toString()
         const linkFile = path.join(process.cwd(),'public','versionning','linkFile.js')
-            this.complilerContentPromise(this.fileDirArray.slice(1,this.fileDirArray.length-1))
+            this.compilerContentPromise(this.fileDirArray.slice(1,this.fileDirArray.length-1),'linkfile')
             .then((data)=>{
                 setTimeout(()=>{
                     fs.truncate(linkFile,0,(err)=>{ 
@@ -391,6 +611,7 @@ export default class Utility {
     French:
         find all the constants to export later
     */
+    
     /**
      * @public find all the constants to export later
      * @param {string} string get all the content of the export name;
@@ -398,33 +619,16 @@ export default class Utility {
      */
     getAllExportName(content)
     {
-        const regexgetConst = /(?<=const.)[^{[][A-z0-9]*/g; 
-        const regexgetfunction = /(?<=[f][u][n][c][t][i][o][n].)[A-z]*/g; 
-        const getAllFunction = /(function)+.*[^]*.?\/*[}][^(function)+]/gm;
-        const allConstinfile = content.match(regexgetConst)
-        const alltheFunction = content.match(getAllFunction)
-        if(alltheFunction !== null)
-        {
-            let contentfunc = ''
-            for(let i = 0; i < alltheFunction.length; i++)
-            {
-                contentfunc += alltheFunction[i]
-            }
-            const allconstinFunc = contentfunc.match(regexgetConst)
-            if(allconstinFunc !== null)
-            {
-                const diferrence = allConstinfile.filter((element)=> !allconstinFunc.includes(element))
-                const allfuncinfile = content.match(regexgetfunction)
-                const allinfile = diferrence.concat(allfuncinfile)
-                return allinfile;
-            } else {
-                const allfuncinfile = content.match(regexgetfunction)
-                const allinfile = allConstinfile.concat(allfuncinfile)
-                return  allinfile
-            }
-        } else {
-            return allConstinfile;
+        const allConstinfile = content.match(this.#regexgetConst);
+        const alltheFunction = RecursiveMatcher.getAllFunctionContent(content);
+        if(alltheFunction !== null){
+            alltheFunction.forEach((e)=>{
+                content = content.replace(e,'')
+            }) 
         }
+        let arrayDeclaration = this.getTotaldeclaration(content).constant;
+        arrayDeclaration = content.match(this.#getfunctionName)?.concat(arrayDeclaration) ?? arrayDeclaration;
+        return arrayDeclaration;
     }
     /*
     français:
@@ -446,8 +650,7 @@ export default class Utility {
             const content = fs.readFileSync(file,'utf-8')
             if(content !== null)
             {   
-                const regexmatchRequire = /(const.{.*.}.[=].require)+.*/g
-                const test = content.match(regexmatchRequire)
+                const test = content.match(this.#regexmatchRequire)
                 if(test === null)
                     {
                         const text = this.getImportStript()
@@ -549,58 +752,53 @@ export default class Utility {
         (because the express server uses a static the path used is the previous 'asset(true path: public/asset)/...')
         then is reusable in this way: glb.donus (it is in the list of the basic import script)
         the addition is automatic so if more is needed creates a folder that has the name of the extension (example: hdr => gun.hdr)
-     * @returns {void} void
+     * @returns {object} object
      */
     getAssetPathConst()
     {
-        const arraycontent = []
+        const content = {}
         for(const [key, value] of this.mapAsset)
             {
+                const subContent = {}
                 if(key === 'img')
                 {
-                    let content = `${key} = {\n`
+                    // let content = `${key} = {\n`
                     for (const file of value)
                     {
                         if(path.basename(file).includes('.png'))
                             {
-                                content+= `${path.basename(file,'.png')}:'${path.join('asset','img',file)}',\n`;
+                                subContent[path.basename(file,'.png')] = path.join('asset','img',file);
                             } else if(path.basename(file).includes('.jpg')) {
-                                content+= `${path.basename(file,'.jpg')}:'${path.join('asset','img',file)}',\n`;
+                                subContent[path.basename(file,'.jpg')] = path.join('asset','img',file);
                             }
                     };
-                    content+= '}\n'
-                    arraycontent.push(content)
                 } else {
-                    let content = `${key} = {\n`
+                    // let content = `${key} = {\n`
                     for(const file of value)
                         {
-                            content+= `${path.basename(file,`.${key}`)}:'${path.join('asset',key,file)}',\n`;
+                            subContent[path.basename(file,`.${key}`)] = path.join('asset',key,file);
                         }
-                        content += '}\n'
-                        arraycontent.push(content)
                 }
+                content[key] = subContent;
             }
-            return arraycontent
+            return content
     }
     /*
     français:
         récupère du dossier threeElement/Setting/configImport.js 
         les élements uile tel que les nom ainsi que les chemin d'importation externe
     */ 
-   /**
+    /**
     * @public retrieves from the three Element/Setting/config Import.js folder the useful 
     elements such as the name and the external import path
     * @returns array
     */
     getConfigUtilty(){
-
-        const configFile = path.join(process.cwd(),'threeElement','Setting','configImport.js')
+        const configFile = path.join(process.cwd(),'threeElement','Setting','configImport.js')  
         const contentConfig = fs.readFileSync(configFile,'utf-8')
-        const regexDeclaration = /(?:(?=(?<=import.{.))[A-z,\s]*|(?!import.{.)((?<=import.*.as.)[A-z]*))/g
-        const regexpathimport = /(?<=from.')[A-z/.-]*/g
         const elementDict = {}
-        const declaration = contentConfig.match(regexDeclaration)
-        const importpath = contentConfig.match(regexpathimport)
+        const declaration = contentConfig.match(this.#regexDeclaration)
+        const importpath = contentConfig.match(this.#regexpathimport)
         for(let i = 0;i<declaration.length;i++)
         {
             elementDict[declaration[i].trim()] = importpath[i]
@@ -649,21 +847,27 @@ export default class Utility {
      * @param {array} array array of file already sorted
      * @returns {promise} promise
      */
-    complilerContentPromise(array) 
+    compilerContentPromise(array,typedata) 
     {
         return new Promise((resolve,reject)=>
             {
                 setTimeout(()=>{
                     reject("la compilation des donnée à pris trop de temps");
                 },3000)
-                const content = this.getContentFile(array,'normal')
-                const declaration = this.getAllExportName(content)
-
-                if(this.checkdouble(declaration) == false)
+                if(typedata == 'linkfile')
                 {
-                    resolve(content);
+                    const content = this.getContentFile(array,'normal')
+                    const declaration = this.getAllExportName(content)
+                    if(this.checkdouble(declaration) == false)
+                    {
+                        resolve(content);
+                    } else {
+                        resolve(this.getContentFile(array))
+                    }
+                } else if(typedata == 'composer'){
+                    resolve(this.getComposerContent(array))
                 } else {
-                    resolve(this.getContentFile(array))
+                    reject(`typedata: ${typedata} non reconnu `)
                 }
             },)
     }

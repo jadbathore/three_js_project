@@ -1,7 +1,7 @@
 const {THREE, scene} = require('../../public/versionning/linkFile.js')
 
 
-const light = new THREE.PointLight(0xFFFFFF);
-scene.add(light);
-light.position.set(10,0,0);
-light.castShadow = true;
+const #name# = new THREE.PointLight(0xFFFFFF);
+scene.add(#name#);
+#name#.position.set(10,0,0);
+#name#.castShadow = true;

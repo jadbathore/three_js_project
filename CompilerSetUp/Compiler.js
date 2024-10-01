@@ -1,8 +1,8 @@
 import chalk from 'chalk';
 import fs from 'fs';
 import path from 'path';
-import Utility from './Utility.js';
-import { allFile,mapAsset, mapFile } from './pathUtility.js';
+import Utility from './Utility/Utility.js';
+import { allFile,mapAsset, mapFile } from './Utility/pathUtility.js';
 import {loadConfigFile} from 'rollup/loadConfigFile'
 import {rollup,watch} from 'rollup';
 
@@ -37,6 +37,11 @@ français:
 English:
     composer allows the compilation of the data of the threeElement into a single file
 */
+
+/**
+ * @public watching a the file 
+ * @return void 
+ */
 export const composer = () =>
 {
     UtilityClass.repopulateComposer()
@@ -71,8 +76,8 @@ export const composer = () =>
                                         case 'change':
                                             console.log(chalk.keyword('violet')(`the file ${event.filename} as been ${event.eventType} 🔮`))
                                             UtilityClass.addimportScript(path.join(process.cwd(),'threeElement',key,event.filename));
-                                            UtilityClass.lazyRemplacementComposer(complierFile,path.join(process.cwd(),'threeElement',key,event.filename));
-                                            UtilityClass.lazyRemplacementComposer(linkFile,path.join(process.cwd(),'threeElement',key,event.filename))
+                                            UtilityClass.lazyComposerRemplacement(complierFile,path.join(process.cwd(),'threeElement',key,event.filename));
+                                            UtilityClass.lazyRemplacement(linkFile,path.join(process.cwd(),'threeElement',key,event.filename))
                                         break;
                                         case 'rename' : 
                                         //if the file is remove
@@ -87,8 +92,8 @@ export const composer = () =>
                                                 console.log(chalk.keyword('violet')(`the file ${event.filename} is now unwatch and delete 🔮`));
                                             } else {
                                                 console.log(chalk.keyword('violet')(`the file ${event.filename} as been change 🔮`));
-                                                UtilityClass.lazyRemplacementComposer(complierFile,path.join(process.cwd(),'threeElement',key,event.filename));
-                                                UtilityClass.lazyRemplacementComposer(linkFile,path.join(process.cwd(),'threeElement',key,event.filename))
+                                                UtilityClass.lazyRemplacement(linkFile,path.join(process.cwd(),'threeElement',key,event.filename));
+                                                UtilityClass.lazyComposerRemplacement(complierFile,path.join(process.cwd(),'threeElement',key,event.filename))
                                             }
                                         //the file is added
                                         } else {
