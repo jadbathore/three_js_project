@@ -7,6 +7,7 @@ export default class RecursiveMatcher{
     static RegexExcludingFunctionStartAndMatchRestOfText = /(?<=(\bfunction\b((\s)+?))(([A-z])|([A-z]\w+))(((\s)?)+?)(\((\n*?)([^]*)(\n*?)\))((\n*)?)\{)(.*)/gms
     static FunctionStart = /(\b(\t?)function\b((\s)+?))(([A-z])|([A-z]\w+))(((\s)?)+?)(\((\n*?)([^]*)(\n*?)\))((\n*)?)\{/g
     static ClassStart = /((\b(\t?)class((\s)+?)\b))([A-z]|([A-z]\w+))((\s?)+?)(?=\{)/g
+    static ClassName = /(?<=(\b(\t?)class((\s)+?)\b))([A-z]|([A-z]\w+))(?=((\s?)+?)(?=\{))/g
     static RegexExcludingClassStartAndMatchRestOfText = /(?<=((\bclass((\s)+?)\b))([A-z]|([A-z]\w+))((\s?)+?)\{)(.*)/gms
     static RegexIncludingClassStartAndMatchRestOfText = /((\bclass((\s)+?)\b))([A-z]|([A-z]\w+))((\s?)+?)\{(.*)/gms
 
@@ -65,10 +66,9 @@ export default class RecursiveMatcher{
     {
         try{
             function* generatorMatchingFunction(textMatched) {
-                const recursiveMatcher = new RecursiveMatcher();
                     while(textMatched.match(RecursiveMatcher.FunctionStart)!== null)
                         {
-                            const processedFunction = recursiveMatcher.processRecurtion(textMatched,RecursiveMatcher.RegexExcludingFunctionStartAndMatchRestOfText);
+                            const processedFunction = (new RecursiveMatcher()).processRecurtion(textMatched,RecursiveMatcher.RegexExcludingFunctionStartAndMatchRestOfText);
                             yield processedFunction.matchingtext;
                             textMatched = processedFunction.restOfTheText ;
                         }
@@ -82,19 +82,28 @@ export default class RecursiveMatcher{
         }
     }
 
+
+    /**
+     * @param {string} text 
+     * @returns null|string return null if there are no function else string 
+     * @local *generatorMatchingFunction(textMatched) generate all matching 
+     * @example
+     * ```
+    const generator = generatorMatchingFunction(text)
+    const arrayGenerated = [...generator]
+    const matchedFunction =(arrayGenerated == 0)? null :arrayGenerated;
+    return matchedFunction 
+    * ```
+    */
     static getAllClass(text)
     {
         try{
             function* generatorMatchingClass(textMatched) {
-                const recursiveMatcher = new RecursiveMatcher();
                 while(textMatched.match(RecursiveMatcher.ClassStart)!== null)
                     {
-                        const className = textMatched.match(RecursiveMatcher.ClassStart)[0];
-                        const processedClass = recursiveMatcher.processRecurtion(textMatched,RecursiveMatcher.RegexIncludingClassStartAndMatchRestOfText,0);
-                        console.log(processedClass)
-
+                        const processedClass = (new RecursiveMatcher()).processRecurtion(textMatched,RecursiveMatcher.RegexIncludingClassStartAndMatchRestOfText,0);
                         yield `${processedClass.matchingtext}`;
-                        textMatched = processedClass.restOfTheText ;
+                        textMatched = processedClass.restOfTheText;
                     }
             } 
                 const generator = generatorMatchingClass(text)

@@ -1,6 +1,7 @@
 //generate with configImport.js
 const THREE = require('three')
 const OrbitControls = require('three/examples/jsm/controls/OrbitControls.js')
+
 const glb = {
 donus:'asset/glb/donus.glb',
 earth:'asset/glb/earth.glb',
@@ -27,6 +28,9 @@ singleStar:'asset/img/singleStar.png',
 
 }
 //----|RendererSetting.js|----
+
+
+
 const renderer = new THREE.WebGLRenderer({antialias:true})
 const scene = new THREE.Scene()
 renderer.shadowMap.enabled = true;
@@ -34,6 +38,8 @@ renderer.setSize(window.innerWidth,window.innerHeight);
 document.body.appendChild(renderer.domElement)
 //&end
 //----|cameraSetting.js|----
+
+
 const camera = new THREE.PerspectiveCamera(
     45,
     window.innerWidth/window.innerHeight,
@@ -48,8 +54,27 @@ orbit.update();
 //&end
 //----|loader.js|----
 const loader = new THREE.TextureLoader();
+const test = "test"
+
+class testor{
+    "test class100"
+    methodgay(){
+        console.log("you gay")
+    }
+}
+
+class testor3{
+    "test class233_11"
+    methodgay(){
+        console.log("you gay")
+    }
+}
+
+
 //&end
 //----|earthGroup.js|----
+
+
 const earthGroup = new THREE.Group();
 earthGroup.rotation.z = -23.4 * Math.PI / 180
 scene.add(earthGroup);
@@ -101,6 +126,8 @@ cloudMesh.scale.setScalar(1.01)
 earthGroup.add(cloudMesh);
 //&end
 //----|moon.js|----
+
+
 const moonRotation = new THREE.Object3D();
 scene.add(moonRotation);
 
@@ -118,10 +145,17 @@ const moonMesh = new THREE.Mesh(
 moonRotation.add(moonMesh);
 moonMesh.position.x = 8
 moonMesh.castShadow = true
-
+const b = 2
+const c = 2
 const booleana = 4
 //&end
+//----|test.js|----
+
+//&end
 //----|fresnel.js|----
+
+
+
 function getFresnelMat({rimHex = 0x0088ff,facingHax = 0x000000} = {})
 {
     const uniforms = {
@@ -172,12 +206,17 @@ blending: THREE.AdditiveBlending,
 });
 return fresnelMat;
 }
+
+
 const fresnel = getFresnelMat();
 const glowmesh = new THREE.Mesh(geo,fresnel);
 scene.add(glowmesh);
 glowmesh.scale.setScalar(1.02)
 //&end
 //----|getStarField.js|----
+
+
+
 function getStarfield({numStar = 500} = {})
 {    
     function randomSpherePoint() {
@@ -229,12 +268,21 @@ const star = getStarfield({numStar:2000});
 scene.add(star);
 //&end
 //----|sunlight.js|----
+
+
+class testor2{
+    "test class"
+    methodgay(){
+        console.log("you gay")
+    }
+}
 const sunLight = new THREE.DirectionalLight(0xFFFFFF)
 scene.add(sunLight);
 sunLight.position.set(10,0,0);
 sunLight.castShadow = true
 sunLight.shadow.mapSize.width = 1024;
 sunLight.shadow.mapSize.height = 1024;
+
 //&end
 //----|animate.js|----
 requestAnimationFrame(()=>{
@@ -247,11 +295,19 @@ requestAnimationFrame(()=>{
     renderer.render(scene,camera)
     this.file_animate()
 })
+
+
+
+
+
+
 //&end
 exports.THREE = THREE
 exports.OrbitControls = OrbitControls
 module.exports = {getFresnelMat}
 module.exports = {getStarfield}
+module.exports = {THREE}
+module.exports = {OrbitControls}
 module.exports = {glb}
 module.exports = {gltf}
 module.exports = {hdr}
@@ -261,6 +317,7 @@ module.exports = {scene}
 module.exports = {camera}
 module.exports = {orbit}
 module.exports = {loader}
+module.exports = {test}
 module.exports = {earthGroup}
 module.exports = {geo}
 module.exports = {earthMesh}
@@ -269,6 +326,8 @@ module.exports = {couldsMat}
 module.exports = {cloudMesh}
 module.exports = {moonRotation}
 module.exports = {moonMesh}
+module.exports = {b}
+module.exports = {c}
 module.exports = {booleana}
 module.exports = {fresnel}
 module.exports = {glowmesh}

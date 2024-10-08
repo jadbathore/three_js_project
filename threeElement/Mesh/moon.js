@@ -17,5 +17,6 @@ const moonMesh = new THREE.Mesh(
 moonRotation.add(moonMesh);
 moonMesh.position.x = 8
 moonMesh.castShadow = true
-
+const b = 2
+const c = 2
 const booleana = 4

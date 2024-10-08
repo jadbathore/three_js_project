@@ -17,12 +17,11 @@ export default class Utility {
     #complierFile = path.join(process.cwd(),'public','versionning','compling.js')
     #matchregexRaw = /(let)+[^{][A-z]*.*/g;
     #matchregexWord = /(?<=let.)[^{][A-z]*/g;
-    // #matchregexConstWord = /(?<=(\bconst\b((\s)+?)))(?!\[)(([A-z])|[A-z]\w+)*/g
+    #commentRemover = /((\/\/).+|(\/[*](.*\n)+[*]\/))/g
     #matchregexConstWord = /(?<=const.)[^{][A-z]*/g;
     #matchparamAndConstDelcaration = /((?<=(\bconst\b((\s)+?)))(?!\[)(([A-z])|[A-z]\w+)*|(?<=(\bthis[.]\b))((([A-z])|[A-z]\w+)*)(?=((\s?)+?)[=]))/g;
     #matchparamDeclaration = /(?<=(\bthis[.]\b))((([A-z])|[A-z]\w+)*)(?=((\s?)+?)[=])/g
-    #regexremove = /^((?!const.{(.*)}.[=].require)[\s\S])*$/gm;
-    #regexfound = /\b(const.{.*)/g;
+    #regexremove = /\b(const(\s?))(([\s]+)?)(\{(.*)\})([\s]+)[=]([\s]+)(require)\((.*)\)/g;
     #removeConstDeclaration = /\b(const.)\b/g;
     #regexgetConst = /(?<=const.)[^{[][A-z0-9]*/g; 
     #getfunctionName = /(?<=(\b(\t?)function\b((\s)+?)))(([A-z])|([A-z]\w+))(?=(((\s)?)+?)(\((\n*?)([^]*)(\n*?)\))((\n*)?)\{)/g
@@ -35,7 +34,7 @@ export default class Utility {
      */
     constructor(fileDirArray,mapAsset)
     {
-        this.fileDirArray = this.#mapContent(fileDirArray)
+        this.fileDirArray = this.mapContent(fileDirArray)
         this.mapAsset = mapAsset
     }
     /*
@@ -55,7 +54,7 @@ export default class Utility {
     * @param {array} array arrat of file  use privately to sort the array needed
     * @returns {array} array sorted well
     */
-    #mapContent(fileArray)
+    mapContent(fileArray)
     {
         const mapContent = new Map();
         let ii = 1;
@@ -131,6 +130,7 @@ export default class Utility {
      */
     checkdouble(array)
     {
+        // TODO à changer 
         const setformarray = new Set(array)
         if (array.length !== setformarray.size)
         {
@@ -190,9 +190,8 @@ export default class Utility {
      */
     getContentFile(fileArray,options=null)
     {
-        let compiledContent = '';
+        let compiledContent = `//generate with configImport.js\n${this.getImportCommunJsScript()}\n`;
         const getAsset = this.getAssetPathConst()
-        // for (let [oldStr, newStr] of Object.entries(replacements))
         for(let [key,values] of Object.entries(getAsset))
         {
             compiledContent+=`const ${key} = {\n`;
@@ -202,85 +201,72 @@ export default class Utility {
             }
             compiledContent+=`\n}\n`
         }
-        if(options == null)
-        {
-            let totalDeclaration = [];
-            for(let i = 0;i<fileArray.length;i++)
-            {
-                if(fileArray[i] !== undefined)
-                {
-                        const content = fs.readFileSync(fileArray[i],'utf-8')
-                        const allmatcheddecaration = this.getTotaldeclaration(content)
-                        // for(let i = 0;i<allmatcheddecaration.length;i++)
-                        for(const [key,value] of Object.entries(allmatcheddecaration))
-                        {
-                            if(value !== null)
-                                {
-                                    totalDeclaration = totalDeclaration.concat(value)
-                                } 
-                        }
-                        if(content !== null)
-                        {
-                            const double = this.checkdouble(totalDeclaration)
-                            
-                            if(double === false)
-                            {
-                                if(content.match(this.#regexfound) === null)
-                                    {
-                                        compiledContent += `//----|${path.basename(fileArray[i])}|----\n${content.trim()}\n//&end\n`
-                                    } else {
-                                        compiledContent += `//----|${path.basename(fileArray[i])}|----\n${content.match(this.#regexremove).join('').trim()}\n//&end\n`
-                                    }
-                            } else {
-                                if(content.match(this.#regexfound) === null)
-                                    {
-                                        compiledContent += `//----|${path.basename(fileArray[i])}|----\n${this.replaceContent(content,double,allmatcheddecaration[0]).trim()}\n//&end\n`
-                                    } else {
-                                        const text = content.match(this.#regexremove).join('').trim()
-                                        const transform = this.replaceContent(text,double,allmatcheddecaration[0])
-                                        double.forEach((e)=>{
-                                            totalDeclaration.splice(totalDeclaration.indexOf(e),10-9)
-                                        })
-                                        compiledContent += `//----|${path.basename(fileArray[i])}|----\n${transform}\n//&end\n`
-                                    } 
-                                    if(path.basename(fileArray[i]) == 'configImport.js')
-                                        {
-                                            compiledContent += '\nconst content = () => {\n'
-                                        } 
-                            }
-                        } else {
-                            compiledContent += `//----|${path.basename(fileArray[i])}|----\n//'fichier vide'\n//&end\n`
-                        }
-                }
-            }
-            return compiledContent;
-        } else if(options == 'normal'){
+        //--------------------- TODO à changer 
+        // if(options == null)
+        // {
+        //     let totalDeclaration = [];
+        //     for(let i = 0;i<fileArray.length;i++)
+        //     {
+        //         if(fileArray[i] !== undefined)
+        //         {
+        //                 const content = fs.readFileSync(fileArray[i],'utf-8')
+        //                 const allmatcheddecaration = this.getTotaldeclaration(content)
+        //                 for(const [key,value] of Object.entries(allmatcheddecaration))
+        //                 {
+        //                     if(value !== null)
+        //                         {
+        //                             totalDeclaration = totalDeclaration.concat(value)
+        //                         } 
+        //                 }
+        //                 if(content !== null)
+        //                 {
+        //                     const double = this.checkdouble(totalDeclaration)
+        //                     if(double === false)
+        //                     {
+        //                         if(content.match(this.#regexfound) === null)
+        //                             {
+        //                                 compiledContent += `//----|${path.basename(fileArray[i])}|----\n${content.trim()}\n//&end\n`
+        //                             } else {
+        //                                 compiledContent += `//----|${path.basename(fileArray[i])}|----\n${content.match(this.#regexremove).join('').trim()}\n//&end\n`
+        //                             }
+        //                     } else {
+        //                         if(content.match(this.#regexfound) === null)
+        //                             {
+        //                                 compiledContent += `//----|${path.basename(fileArray[i])}|----\n${this.replaceContent(content,double,allmatcheddecaration[0]).trim()}\n//&end\n`
+        //                             } else {
+        //                                 const text = content.match(this.#regexremove).join('').trim()
+        //                                 const transform = this.replaceContent(text,double,allmatcheddecaration[0])
+        //                                 double.forEach((e)=>{
+        //                                     totalDeclaration.splice(totalDeclaration.indexOf(e),10-9)
+        //                                 })
+        //                                 compiledContent += `//----|${path.basename(fileArray[i])}|----\n${transform}\n//&end\n`
+        //                             } 
+        //                             if(path.basename(fileArray[i]) == 'configImport.js')
+        //                                 {
+        //                                     compiledContent += '\nconst content = () => {\n'
+        //                                 } 
+        //                     }
+        //                 } else {
+        //                     compiledContent += `//----|${path.basename(fileArray[i])}|----\n//'fichier vide'\n//&end\n`
+        //                 }
+        //         }
+        //     }
+        //     return compiledContent;
+        // } else if(options == 'normal'){
             for(let i = 0;i< fileArray.length;i++)
                 {
                     if(fileArray[i] !== undefined)
                     {
-                        const content = fs.readFileSync(fileArray[i],'utf-8');
-                        if(content !== null)
-                        {
-                            if(content.match(this.#regexfound) === null)
-                            {
-                                compiledContent += `//----|${path.basename(fileArray[i])}|----\n${content.trim()}\n//&end\n`
-                            } else {
-                                compiledContent += `//----|${path.basename(fileArray[i])}|----\n${content.match(this.#regexremove).join('').trim()}\n//&end\n`
-                            }
-                        } else {
-                            compiledContent += `//----|${path.basename(fileArray[i])}|----\n//'fichier vide'\n//&end\n`
-                        }
-                        if(path.basename(fileArray[i]) == 'configImport.js')
-                            {
-                                compiledContent += '\nconst content = () => {\n'
-                            }
+                        let content = fs.readFileSync(fileArray[i],'utf-8');
+                        content = this.cleanerCommunJsDeclaration(content);
+                        compiledContent += `//----|${path.basename(fileArray[i])}|----\n${content}\n//&end\n`
                     }
                 }
-                return compiledContent;
-        }else {
-            throw new Error(`option ${options} non reconnu`)
-        }
+                compiledContent +=this.getExportScript(this.getAllExportName(compiledContent))
+                return compiledContent.trim();
+        // }else {
+        //     throw new Error(`option ${options} non reconnu`)
+        // }
     }
 
     /**
@@ -291,6 +277,7 @@ export default class Utility {
     async getComposerContent(fileArray){
 
         let compiledContent = fs.readFileSync(fileArray[0],'utf-8');
+        compiledContent += '//----|Class_Content|----\n//No Class\n//&end'
         compiledContent += '\nclass Content {\n';
         const getAsset = this.getAssetPathConst();
         //-----param_asset-----
@@ -312,17 +299,18 @@ export default class Utility {
         }
         compiledContent+='\n}\n';
         //-----methods-----
-        let totalconstant = []; 
+        let totalconstant = [];
+        let totalClass = ''; 
         for(let i = 1;i< fileArray.length;i++)
             {
-                //TODO:condition retiré les class de la class principale 
-                const contentRaw = fs.readFileSync(fileArray[i],'utf-8');
-                //TODO:****test_de_ResursiveMatcher.Allclass()****
-                // if(contentRaw.match(RecursiveMatcher.ClassStart) !== null){
-                //     console.log(RecursiveMatcher.getAllClass(contentRaw))
-                // }
-                let content = ''
+                const Raw = fs.readFileSync(fileArray[i],'utf-8');
+                const condition = (Raw.match(RecursiveMatcher.ClassStart) !== null)
+                const contentRaw = (condition)? await this.DeletorForClassPromise(Raw).then((dataObj)=>{
+                    totalClass += dataObj.value.join('\n');
+                    return dataObj.data
+                }):Raw;
                 const namefile = this.formatName(fileArray[i]);
+                let content = '';
                 if(fileArray[i] !== undefined)
                 {
                     content += `${namefile}(){\n`
@@ -334,29 +322,34 @@ export default class Utility {
                             totalconstant.push(element)
                         })
                     }
-                    const cleanContent = await this.ContentCleaner(contentRaw,totalconstant)
+                    const cleanContent = await this.ContentCleaner(contentRaw,totalconstant,Object.keys(getAsset))
                     content += `${cleanContent}\n//&end\n`; 
                 }
             content += '\n}\n'
             compiledContent += `\n${content}\n`;
             }  
-        if(compiledContent.match(this.#regexfound) !== null)
-        {
-            compiledContent = compiledContent.match(this.#regexremove).join('')
-        }
-            Object.keys(getAsset).forEach((e)=>{
-            const regex = new RegExp(`\\b(${e}[.])\\b`,'g')
-            if(compiledContent.match(regex) !== null)
-                {
-                    compiledContent = compiledContent.replace(regex,`Content.${e}.`)
-                }
-        })
+        compiledContent = this.cleanerCommunJsDeclaration(compiledContent)
         compiledContent += '\n}\n'
         compiledContent += `\nwindow.onload = () => {\n\tnew Content()\n}`;
+        const tregex = this.regexSectionMaker('Class_Content');
+        compiledContent = compiledContent.replace(tregex,totalClass)
         return compiledContent.trim();
     }
 
-    async ContentCleaner(contentRaw,totalconstant){
+    /**
+     * 
+     * @param {string} contentRaw raw content of the file 
+     * @param {*} totalconstant every constant in the file 
+     * @returns string clean content
+     */
+    async ContentCleaner(contentRaw,totalconstant,asset){
+        asset.forEach((e)=>{
+            const regex = new RegExp(`\\b(${e}[.])\\b`,'g')
+            if(contentRaw.match(regex) !== null)
+                {
+                    contentRaw = contentRaw.replace(regex,`Content.${e}.`)
+                }
+        })
         const condition = (contentRaw.match(this.#getfunctionName) !== null)
         let contentTransform = (condition)? this.replacorForFunctionPromise(contentRaw) : contentRaw;
         let cleanContent = '';
@@ -368,10 +361,7 @@ export default class Utility {
                         const regex = new RegExp(`\\b(${e})\\b`,'g') 
                         tempsContent = tempsContent.replace(regex,`this.${e}`)
                     });
-                    if(tempsContent.match(this.#removeConstDeclaration) !== null)
-                    {
-                        tempsContent = tempsContent.replace(this.#removeConstDeclaration,'')
-                    }
+                    tempsContent = this.cleanerConstDeclaration(tempsContent)
                     for(const [key,value] of Object.entries(dataObj.data))
                     {
                         const regex = new RegExp(`(?<=(\\bfunction\\b((\\s)+?))(\\b${key}\\b)(((\\s)?)+?)(\\((\\n*?)([^]*)(\\n*?)\\))((\\n*)?))\\{(#&@)\\}`,'g')
@@ -386,10 +376,7 @@ export default class Utility {
                 const regex = new RegExp(`\\b(${e})\\b`,'g') 
                 contentTransform = contentTransform.replace(regex,`this.${e}`)
                 })
-                if(contentTransform.match(this.#removeConstDeclaration) !== null)
-                {
-                    contentTransform = contentTransform.replace(this.#removeConstDeclaration,'')
-                }
+                contentTransform = this.cleanerConstDeclaration(contentTransform)
                 cleanContent = contentTransform;
                 }
         return cleanContent;
@@ -408,7 +395,63 @@ export default class Utility {
             throw new Error(`${pathfile} n'est pas un fichier`);
         }
     }
+    /**
+     * 
+     * @param {array} arrayClass 
+     * @yeild {string} generate iterable of modify class string
+     */
+    *classModifyGenerator(arrayClass)
+    {
+        for(let classe of arrayClass)
+        {
+            const getClassName = classe.match(RecursiveMatcher.ClassName)[0]
+            yield `//----|${getClassName}|----\n${classe}\n//&endClass\n`;
+        }
+    }
 
+    cleanerConstDeclaration(text){
+        if(text.match(this.#removeConstDeclaration) !== null)
+            {
+                text = text.replace(this.#removeConstDeclaration,'')
+            }
+        return text;
+    }
+
+    cleanerCommunJsDeclaration(text){
+        if(text.match(this.#regexremove) !== null)
+        {
+            text = text.replace(this.#regexremove,'')
+        }
+        return text;
+    }
+
+    /**
+     * @param {string} text the text in use to delete every class 
+     */
+    DeletorForClassPromise(text)
+    {
+        return new Promise((resolve,reject)=>{
+            const values = RecursiveMatcher.getAllClass(text)
+            const allClassName = text.match(RecursiveMatcher.ClassName)
+            let textWithoutClass = text;
+            const rawValueObj = {};
+            if(values == null){
+                reject(`there are no class to delete in this text (DeletorForClassPromise)`)
+            }
+            values.forEach((e,index)=>{
+                textWithoutClass = textWithoutClass.split(e).join('')
+                rawValueObj[allClassName[index]] = e;
+            })
+            const generateClassModif = this.classModifyGenerator(values)
+            resolve(
+                {
+                data:textWithoutClass,
+                value:[...generateClassModif],
+                rawValueObj:rawValueObj
+            }
+            );
+        })
+    }
     /**
      * @param {string} text the path file to transform 
      * @throws Error if is not a path file
@@ -457,13 +500,11 @@ export default class Utility {
         fs.promises.readFile(beginingFile,{encoding:'utf-8'}).then((buffer)=>{
             const textToreplace = buffer.toString()
             let replacingContent = fs.readFileSync(endFile,'utf-8');
-            if(replacingContent.match(this.#regexfound) !== null) {
-                replacingContent = replacingContent.match(this.#regexremove).join('')
-            }
+            replacingContent = this.cleanerCommunJsDeclaration(replacingContent);
             let totalDeclaration = [];
             const allmatcheddecaration = this.getTotaldeclaration(replacingContent);
-            const textRemplacement = `\n//----|${endBaseName}|----\n${replacingContent}\n//&end`
-            const totaltext = textToreplace.replace(tRegex,textRemplacement)
+            // const textRemplacement = `\n//----|${endBaseName}|----\n${replacingContent}\n//&end`
+            const totaltext = textToreplace.replace(tRegex,replacingContent)
             for(const [key,value] of Object.entries(allmatcheddecaration))
                 {
                     if(value !== null)
@@ -487,24 +528,37 @@ export default class Utility {
         const beginingBaseName = path.basename(beginingFile)
         const endBaseName = path.basename(endFile)
         fs.promises.readFile(beginingFile,{encoding:'utf-8'}).then(async (buffer)=>{
-            const tRegex = this.regexSectionMaker(endBaseName)
-            const textToreplace = buffer.toString()
+            const tRegex = this.regexSectionMaker(endBaseName);
+            let textToreplace = buffer.toString();
             const globalDelcaration = this.getTotaldeclaration(buffer.toString().replace(tRegex,'')).paramDeclaration;
-            let replacingContent = fs.readFileSync(endFile,'utf-8');
+            // let replacingContent = fs.readFileSync(endFile,'utf-8');
+            let raw = fs.readFileSync(endFile,'utf-8');
+            let totalClass;
+            const condition = (raw.match(RecursiveMatcher.ClassStart) !== null)
+            let replacingContent = (condition)? await this.DeletorForClassPromise(raw).then((dataObj)=>{
+                totalClass = dataObj.rawValueObj;
+                return dataObj.data
+            }):raw;
             //--------------endfile---------------------
-            if(replacingContent.match(this.#regexfound) !== null) {
-                replacingContent = replacingContent.match(this.#regexremove).join('')
-            }
+            replacingContent = this.cleanerCommunJsDeclaration(replacingContent);
             const inFileDecaration = this.getTotaldeclaration(replacingContent).constant;
             const totalDeclaration = globalDelcaration.concat(inFileDecaration)
-            replacingContent = await this.ContentCleaner(replacingContent,totalDeclaration);
+            const getAsset = this.getAssetPathConst()
+            replacingContent = await this.ContentCleaner(replacingContent,totalDeclaration,Object.keys(getAsset));
             //--------------beginingfile---------------------
-            const textRemplacement = `\n//----|${endBaseName}|----\n${replacingContent}\n//&end`
-            const totaltext = textToreplace.replace(tRegex,textRemplacement)
+            if(typeof totalClass != 'undefined')
+            {
+                for(const [key,value] of Object.entries(totalClass)){
+                    const regexsection = this.regexSectionMakerForClass(key)
+                    textToreplace = textToreplace.replace(regexsection,value)
+                }
+            }
+            const totaltext = textToreplace.replace(tRegex,replacingContent)
             console.log(chalk.green(`fichier ${beginingBaseName} mise à jour ${time}`))
             return fs.promises.writeFile(beginingFile,totaltext)
         })
     }
+
     /*
     français:
         permet de compléte le dossier public/versionning/compiling.js automatiquement 
@@ -529,9 +583,25 @@ export default class Utility {
      */
     regexSectionMaker(toSection)
     {
-        return new RegExp(`(?=[/][/]----[|](${toSection})).+?(?<=[/][/](&end))`, "s");
+        return new RegExp(`((?<=(\\/\\/----)[\\|](${toSection}).*\n))(.+?)(?=((\\/\\/&end)\\b))`, "s");
     }
-    
+    /**
+     * 
+     * @param {string} toSection 
+     * @return make a regex to Cut a section in some text 
+     * @example section must be like this :
+        ```
+        ...
+        //----|loader.js|----
+        const loader = new THREE.TextureLoader();//only this space will be capture
+        //&endClass
+        ...
+        ```
+     */
+    regexSectionMakerForClass(toSection)
+    {
+        return new RegExp(`((?<=(\\/\\/----)[\\|](${toSection}).*\n))(.+?)(?=((\\/\\/&endClass)\\b))`,"s")
+    }
     /**
      * @public allows to complete the public/versioning/compiling.js folder automatically
         it waits for the promise compilerContentPromise() to return what is needed according to the given situation (in a macOS enviroment the 'repolulate' 
@@ -590,10 +660,7 @@ export default class Utility {
                             throw new Error(`erreur truncate ${time} \n${err}`);
                         }}
                     );
-                    let content = `//generate with configImport.js\n${this.getImportCommunJsScript()}`
-                    content += data
-                    content += this.getExportScript(this.getAllExportName(data))
-                    fs.appendFile(linkFile,content,(err)=>{ 
+                    fs.appendFile(linkFile,data,(err)=>{ 
                         if(err){ 
                             throw new Error(`erreur compilation linkfile ${time} \n${err}`);
                         }
@@ -856,14 +923,16 @@ export default class Utility {
                 },3000)
                 if(typedata == 'linkfile')
                 {
-                    const content = this.getContentFile(array,'normal')
-                    const declaration = this.getAllExportName(content)
-                    if(this.checkdouble(declaration) == false)
-                    {
-                        resolve(content);
-                    } else {
-                        resolve(this.getContentFile(array))
-                    }
+                    // const content = this.getContentFile(array,'normal')
+                    // const declaration = this.getAllExportName(content)
+                    // if(this.checkdouble(declaration) == false)
+                    // {
+                    //     resolve(content);
+                    // } else {
+                    //     resolve(this.getContentFile(array))
+                    // }
+                    resolve(this.getContentFile(array))
+
                 } else if(typedata == 'composer'){
                     resolve(this.getComposerContent(array))
                 } else {

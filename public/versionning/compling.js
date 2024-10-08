@@ -2,7 +2,33 @@ import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 
 
+//----|Class_Content|----
+//----|testor|----
+class testor{
+    "test class100"
+    methodgay(){
+        console.log("you gay")
+    }
+}
+//&endClass
 
+//----|testor3|----
+class testor3{
+    "test class233_11"
+    methodgay(){
+        console.log("you gay")
+    }
+}
+//&endClass
+//----|testor2|----
+class testor2{
+    "test class"
+    methodgay(){
+        console.log("you gay")
+    }
+}
+//&endClass
+//&end
 class Content {
 static glb = {
 donus:'asset/glb/donus.glb',
@@ -36,6 +62,7 @@ document.addEventListener('load',this.file_cameraSetting())
 document.addEventListener('load',this.file_loader())
 document.addEventListener('load',this.file_earthGroup())
 document.addEventListener('load',this.file_moon())
+document.addEventListener('load',this.file_test())
 document.addEventListener('load',this.file_fresnel())
 document.addEventListener('load',this.file_getStarField())
 document.addEventListener('load',this.file_sunlight())
@@ -45,6 +72,8 @@ document.addEventListener('load',this.file_resizeSetting())
 
 file_RendererSetting(){
 //----|RendererSetting.js|----
+
+
 
 this.renderer = new THREE.WebGLRenderer({antialias:true})
 this.scene = new THREE.Scene()
@@ -58,6 +87,8 @@ document.body.appendChild(this.renderer.domElement)
 
 file_cameraSetting(){
 //----|cameraSetting.js|----
+
+
 this.camera = new THREE.PerspectiveCamera(
     45,
     window.innerWidth/window.innerHeight,
@@ -77,6 +108,12 @@ this.orbit.update();
 file_loader(){
 //----|loader.js|----
 this.loader = new THREE.TextureLoader();
+this.test = "this.test"
+
+
+
+
+
 
 //&end
 
@@ -85,6 +122,8 @@ this.loader = new THREE.TextureLoader();
 
 file_earthGroup(){
 //----|earthGroup.js|----
+
+
 this.earthGroup = new THREE.Group();
 this.earthGroup.rotation.z = -23.4 * Math.PI / 180
 this.scene.add(this.earthGroup);
@@ -141,6 +180,8 @@ this.earthGroup.add(this.cloudMesh);
 
 file_moon(){
 //----|moon.js|----
+
+
 this.moonRotation = new THREE.Object3D();
 this.scene.add(this.moonRotation);
 
@@ -158,8 +199,17 @@ this.moonMesh = new THREE.Mesh(
 this.moonRotation.add(this.moonMesh);
 this.moonMesh.position.x = 8
 this.moonMesh.castShadow = true
-
+this.b = 2
+this.c = 2
 this.booleana = 4
+//&end
+
+}
+
+
+file_test(){
+//----|test.js|----
+
 //&end
 
 }
@@ -167,6 +217,8 @@ this.booleana = 4
 
 file_fresnel(){
 //----|fresnel.js|----
+
+
 
 function getFresnelMat({rimHex = 0x0088ff,facingHax = 0x000000} = {})
 
@@ -220,6 +272,8 @@ blending: THREE.AdditiveBlending,
 return fresnelMat;
 }
 
+
+
 this.fresnel = getFresnelMat();
 this.glowmesh = new THREE.Mesh(this.geo,this.fresnel);
 this.scene.add(this.glowmesh);
@@ -231,6 +285,8 @@ this.glowmesh.scale.setScalar(1.02)
 
 file_getStarField(){
 //----|getStarField.js|----
+
+
 
 function getStarfield({numStar = 500} = {})
 
@@ -291,12 +347,15 @@ this.scene.add(this.star);
 file_sunlight(){
 //----|sunlight.js|----
 
+
+
 this.sunLight = new THREE.DirectionalLight(0xFFFFFF)
 this.scene.add(this.sunLight);
 this.sunLight.position.set(10,0,0);
 this.sunLight.castShadow = true
 this.sunLight.shadow.mapSize.width = 1024;
 this.sunLight.shadow.mapSize.height = 1024;
+
 //&end
 
 }
@@ -314,6 +373,8 @@ requestAnimationFrame(()=>{
     this.renderer.render(this.scene,this.camera)
     this.file_animate()
 })
+
+
 
 
 

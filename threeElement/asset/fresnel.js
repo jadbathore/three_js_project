@@ -51,6 +51,8 @@ blending: THREE.AdditiveBlending,
 });
 return fresnelMat;
 }
+
+
 const fresnel = getFresnelMat();
 const glowmesh = new THREE.Mesh(geo,fresnel);
 scene.add(glowmesh);

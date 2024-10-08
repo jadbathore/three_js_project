@@ -33749,6 +33749,8 @@ class OrbitControls extends EventDispatcher {
 
 }
 
+//&endClass
+//&end
 class Content {
 static glb = {
 donus:'asset/glb/donus.glb',
@@ -33782,6 +33784,7 @@ document.addEventListener('load',this.file_cameraSetting());
 document.addEventListener('load',this.file_loader());
 document.addEventListener('load',this.file_earthGroup());
 document.addEventListener('load',this.file_moon());
+document.addEventListener('load',this.file_test());
 document.addEventListener('load',this.file_fresnel());
 document.addEventListener('load',this.file_getStarField());
 document.addEventListener('load',this.file_sunlight());
@@ -33791,6 +33794,8 @@ document.addEventListener('load',this.file_resizeSetting());
 
 file_RendererSetting(){
 //----|RendererSetting.js|----
+
+
 
 this.renderer = new WebGLRenderer({antialias:true});
 this.scene = new Scene();
@@ -33804,6 +33809,8 @@ document.body.appendChild(this.renderer.domElement);
 
 file_cameraSetting(){
 //----|cameraSetting.js|----
+
+
 this.camera = new PerspectiveCamera(
     45,
     window.innerWidth/window.innerHeight,
@@ -33823,6 +33830,12 @@ this.orbit.update();
 file_loader(){
 //----|loader.js|----
 this.loader = new TextureLoader();
+this.test = "this.test";
+
+
+
+
+
 
 //&end
 
@@ -33831,6 +33844,8 @@ this.loader = new TextureLoader();
 
 file_earthGroup(){
 //----|earthGroup.js|----
+
+
 this.earthGroup = new Group();
 this.earthGroup.rotation.z = -23.4 * Math.PI / 180;
 this.scene.add(this.earthGroup);
@@ -33887,6 +33902,8 @@ this.earthGroup.add(this.cloudMesh);
 
 file_moon(){
 //----|moon.js|----
+
+
 this.moonRotation = new Object3D();
 this.scene.add(this.moonRotation);
 
@@ -33904,8 +33921,17 @@ this.moonMesh = new Mesh(
 this.moonRotation.add(this.moonMesh);
 this.moonMesh.position.x = 8;
 this.moonMesh.castShadow = true;
-
+this.b = 2;
+this.c = 2;
 this.booleana = 4;
+//&end
+
+}
+
+
+file_test(){
+//----|test.js|----
+
 //&end
 
 }
@@ -33913,6 +33939,8 @@ this.booleana = 4;
 
 file_fresnel(){
 //----|fresnel.js|----
+
+
 
 function getFresnelMat({rimHex = 0x0088ff,facingHax = 0x000000} = {})
 
@@ -33966,6 +33994,8 @@ blending: AdditiveBlending,
 return fresnelMat;
 }
 
+
+
 this.fresnel = getFresnelMat();
 this.glowmesh = new Mesh(this.geo,this.fresnel);
 this.scene.add(this.glowmesh);
@@ -33977,6 +34007,8 @@ this.glowmesh.scale.setScalar(1.02);
 
 file_getStarField(){
 //----|getStarField.js|----
+
+
 
 function getStarfield({numStar = 500} = {})
 
@@ -34035,12 +34067,15 @@ this.scene.add(this.star);
 file_sunlight(){
 //----|sunlight.js|----
 
+
+
 this.sunLight = new DirectionalLight(0xFFFFFF);
 this.scene.add(this.sunLight);
 this.sunLight.position.set(10,0,0);
 this.sunLight.castShadow = true;
 this.sunLight.shadow.mapSize.width = 1024;
 this.sunLight.shadow.mapSize.height = 1024;
+
 //&end
 
 }
@@ -34058,6 +34093,8 @@ requestAnimationFrame(()=>{
     this.renderer.render(this.scene,this.camera);
     this.file_animate();
 });
+
+
 
 
 
