@@ -58,15 +58,15 @@ const test = "test"
 
 class testor{
     "test class100"
-    methodgay(){
-        console.log("you gay")
+    method(){
+        console.log("test")
     }
 }
 
 class testor3{
     "test class233_11"
-    methodgay(){
-        console.log("you gay")
+    method(){
+        console.log("test")
     }
 }
 
@@ -272,8 +272,8 @@ scene.add(star);
 
 class testor2{
     "test class"
-    methodgay(){
-        console.log("you gay")
+    method(){
+        console.log("test")
     }
 }
 const sunLight = new THREE.DirectionalLight(0xFFFFFF)

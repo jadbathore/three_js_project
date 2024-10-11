@@ -5,10 +5,11 @@
 .AppleDouble
 .LSOverride
 /node_modules
-/public/node_modules
+
+# ignore ALL files in ANY directory named public/versonning 
+public/versonning 
 # Icon must end with two \r
 Icon
-
 
 # Thumbnails
 ._*

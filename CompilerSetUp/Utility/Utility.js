@@ -1,12 +1,7 @@
 import chalk from 'chalk';
 import path from 'path';
 import fs from 'fs'
-import mongoose from 'mongoose';
 import RecursiveMatcher from './RecursiveMatcher.js'
-
-
-
-
 
 /**
  * @class Utility is use to do Some Utility work to the compiler here are all the methode use in se compilation phase
@@ -15,15 +10,14 @@ import RecursiveMatcher from './RecursiveMatcher.js'
 export default class Utility {
     
     #complierFile = path.join(process.cwd(),'public','versionning','compling.js')
-    #matchregexRaw = /(let)+[^{][A-z]*.*/g;
-    #matchregexWord = /(?<=let.)[^{][A-z]*/g;
+    #matchregexVariableDeclaration = /(?<=let.)[^{][A-z]*/g;
     #commentRemover = /((\/\/).+|(\/[*](.*\n)+[*]\/))/g
-    #matchregexConstWord = /(?<=const.)[^{][A-z]*/g;
+    #digitMatcher = /(\d)+/g
+    #matchregexConstWord = /(?<=\b(const(\s)+?)\b)(([A-z]|[A-z]\w+)*)/g;
     #matchparamAndConstDelcaration = /((?<=(\bconst\b((\s)+?)))(?!\[)(([A-z])|[A-z]\w+)*|(?<=(\bthis[.]\b))((([A-z])|[A-z]\w+)*)(?=((\s?)+?)[=]))/g;
     #matchparamDeclaration = /(?<=(\bthis[.]\b))((([A-z])|[A-z]\w+)*)(?=((\s?)+?)[=])/g
     #regexremove = /\b(const(\s?))(([\s]+)?)(\{(.*)\})([\s]+)[=]([\s]+)(require)\((.*)\)/g;
     #removeConstDeclaration = /\b(const.)\b/g;
-    #regexgetConst = /(?<=const.)[^{[][A-z0-9]*/g; 
     #getfunctionName = /(?<=(\b(\t?)function\b((\s)+?)))(([A-z])|([A-z]\w+))(?=(((\s)?)+?)(\((\n*?)([^]*)(\n*?)\))((\n*)?)\{)/g
     #regexmatchRequire = /(const.{.*.}.[=].require)+.*/g;
     #regexDeclaration = /(?:(?=(?<=import.{.))[A-z,\s]*|(?!import.{.)((?<=import.*.as.)[A-z]*))/g;
@@ -96,27 +90,26 @@ export default class Utility {
      * @returns {string} string of the text remplaced content
      */
 
-    replaceContent(text,wordConst=null,VariableRaw=null)
+    replaceContent(text,arrayWord)
     {
-            const originalhash = new mongoose.Types.ObjectId().toString()
-            
-            if(wordConst != null)
+        for(const word of arrayWord)
+        {
+            const regex = new RegExp(`\\b(${word})\\b`,'g')
+            if(word.match(this.#digitMatcher))
             {
-                for(let i=0;i<wordConst.length;i++)
-                    {
-                        const regex = new RegExp(`${wordConst[i]}+(?![A-z0-9])`,'g')
-                        text = text.split(regex).join(`${wordConst[i]}_${originalhash}`);
-                    }
+                const wordDigits = word.match(this.#digitMatcher);
+                const lastDigit = wordDigits[wordDigits.length];
+                const nonlastDigitWord = word.split(lastDigit).join('');
+                text = text.replace(regex,`${nonlastDigitWord}${lastDigit+1}`);
+            } else {
+                text = text.replace(regex,word+"1");
             }
-            if(VariableRaw !== null)
-            {
-                for(let i=0;i<VariableRaw.length;i++)
-                    {
-                        text = text.split(VariableRaw[i]).join(VariableRaw[i].slice(4));
-                    }
-            }
+        }
             return text
     }
+
+
+    
     /*
     français:
         verifier si in y a un double dans un array puis si c'est le cas les retournes dans une autre array
@@ -130,25 +123,21 @@ export default class Utility {
      */
     checkdouble(array)
     {
-        // TODO à changer 
-        const setformarray = new Set(array)
-        if (array.length !== setformarray.size)
-        {
-            let testArray = []
-            let doubleWord = []
-            for(let i = 0;i<array.length;i++)
+        const uniqueArray = [...new Set(array)];
+        let i = 0;
+        const condition = (array.length != uniqueArray.length);
+        const double = (condition)?array.filter((e)=>{
+            if(e != uniqueArray[i])
             {
-                if(testArray.indexOf(array[i]) !== -1)
-                {
-                    doubleWord.push(array[i])
-                } else {
-                    testArray.push(array[i])
-                }
+                return e
+            } else {
+                i++;
             }
-            return doubleWord;
-        } else {
-            return false;
-        }
+        }):null;
+        return {
+            double:double,
+            uniqueArray:[...new Set(array)],
+        };
     }
 
     /**
@@ -157,15 +146,19 @@ export default class Utility {
      * @returns {Object} return a array object reusable like so (const a = thisgetTotaldecaration(text) ; console.log(a[0]))
      */
     getTotaldeclaration(text){
-        const allVariableRaw = text.match(this.#matchregexRaw);
-        const allVariableword = text.match(this.#matchregexWord);
+        const allclassAndFunctionContent = RecursiveMatcher.getallRecursiveContentClassAndFunction(text);
+        allclassAndFunctionContent?.forEach((e)=>{
+            text = text.replace(e,'')
+        });
+
+        // const allVariableRaw = text.match(this.#matchregexRaw);
+        const allVariable = text.match(this.#matchregexVariableDeclaration);
         const allVariablewordConst = text.match(this.#matchregexConstWord);
         const paramAndConstDelcaration = text.match(this.#matchparamAndConstDelcaration);
         const matchparamDeclaration = text.match(this.#matchparamDeclaration);
         
         return {
-            variableRaw:allVariableRaw,
-            variableDeclaration:allVariableword,
+            variableDeclaration:allVariable,
             constant:allVariablewordConst,
             paramAndConstDelcaration:paramAndConstDelcaration,
             paramDeclaration:matchparamDeclaration
@@ -188,7 +181,7 @@ export default class Utility {
      * @throws Error - if the param option is not found
      * @returns {string} compile file of all the array 
      */
-    getContentFile(fileArray,options=null)
+    getContentFile(fileArray)
     {
         let compiledContent = `//generate with configImport.js\n${this.getImportCommunJsScript()}\n`;
         const getAsset = this.getAssetPathConst()
@@ -275,7 +268,6 @@ export default class Utility {
      * @returns {string} compile file of all the array 
      */
     async getComposerContent(fileArray){
-
         let compiledContent = fs.readFileSync(fileArray[0],'utf-8');
         compiledContent += '//----|Class_Content|----\n//No Class\n//&end'
         compiledContent += '\nclass Content {\n';
@@ -531,7 +523,6 @@ export default class Utility {
             const tRegex = this.regexSectionMaker(endBaseName);
             let textToreplace = buffer.toString();
             const globalDelcaration = this.getTotaldeclaration(buffer.toString().replace(tRegex,'')).paramDeclaration;
-            // let replacingContent = fs.readFileSync(endFile,'utf-8');
             let raw = fs.readFileSync(endFile,'utf-8');
             let totalClass;
             const condition = (raw.match(RecursiveMatcher.ClassStart) !== null)
@@ -686,7 +677,6 @@ export default class Utility {
      */
     getAllExportName(content)
     {
-        const allConstinfile = content.match(this.#regexgetConst);
         const alltheFunction = RecursiveMatcher.getAllFunctionContent(content);
         if(alltheFunction !== null){
             alltheFunction.forEach((e)=>{

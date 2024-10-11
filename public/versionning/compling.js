@@ -6,8 +6,8 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 //----|testor|----
 class testor{
     "test class100"
-    methodgay(){
-        console.log("you gay")
+    method(){
+        console.log("test")
     }
 }
 //&endClass
@@ -15,16 +15,16 @@ class testor{
 //----|testor3|----
 class testor3{
     "test class233_11"
-    methodgay(){
-        console.log("you gay")
+    method(){
+        console.log("test")
     }
 }
 //&endClass
 //----|testor2|----
 class testor2{
     "test class"
-    methodgay(){
-        console.log("you gay")
+    method(){
+        console.log("test")
     }
 }
 //&endClass

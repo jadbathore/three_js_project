@@ -2,6 +2,13 @@
 
 export default class RecursiveMatcher{
 
+    static{
+        /**
+         * @property this.self invokation of itself for accessing public method in a static context
+         */
+        this.self = (new RecursiveMatcher)
+    }
+
     static StartBraket = /\{/g
     static EndBraket = /\}/g
     static RegexExcludingFunctionStartAndMatchRestOfText = /(?<=(\bfunction\b((\s)+?))(([A-z])|([A-z]\w+))(((\s)?)+?)(\((\n*?)([^]*)(\n*?)\))((\n*)?)\{)(.*)/gms
@@ -11,6 +18,14 @@ export default class RecursiveMatcher{
     static RegexExcludingClassStartAndMatchRestOfText = /(?<=((\bclass((\s)+?)\b))([A-z]|([A-z]\w+))((\s?)+?)\{)(.*)/gms
     static RegexIncludingClassStartAndMatchRestOfText = /((\bclass((\s)+?)\b))([A-z]|([A-z]\w+))((\s?)+?)\{(.*)/gms
 
+    /**
+     * 
+     * @param {string} textMatched the text where the recurtion might be 
+     * @param {RegExp} regexToTransform the regex matching the rest of the text 
+     * @param {number} StartNestedLevel nullish number you can forget to declare it's but the nestedlevel will be considered
+     * 1
+     * @returns Object 
+     */
     processRecurtion(textMatched,regexToTransform,StartNestedLevel){
             let nestedLevel = StartNestedLevel ?? 1;
             let transform = textMatched.match(regexToTransform)[0];
@@ -50,6 +65,43 @@ export default class RecursiveMatcher{
                 restOfTheText: restOfTheText,
             };
     }
+
+    /**
+     * 
+     * @param {string} textMatched the text where the recurtion might be 
+     * @param {RegExp} RegexMatchStart the regex which identifies the declaration of the recurtion 
+     * @example 
+     * ```
+            //matching (the declaration + argument + startbraket)
+            function getFresnelMat({rimHex = 0x0088ff,facingHax = 0x000000} = {}){
+        ```
+     * @param {RegExp} RegexRestOfText the regex matching the rest of the text including or excluding the **RegexMatchStart** param
+     * @param {number|null} StartNestedLevel nullish number you can forget to declare it's but the nestedlevel will be considered
+     * 1
+     * @yield matched Recurstion 
+     */
+    *generatorMatchingRecurtion(textMatched,RegexMatchStart,RegexRestOfText,StartNestedLevel) {
+        while(textMatched.match(RegexMatchStart)!== null)
+        {
+            const processedClass = this.processRecurtion(textMatched,RegexRestOfText,StartNestedLevel);
+            yield processedClass.matchingtext;
+            textMatched = processedClass.restOfTheText;
+        }
+    } 
+
+    /**
+     * 
+     * @param {Iterable} generator handling every type of Iterable to transform into a array and then if length = 0 (return null) else 
+     * return the arraygenerated 
+     * @returns 
+     */
+    generatorHandler(generator)
+    {
+        const arrayGenerated = [...generator]
+        const arrayOrNull =(arrayGenerated.length == 0)? null : arrayGenerated;
+        return arrayOrNull
+    }
+
     /**
      * @param {string} text 
      * @returns null|string return null if there are no function else string 
@@ -65,18 +117,12 @@ export default class RecursiveMatcher{
     static getAllFunctionContent(text)
     {
         try{
-            function* generatorMatchingFunction(textMatched) {
-                    while(textMatched.match(RecursiveMatcher.FunctionStart)!== null)
-                        {
-                            const processedFunction = (new RecursiveMatcher()).processRecurtion(textMatched,RecursiveMatcher.RegexExcludingFunctionStartAndMatchRestOfText);
-                            yield processedFunction.matchingtext;
-                            textMatched = processedFunction.restOfTheText ;
-                        }
-            } 
-                const generator = generatorMatchingFunction(text)
-                const arrayGenerated = [...generator]
-                const matchedFunction =(arrayGenerated.length == 0)? null :arrayGenerated;
-                return matchedFunction 
+            const generator = this.self.generatorMatchingRecurtion(
+                text,
+                RecursiveMatcher.FunctionStart,
+                RecursiveMatcher.RegexExcludingFunctionStartAndMatchRestOfText,
+            );
+            return this.self.generatorHandler(generator)
         } catch (err){
             throw err
         }
@@ -98,21 +144,33 @@ export default class RecursiveMatcher{
     static getAllClass(text)
     {
         try{
-            function* generatorMatchingClass(textMatched) {
-                while(textMatched.match(RecursiveMatcher.ClassStart)!== null)
-                    {
-                        const processedClass = (new RecursiveMatcher()).processRecurtion(textMatched,RecursiveMatcher.RegexIncludingClassStartAndMatchRestOfText,0);
-                        yield `${processedClass.matchingtext}`;
-                        textMatched = processedClass.restOfTheText;
-                    }
-            } 
-                const generator = generatorMatchingClass(text)
-                const arrayGenerated = [...generator]
-                const matchedFunction =(arrayGenerated.length == 0)? null : arrayGenerated;
-                return matchedFunction 
+            const generator = this.self.generatorMatchingRecurtion(
+                text,
+                RecursiveMatcher.ClassStart,
+                RecursiveMatcher.RegexIncludingClassStartAndMatchRestOfText,
+                0
+            );
+            return this.self.generatorHandler(generator);
         } catch (err){
             throw err
         }
     }
 
+
+    static getallRecursiveContentClassAndFunction(text)
+    {
+        try{
+            const generator = this.self.generatorMatchingRecurtion(
+                text,
+                RecursiveMatcher.ClassStart,
+                RecursiveMatcher.RegexExcludingClassStartAndMatchRestOfText,
+            );
+            const resultContentClass = this.self.generatorHandler(generator);
+            const allcontent = resultContentClass?.concat(RecursiveMatcher.getAllFunctionContent(text)) ??
+            RecursiveMatcher.getAllFunctionContent(text);
+            return allcontent;
+        } catch (err){
+            throw err
+        }
+    }
 }

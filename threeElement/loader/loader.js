@@ -3,15 +3,15 @@ const test = "test"
 
 class testor{
     "test class100"
-    methodgay(){
-        console.log("you gay")
+    method(){
+        console.log("test")
     }
 }
 
 class testor3{
     "test class233_11"
-    methodgay(){
-        console.log("you gay")
+    method(){
+        console.log("test")
     }
 }
 
