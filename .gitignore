@@ -6,8 +6,9 @@
 .LSOverride
 /node_modules
 
-# ignore ALL files in ANY directory named public/versonning 
-public/versonning 
+# ignore ALL files in ANY directory named public/versonning ""
+/public/versionning/*
+/public/dist/*
 # Icon must end with two \r
 Icon
 
