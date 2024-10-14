@@ -6,6 +6,9 @@ class testor2{
         console.log("test")
     }
 }
+
+const fresnel = ""
+const star = "a"
 const sunLight = new THREE.DirectionalLight(0xFFFFFF)
 scene.add(sunLight);
 sunLight.position.set(10,0,0);

@@ -10,10 +10,10 @@ import RecursiveMatcher from './RecursiveMatcher.js'
 export default class Utility {
     
     #complierFile = path.join(process.cwd(),'public','versionning','compling.js')
-    #matchregexVariableDeclaration = /(?<=let.)[^{][A-z]*/g;
+    #matchregexVariableDeclaration = /(?<=(\blet\b)(\s+))(([A-z]|[A-z]\w+)*)/g;
     #commentRemover = /((\/\/).+|(\/[*](.*\n)+[*]\/))/g
     #digitMatcher = /(\d)+/g
-    #matchregexConstWord = /(?<=\b(const(\s)+?)\b)(([A-z]|[A-z]\w+)*)/g;
+    #matchregexConstantDelcaration = /(?<=\b(const(\s)+?)\b)(([A-z]|[A-z]\w+)*)/g;
     #matchparamAndConstDelcaration = /((?<=(\bconst\b((\s)+?)))(?!\[)(([A-z])|[A-z]\w+)*|(?<=(\bthis[.]\b))((([A-z])|[A-z]\w+)*)(?=((\s?)+?)[=]))/g;
     #matchparamDeclaration = /(?<=(\bthis[.]\b))((([A-z])|[A-z]\w+)*)(?=((\s?)+?)[=])/g
     #regexremove = /\b(const(\s?))(([\s]+)?)(\{(.*)\})([\s]+)[=]([\s]+)(require)\((.*)\)/g;
@@ -77,11 +77,7 @@ export default class Utility {
         }
         return array;
     }   
-    /*
-    français:
-        remplacer par un hash distin tout nom donné pour évite des confits de nommage de constant ou de variable lors de la compilation
-    */
-    
+
     /**
      * @public replace any given name with a distinct hash to avoid constant or variable naming conflicts during compilation
      * @param {String} string -text : take a text to remplace 
@@ -90,26 +86,22 @@ export default class Utility {
      * @returns {string} string of the text remplaced content
      */
 
-    replaceContent(text,arrayWord)
+    replaceContent(text,arrayWord,objNameSpace)
     {
         for(const word of arrayWord)
         {
-            const regex = new RegExp(`\\b(${word})\\b`,'g')
-            if(word.match(this.#digitMatcher))
-            {
-                const wordDigits = word.match(this.#digitMatcher);
-                const lastDigit = wordDigits[wordDigits.length];
-                const nonlastDigitWord = word.split(lastDigit).join('');
-                text = text.replace(regex,`${nonlastDigitWord}${lastDigit+1}`);
-            } else {
-                text = text.replace(regex,word+"1");
-            }
+            const regex = new RegExp(`(((const)((\\s?)+))(\\b${word}\\b)|(\\b${word}\\b))`,'g');
+            text = text.replace(regex,`${objNameSpace}.${word}`);
         }
-            return text
+        return text
     }
 
+    nameSpaceMaker(file){
+        const formatName = this.formatName(file,'__','__');
+        let content = `const ${formatName} = {}\n`
+        return content
+    }
 
-    
     /*
     français:
         verifier si in y a un double dans un array puis si c'est le cas les retournes dans une autre array
@@ -119,7 +111,7 @@ export default class Utility {
     /**
      * @public check if there is a double in an array then if so return them in another array (if is in a iterable you might want to correct the array length latter )
      * @param {array} array array parameter to check if there a double in this array
-     * @returns {array|boolean} array|boolean array if there a double boolean false if not
+     * @returns {object} object of 2 array double the found double in array(null if not found), uniqueArray the clean array without double
      */
     checkdouble(array)
     {
@@ -136,7 +128,7 @@ export default class Utility {
         }):null;
         return {
             double:double,
-            uniqueArray:[...new Set(array)],
+            uniqueArray:uniqueArray
         };
     }
 
@@ -146,22 +138,21 @@ export default class Utility {
      * @returns {Object} return a array object reusable like so (const a = thisgetTotaldecaration(text) ; console.log(a[0]))
      */
     getTotaldeclaration(text){
-        const allclassAndFunctionContent = RecursiveMatcher.getallRecursiveContentClassAndFunction(text);
-        allclassAndFunctionContent?.forEach((e)=>{
-            text = text.replace(e,'')
-        });
-
         // const allVariableRaw = text.match(this.#matchregexRaw);
         const allVariable = text.match(this.#matchregexVariableDeclaration);
-        const allVariablewordConst = text.match(this.#matchregexConstWord);
-        const paramAndConstDelcaration = text.match(this.#matchparamAndConstDelcaration);
-        const matchparamDeclaration = text.match(this.#matchparamDeclaration);
+        const allVariablewordConst = text.match(this.#matchregexConstantDelcaration);
+        const allFunctionName = text.match(RecursiveMatcher.functionName);
+        const allClassName = text.match(RecursiveMatcher.ClassName);
+        // const paramAndConstDelcaration = text.match(this.#matchparamAndConstDelcaration);
+        // const matchparamDeclaration = text.match(this.#matchparamDeclaration);
         
         return {
             variableDeclaration:allVariable,
             constant:allVariablewordConst,
-            paramAndConstDelcaration:paramAndConstDelcaration,
-            paramDeclaration:matchparamDeclaration
+            functionName:allFunctionName,
+            allClassName:allClassName
+            // paramAndConstDelcaration:paramAndConstDelcaration,
+            // paramDeclaration:matchparamDeclaration
         };
     }
 
@@ -181,7 +172,7 @@ export default class Utility {
      * @throws Error - if the param option is not found
      * @returns {string} compile file of all the array 
      */
-    getContentFile(fileArray)
+    async getContentFile(fileArray)
     {
         let compiledContent = `//generate with configImport.js\n${this.getImportCommunJsScript()}\n`;
         const getAsset = this.getAssetPathConst()
@@ -194,74 +185,66 @@ export default class Utility {
             }
             compiledContent+=`\n}\n`
         }
-        //--------------------- TODO à changer 
-        // if(options == null)
-        // {
-        //     let totalDeclaration = [];
-        //     for(let i = 0;i<fileArray.length;i++)
-        //     {
-        //         if(fileArray[i] !== undefined)
-        //         {
-        //                 const content = fs.readFileSync(fileArray[i],'utf-8')
-        //                 const allmatcheddecaration = this.getTotaldeclaration(content)
-        //                 for(const [key,value] of Object.entries(allmatcheddecaration))
-        //                 {
-        //                     if(value !== null)
-        //                         {
-        //                             totalDeclaration = totalDeclaration.concat(value)
-        //                         } 
-        //                 }
-        //                 if(content !== null)
-        //                 {
-        //                     const double = this.checkdouble(totalDeclaration)
-        //                     if(double === false)
-        //                     {
-        //                         if(content.match(this.#regexfound) === null)
-        //                             {
-        //                                 compiledContent += `//----|${path.basename(fileArray[i])}|----\n${content.trim()}\n//&end\n`
-        //                             } else {
-        //                                 compiledContent += `//----|${path.basename(fileArray[i])}|----\n${content.match(this.#regexremove).join('').trim()}\n//&end\n`
-        //                             }
-        //                     } else {
-        //                         if(content.match(this.#regexfound) === null)
-        //                             {
-        //                                 compiledContent += `//----|${path.basename(fileArray[i])}|----\n${this.replaceContent(content,double,allmatcheddecaration[0]).trim()}\n//&end\n`
-        //                             } else {
-        //                                 const text = content.match(this.#regexremove).join('').trim()
-        //                                 const transform = this.replaceContent(text,double,allmatcheddecaration[0])
-        //                                 double.forEach((e)=>{
-        //                                     totalDeclaration.splice(totalDeclaration.indexOf(e),10-9)
-        //                                 })
-        //                                 compiledContent += `//----|${path.basename(fileArray[i])}|----\n${transform}\n//&end\n`
-        //                             } 
-        //                             if(path.basename(fileArray[i]) == 'configImport.js')
-        //                                 {
-        //                                     compiledContent += '\nconst content = () => {\n'
-        //                                 } 
-        //                     }
-        //                 } else {
-        //                     compiledContent += `//----|${path.basename(fileArray[i])}|----\n//'fichier vide'\n//&end\n`
-        //                 }
-        //         }
-        //     }
-        //     return compiledContent;
-        // } else if(options == 'normal'){
+        let totalDeclaration = []
             for(let i = 0;i< fileArray.length;i++)
+            {
+                if(fileArray[i] !== undefined)
                 {
-                    if(fileArray[i] !== undefined)
+                    let content = fs.readFileSync(fileArray[i],'utf-8');
+                    content = this.cleanerCommunJsDeclaration(content);
+                    const DeclarationObject = this.getTotaldeclaration(RecursiveMatcher.contentCleanerRecursion(content));
+                    const allMatchedDecaration = Object.values(DeclarationObject).flat().filter(e=>e!=null);
+                    totalDeclaration = totalDeclaration?.concat(allMatchedDecaration) ?? [];
+                    const optionalNamespace = await this.doubleDeclarationHandler(totalDeclaration,fileArray[i]);
+                    if(optionalNamespace != null)
                     {
-                        let content = fs.readFileSync(fileArray[i],'utf-8');
-                        content = this.cleanerCommunJsDeclaration(content);
-                        compiledContent += `//----|${path.basename(fileArray[i])}|----\n${content}\n//&end\n`
+                        let cleanContent = this.replaceContent(content,optionalNamespace.double,optionalNamespace.objNameSpace)
+                        content = optionalNamespace.data + cleanContent;
+                        totalDeclaration = optionalNamespace.clean;
+                        console.log(
+                            chalk.bgYellow(chalk.black(`A nameSpaceObject has been made in file:(${path.basename(fileArray[i])}) due to multiple same name constant declaration`),
+                            chalk.black(`\nyou must use ${optionalNamespace.objNameSpace}.(${optionalNamespace.double}) for reference in other file`)
+                        ));
                     }
+                    compiledContent += `//----|${path.basename(fileArray[i])}|----\n${content}\n//&end\n`
                 }
-                compiledContent +=this.getExportScript(this.getAllExportName(compiledContent))
-                return compiledContent.trim();
-        // }else {
-        //     throw new Error(`option ${options} non reconnu`)
-        // }
+            }
+            compiledContent +=this.getExportScript(this.getAllExportName(compiledContent))
+            return compiledContent.trim();
     }
 
+
+    ObjectNamespaceMakerPromise(array,file){
+    return new Promise((resolve,reject)=>{
+        if(array == null){
+            resolve(null)
+        }
+            reject(this.nameSpaceMaker(file));  
+    })
+    }
+
+    async doubleDeclarationHandler(array,file){
+        const doubleObject = this.checkdouble(array)
+        const foundDouble = doubleObject.double;
+        const ObjectMakerPromise = this.ObjectNamespaceMakerPromise(foundDouble,file);
+        let objectNamespaceContent;
+        await ObjectMakerPromise.then((data)=>{
+                objectNamespaceContent = data
+            })
+        .catch((dataErr)=>{
+            const namespaceKey = this.formatName(file,'__','__')
+            objectNamespaceContent = {
+                double:foundDouble,
+                data:dataErr,
+                clean:doubleObject.uniqueArray,
+                objNameSpace:namespaceKey,
+            }
+            
+        }).finally(()=>{
+            return objectNamespaceContent
+        })
+        return objectNamespaceContent;
+    }
     /**
      * @public important function to format the compiler contentin class format
      * @param {array} array fileArray use a array of file to compile all the ThreeElement dir   
@@ -286,13 +269,14 @@ export default class Utility {
         compiledContent+=`constructor(){\n`
         for(let i = 1;i< fileArray.length;i++)
         {
-            const namefile = this.formatName(fileArray[i]);
+            const namefile = this.formatName(fileArray[i],'_file');
             compiledContent += `\ndocument.addEventListener('load',this.${namefile}())`
         }
         compiledContent+='\n}\n';
         //-----methods-----
         let totalconstant = [];
         let totalClass = ''; 
+        let totalDeclaration = [];
         for(let i = 1;i< fileArray.length;i++)
             {
                 const Raw = fs.readFileSync(fileArray[i],'utf-8');
@@ -301,7 +285,7 @@ export default class Utility {
                     totalClass += dataObj.value.join('\n');
                     return dataObj.data
                 }):Raw;
-                const namefile = this.formatName(fileArray[i]);
+                const namefile = this.formatName(fileArray[i],'file_');
                 let content = '';
                 if(fileArray[i] !== undefined)
                 {
@@ -314,7 +298,21 @@ export default class Utility {
                             totalconstant.push(element)
                         })
                     }
-                    const cleanContent = await this.ContentCleaner(contentRaw,totalconstant,Object.keys(getAsset))
+                    // const cleanContent = await this.ContentCleaner(contentRaw,totalconstant,Object.keys(getAsset))
+                    // const DeclarationObject = this.getTotaldeclaration(RecursiveMatcher.contentCleanerRecursion(content));
+                    // const allMatchedDecaration = Object.values(DeclarationObject).flat().filter(e=>e!=null);
+                    // totalDeclaration = totalDeclaration?.concat(allMatchedDecaration) ?? [];
+                    // const optionalNamespace = await this.doubleDeclarationHandler(totalDeclaration,fileArray[i]);
+                    // if(optionalNamespace != null)
+                    // {
+                    //     let cleanContent = this.replaceContent(content,optionalNamespace.double,optionalNamespace.objNameSpace)
+                    //     content = optionalNamespace.data + cleanContent;
+                    //     totalDeclaration = optionalNamespace.clean;
+                    //     console.log(
+                    //         chalk.bgYellow(chalk.black(`A nameSpaceObject has been made in file:(${path.basename(fileArray[i])}) due to multiple same name constant declaration`),
+                    //         chalk.black(`\nyou must use ${optionalNamespace.objNameSpace}.(${optionalNamespace.double}) for reference in other file`)
+                    //     ));
+                    // }
                     content += `${cleanContent}\n//&end\n`; 
                 }
             content += '\n}\n'
@@ -376,13 +374,15 @@ export default class Utility {
 
     /**
      * @param {string} pathfile the path file to transform
+     * @param {null|string} prefix the path file to transform
      * @throws Error if is not a path file
      * @return string
      */
-    formatName(pathfile){
+    formatName(pathfile,prefix,suffix){
         if (fs.lstatSync(pathfile).isFile())
         {
-            return 'file_'+path.basename(pathfile).split('.js').join('');
+            
+            return (prefix??'') + path.basename(pathfile).split('.js').join('') + (suffix??'');
         } else {
             throw new Error(`${pathfile} n'est pas un fichier`);
         }
@@ -913,14 +913,6 @@ export default class Utility {
                 },3000)
                 if(typedata == 'linkfile')
                 {
-                    // const content = this.getContentFile(array,'normal')
-                    // const declaration = this.getAllExportName(content)
-                    // if(this.checkdouble(declaration) == false)
-                    // {
-                    //     resolve(content);
-                    // } else {
-                    //     resolve(this.getContentFile(array))
-                    // }
                     resolve(this.getContentFile(array))
 
                 } else if(typedata == 'composer'){

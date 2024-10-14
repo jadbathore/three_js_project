@@ -7,12 +7,11 @@ export default class RecursiveMatcher{
          * @property this.self invokation of itself for accessing public method in a static context
          */
         this.self = (new RecursiveMatcher)
-    }
-
+    };
     static StartBraket = /\{/g
     static EndBraket = /\}/g
     static RegexExcludingFunctionStartAndMatchRestOfText = /(?<=(\bfunction\b((\s)+?))(([A-z])|([A-z]\w+))(((\s)?)+?)(\((\n*?)([^]*)(\n*?)\))((\n*)?)\{)(.*)/gms
-    static FunctionStart = /(\b(\t?)function\b((\s)+?))(([A-z])|([A-z]\w+))(((\s)?)+?)(\((\n*?)([^]*)(\n*?)\))((\n*)?)\{/g
+    static functionName = /(?<=(\b(\t?)function\b((\s)+?)))(([A-z])|([A-z]\w+))(((\s)?)+?)(?=(\((\n*?)([^]*)(\n*?)\))((\s+)?)(\{))/g
     static ClassStart = /((\b(\t?)class((\s)+?)\b))([A-z]|([A-z]\w+))((\s?)+?)(?=\{)/g
     static ClassName = /(?<=(\b(\t?)class((\s)+?)\b))([A-z]|([A-z]\w+))(?=((\s?)+?)(?=\{))/g
     static RegexExcludingClassStartAndMatchRestOfText = /(?<=((\bclass((\s)+?)\b))([A-z]|([A-z]\w+))((\s?)+?)\{)(.*)/gms
@@ -119,7 +118,7 @@ export default class RecursiveMatcher{
         try{
             const generator = this.self.generatorMatchingRecurtion(
                 text,
-                RecursiveMatcher.FunctionStart,
+                RecursiveMatcher.functionName,
                 RecursiveMatcher.RegexExcludingFunctionStartAndMatchRestOfText,
             );
             return this.self.generatorHandler(generator)
@@ -172,5 +171,12 @@ export default class RecursiveMatcher{
         } catch (err){
             throw err
         }
+    }
+    static contentCleanerRecursion(text){
+        const allclassAndFunctionContent = RecursiveMatcher.getallRecursiveContentClassAndFunction(text);
+        allclassAndFunctionContent?.forEach((e)=>{
+            text = text.replace(e,'')
+        });
+        return text;
     }
 }
