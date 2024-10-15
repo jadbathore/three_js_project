@@ -17,7 +17,7 @@ export default class Utility {
     #matchparamAndConstDelcaration = /((?<=(\bconst\b((\s)+?)))(?!\[)(([A-z])|[A-z]\w+)*|(?<=(\bthis[.]\b))((([A-z])|[A-z]\w+)*)(?=((\s?)+?)[=]))/g;
     #matchparamDeclaration = /(?<=(\bthis[.]\b))((([A-z])|[A-z]\w+)*)(?=((\s?)+?)[=])/g
     #regexremove = /\b(const(\s?))(([\s]+)?)(\{(.*)\})([\s]+)[=]([\s]+)(require)\((.*)\)/g;
-    #removeConstDeclaration = /\b(const.)\b/g;
+    #namespaceObjectRegex = /(\bconst\b)(\s?)+(((\_\_)([A-z]|[A-z]\w+)(\_\_)))(\s?)+(\=)(\s?)+(\{(\s?)+\})/g
     #getfunctionName = /(?<=(\b(\t?)function\b((\s)+?)))(([A-z])|([A-z]\w+))(?=(((\s)?)+?)(\((\n*?)([^]*)(\n*?)\))((\n*)?)\{)/g
     #regexmatchRequire = /(const.{.*.}.[=].require)+.*/g;
     #regexDeclaration = /(?:(?=(?<=import.{.))[A-z,\s]*|(?!import.{.)((?<=import.*.as.)[A-z]*))/g;
@@ -90,7 +90,7 @@ export default class Utility {
     {
         for(const word of arrayWord)
         {
-            const regex = new RegExp(`(((const)((\\s?)+))(\\b${word}\\b)|(\\b${word}\\b))`,'g');
+            const regex = this.regexChangerConst(word);
             text = text.replace(regex,`${objNameSpace}.${word}`);
         }
         return text
@@ -138,21 +138,24 @@ export default class Utility {
      * @returns {Object} return a array object reusable like so (const a = thisgetTotaldecaration(text) ; console.log(a[0]))
      */
     getTotaldeclaration(text){
-        // const allVariableRaw = text.match(this.#matchregexRaw);
         const allVariable = text.match(this.#matchregexVariableDeclaration);
         const allVariablewordConst = text.match(this.#matchregexConstantDelcaration);
         const allFunctionName = text.match(RecursiveMatcher.functionName);
         const allClassName = text.match(RecursiveMatcher.ClassName);
-        // const paramAndConstDelcaration = text.match(this.#matchparamAndConstDelcaration);
-        // const matchparamDeclaration = text.match(this.#matchparamDeclaration);
-        
         return {
             variableDeclaration:allVariable,
             constant:allVariablewordConst,
             functionName:allFunctionName,
             allClassName:allClassName
-            // paramAndConstDelcaration:paramAndConstDelcaration,
-            // paramDeclaration:matchparamDeclaration
+        };
+    }
+
+    getClassDeclaration(text){
+        const allVariablewordConst = text.match(this.#matchregexConstantDelcaration);
+        const matchparamDeclaration = text.match(this.#matchparamDeclaration);
+        return {
+            paramClass:matchparamDeclaration,
+            constant:allVariablewordConst,
         };
     }
 
@@ -201,10 +204,6 @@ export default class Utility {
                         let cleanContent = this.replaceContent(content,optionalNamespace.double,optionalNamespace.objNameSpace)
                         content = optionalNamespace.data + cleanContent;
                         totalDeclaration = optionalNamespace.clean;
-                        console.log(
-                            chalk.bgYellow(chalk.black(`A nameSpaceObject has been made in file:(${path.basename(fileArray[i])}) due to multiple same name constant declaration`),
-                            chalk.black(`\nyou must use ${optionalNamespace.objNameSpace}.(${optionalNamespace.double}) for reference in other file`)
-                        ));
                     }
                     compiledContent += `//----|${path.basename(fileArray[i])}|----\n${content}\n//&end\n`
                 }
@@ -269,14 +268,13 @@ export default class Utility {
         compiledContent+=`constructor(){\n`
         for(let i = 1;i< fileArray.length;i++)
         {
-            const namefile = this.formatName(fileArray[i],'_file');
+            const namefile = this.formatName(fileArray[i],'file_');
             compiledContent += `\ndocument.addEventListener('load',this.${namefile}())`
         }
         compiledContent+='\n}\n';
         //-----methods-----
-        let totalconstant = [];
+        let totalConstant = [];
         let totalClass = ''; 
-        let totalDeclaration = [];
         for(let i = 1;i< fileArray.length;i++)
             {
                 const Raw = fs.readFileSync(fileArray[i],'utf-8');
@@ -286,37 +284,30 @@ export default class Utility {
                     return dataObj.data
                 }):Raw;
                 const namefile = this.formatName(fileArray[i],'file_');
-                let content = '';
+                let content = this.cleanerCommunJsDeclaration(contentRaw);
                 if(fileArray[i] !== undefined)
                 {
-                    content += `${namefile}(){\n`
-                    content += `//----|${path.basename(fileArray[i])}|----\n`;
-                    const constant = this.getTotaldeclaration(contentRaw);
-                    if(constant.constant !== null)
+                    // console.log(RecursiveMatcher.contentCleanerRecursion(content))
+                    const declarationObject = this.getTotaldeclaration(RecursiveMatcher.contentCleanerRecursion(content));
+                    const allMatchedDecaration = Object.values(declarationObject).flat().filter(e=>e!=null);
+                    totalConstant = totalConstant?.concat((declarationObject.constant ?? [])) ?? [];
+                    const optionalNamespace = await this.doubleDeclarationHandler(totalConstant,fileArray[i]);
+                    if(optionalNamespace != null)
                     {
-                        constant.constant.forEach((element)=>{
-                            totalconstant.push(element)
-                        })
+                        let contentNameSpaced = this.replaceContent(content,optionalNamespace.double,optionalNamespace.objNameSpace)
+                        content = optionalNamespace.data + contentNameSpaced;
+                        totalConstant = optionalNamespace.clean
+                        totalConstant.push(optionalNamespace.objNameSpace);
+                        console.log(
+                            chalk.bgYellow(chalk.black(`A nameSpaceObject has been made in file:(${path.basename(fileArray[i])}) due to multiple same name constant declaration`),
+                            chalk.black(`\nyou must use ${optionalNamespace.objNameSpace}.(${optionalNamespace.double}) for reference in other file`),
+                            '\n'
+                        ));
                     }
-                    // const cleanContent = await this.ContentCleaner(contentRaw,totalconstant,Object.keys(getAsset))
-                    // const DeclarationObject = this.getTotaldeclaration(RecursiveMatcher.contentCleanerRecursion(content));
-                    // const allMatchedDecaration = Object.values(DeclarationObject).flat().filter(e=>e!=null);
-                    // totalDeclaration = totalDeclaration?.concat(allMatchedDecaration) ?? [];
-                    // const optionalNamespace = await this.doubleDeclarationHandler(totalDeclaration,fileArray[i]);
-                    // if(optionalNamespace != null)
-                    // {
-                    //     let cleanContent = this.replaceContent(content,optionalNamespace.double,optionalNamespace.objNameSpace)
-                    //     content = optionalNamespace.data + cleanContent;
-                    //     totalDeclaration = optionalNamespace.clean;
-                    //     console.log(
-                    //         chalk.bgYellow(chalk.black(`A nameSpaceObject has been made in file:(${path.basename(fileArray[i])}) due to multiple same name constant declaration`),
-                    //         chalk.black(`\nyou must use ${optionalNamespace.objNameSpace}.(${optionalNamespace.double}) for reference in other file`)
-                    //     ));
-                    // }
-                    content += `${cleanContent}\n//&end\n`; 
+                    const cleanContent = await this.ContentCleaner(content,totalConstant,Object.keys(getAsset));
+                    content = `${cleanContent}\n//&end\n`; 
                 }
-            content += '\n}\n'
-            compiledContent += `\n${content}\n`;
+            compiledContent += `${namefile}(){\n//----|${path.basename(fileArray[i])}|----\n${content}\n}\n`;
             }  
         compiledContent = this.cleanerCommunJsDeclaration(compiledContent)
         compiledContent += '\n}\n'
@@ -329,10 +320,10 @@ export default class Utility {
     /**
      * 
      * @param {string} contentRaw raw content of the file 
-     * @param {*} totalconstant every constant in the file 
+     * @param {*} totalConstant every constant in the file 
      * @returns string clean content
      */
-    async ContentCleaner(contentRaw,totalconstant,asset){
+    async ContentCleaner(contentRaw,totalConstant,asset){
         asset.forEach((e)=>{
             const regex = new RegExp(`\\b(${e}[.])\\b`,'g')
             if(contentRaw.match(regex) !== null)
@@ -340,35 +331,34 @@ export default class Utility {
                     contentRaw = contentRaw.replace(regex,`Content.${e}.`)
                 }
         })
-        const condition = (contentRaw.match(this.#getfunctionName) !== null)
+        const condition = (contentRaw.match(RecursiveMatcher.functionName) !== null)
         let contentTransform = (condition)? this.replacorForFunctionPromise(contentRaw) : contentRaw;
-        let cleanContent = '';
+        let cleanContent;
         if(contentTransform instanceof Promise)
             {   
-                cleanContent = await contentTransform.then((dataObj)=>{
+                cleanContent = await contentTransform.then(async(dataObj)=>{
                     let tempsContent = dataObj.cleanText;
-                    totalconstant.forEach((e)=> {
-                        const regex = new RegExp(`\\b(${e})\\b`,'g') 
+                    totalConstant.forEach((e)=> {
+                        const regex = this.regexChangerConst(e)
                         tempsContent = tempsContent.replace(regex,`this.${e}`)
                     });
-                    tempsContent = this.cleanerConstDeclaration(tempsContent)
                     for(const [key,value] of Object.entries(dataObj.data))
                     {
                         const regex = new RegExp(`(?<=(\\bfunction\\b((\\s)+?))(\\b${key}\\b)(((\\s)?)+?)(\\((\\n*?)([^]*)(\\n*?)\\))((\\n*)?))\\{(#&@)\\}`,'g')
                         tempsContent = tempsContent.replace(regex,`\n{${value}}\n`)
                     }
-                        return tempsContent
+                    // console.log(tempsContent)s
+                    return tempsContent;
                     }).catch((err)=>{
                         throw err;
                     })
             } else {
-                totalconstant.forEach((e)=>{
-                const regex = new RegExp(`\\b(${e})\\b`,'g') 
+                totalConstant.forEach((e)=>{
+                const regex = this.regexChangerConst(e)
                 contentTransform = contentTransform.replace(regex,`this.${e}`)
                 })
-                contentTransform = this.cleanerConstDeclaration(contentTransform)
                 cleanContent = contentTransform;
-                }
+            }
         return cleanContent;
     }
 
@@ -381,7 +371,6 @@ export default class Utility {
     formatName(pathfile,prefix,suffix){
         if (fs.lstatSync(pathfile).isFile())
         {
-            
             return (prefix??'') + path.basename(pathfile).split('.js').join('') + (suffix??'');
         } else {
             throw new Error(`${pathfile} n'est pas un fichier`);
@@ -401,12 +390,9 @@ export default class Utility {
         }
     }
 
-    cleanerConstDeclaration(text){
-        if(text.match(this.#removeConstDeclaration) !== null)
-            {
-                text = text.replace(this.#removeConstDeclaration,'')
-            }
-        return text;
+    regexChangerConst(word)
+    {
+        return new RegExp(`(?<!((\\_\\_)[A-z]\\w+(\\_\\_\\.)))(((const)((\\s?)+))(\\b${word}\\b)|(\\b${word}\\b))`,'g');
     }
 
     cleanerCommunJsDeclaration(text){
@@ -489,21 +475,24 @@ export default class Utility {
         const beginingBaseName = path.basename(beginingFile)
         const endBaseName = path.basename(endFile)
         const tRegex = this.regexSectionMaker(endBaseName)
-        fs.promises.readFile(beginingFile,{encoding:'utf-8'}).then((buffer)=>{
+        fs.promises.readFile(beginingFile,{encoding:'utf-8'}).then(async(buffer)=>{
             const textToreplace = buffer.toString()
             let replacingContent = fs.readFileSync(endFile,'utf-8');
-            replacingContent = this.cleanerCommunJsDeclaration(replacingContent);
-            let totalDeclaration = [];
-            const allmatcheddecaration = this.getTotaldeclaration(replacingContent);
-            // const textRemplacement = `\n//----|${endBaseName}|----\n${replacingContent}\n//&end`
-            const totaltext = textToreplace.replace(tRegex,replacingContent)
-            for(const [key,value] of Object.entries(allmatcheddecaration))
+            replacingContent = this.cleanerCommunJsDeclaration(replacingContent);   
+            let totaltext = textToreplace.replace(tRegex,replacingContent)
+            const DeclarationObject = this.getTotaldeclaration(RecursiveMatcher.contentCleanerRecursion(totaltext));
+            const allMatchedDecaration = Object.values(DeclarationObject).flat().filter(e=>e!=null);
+            // totalDeclaration = totalDeclaration?.concat(allMatchedDecaration) ?? [];
+            const optionalNamespace = await this.doubleDeclarationHandler(allMatchedDecaration,endFile)
+            if(optionalNamespace !==null)
+            {
+                let tempsContent = this.replaceContent(replacingContent,optionalNamespace.double,optionalNamespace.objNameSpace)
+                if(replacingContent.match(this.#namespaceObjectRegex) == null)
                 {
-                    if(value !== null)
-                        {
-                            totalDeclaration = totalDeclaration.concat(value)
-                        } 
+                    tempsContent = optionalNamespace.data + tempsContent
                 }
+                totaltext = textToreplace.replace(tRegex,tempsContent)
+            }
             console.log(chalk.green(`fichier ${beginingBaseName} mise à jour ${time}`))
             return fs.promises.writeFile(beginingFile,totaltext)
         })
@@ -522,7 +511,6 @@ export default class Utility {
         fs.promises.readFile(beginingFile,{encoding:'utf-8'}).then(async (buffer)=>{
             const tRegex = this.regexSectionMaker(endBaseName);
             let textToreplace = buffer.toString();
-            const globalDelcaration = this.getTotaldeclaration(buffer.toString().replace(tRegex,'')).paramDeclaration;
             let raw = fs.readFileSync(endFile,'utf-8');
             let totalClass;
             const condition = (raw.match(RecursiveMatcher.ClassStart) !== null)
@@ -531,11 +519,24 @@ export default class Utility {
                 return dataObj.data
             }):raw;
             //--------------endfile---------------------
+            const allClassContent = RecursiveMatcher.getSpecificClassContent(textToreplace,'Content')[0]
             replacingContent = this.cleanerCommunJsDeclaration(replacingContent);
-            const inFileDecaration = this.getTotaldeclaration(replacingContent).constant;
-            const totalDeclaration = globalDelcaration.concat(inFileDecaration)
+            const totalClassContent = allClassContent.replace(tRegex,replacingContent);
+            const totalClassDeclaration = this.getClassDeclaration(RecursiveMatcher.contentCleanerRecursion(totalClassContent))
+            const inClassDeclaration = Object.values(totalClassDeclaration).flat().filter(e=>e!=null);
+            const optionalNamespace = await this.doubleDeclarationHandler(inClassDeclaration,endFile)
+            if(optionalNamespace !==null)
+            {
+                replacingContent = this.replaceContent(replacingContent,optionalNamespace.double,optionalNamespace.objNameSpace)
+                replacingContent = optionalNamespace.data + replacingContent
+                console.log(
+                    chalk.bgYellow(chalk.black(`A nameSpaceObject has been made in file:(${path.basename(endFile)}) due to multiple same name constant declaration`),
+                    chalk.black(`\nyou must use ${optionalNamespace.objNameSpace}.(${optionalNamespace.double}) for reference in other file`)
+                ));
+                inClassDeclaration.push(optionalNamespace.objNameSpace)
+            }
             const getAsset = this.getAssetPathConst()
-            replacingContent = await this.ContentCleaner(replacingContent,totalDeclaration,Object.keys(getAsset));
+            replacingContent = await this.ContentCleaner(replacingContent,inClassDeclaration,Object.keys(getAsset));
             //--------------beginingfile---------------------
             if(typeof totalClass != 'undefined')
             {
@@ -544,7 +545,7 @@ export default class Utility {
                     textToreplace = textToreplace.replace(regexsection,value)
                 }
             }
-            const totaltext = textToreplace.replace(tRegex,replacingContent)
+            let totaltext = textToreplace.replace(tRegex,replacingContent)
             console.log(chalk.green(`fichier ${beginingBaseName} mise à jour ${time}`))
             return fs.promises.writeFile(beginingFile,totaltext)
         })

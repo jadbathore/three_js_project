@@ -6,7 +6,7 @@ import figlet from "figlet";
 import mongoose from 'mongoose';
 import path from 'path';
 import fs, { appendFile, appendFileSync, existsSync, truncateSync } from 'fs';
-import { allExeceptSetting, allFile, basenameExecptSetting, basenameFile,importscript } from "../CompilerSetUp/pathUtility.js";
+import { allExeceptSetting, allFile, basenameExecptSetting, basenameFile,importscript } from "../CompilerSetUp/Utility/pathUtility.js";
 import commanderHelp from 'commander-help'
 import ora from 'ora'
 import BinUtility from "./BinUtility.js";

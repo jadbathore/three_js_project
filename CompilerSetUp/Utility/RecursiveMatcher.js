@@ -179,4 +179,18 @@ export default class RecursiveMatcher{
         });
         return text;
     }
+
+    static getSpecificClassContent(text,className)
+    {
+        try{
+            const generator = this.self.generatorMatchingRecurtion(
+                text,
+                new RegExp(`((\\bclass((\\s)+?)\\b))(${className})((\\s?)+?)(?=\\{)`,'g'),
+                new RegExp(`(?<=((\\bclass((\\s)+?)\\b))(${className})((\\s?)+?)\\{)(.*)`,'gms'),
+            );
+            return this.self.generatorHandler(generator);
+        } catch (err){
+            throw err
+        }
+    }
 }
