@@ -6,6 +6,7 @@ import fs from 'fs';
 
 
 
+
 export default class BinUtility {
 /*
 français : 
@@ -119,6 +120,14 @@ English:
         } else {
             console.log(chalk.red(`la ressource : '${ressource}' n'existe pas`));
         }
+    }
+
+    importscript()
+    {
+        for(let file of PathUtility.getarrayFile())
+        {
+            (new Utility(PathUtility.getarrayFile(),PathUtility.getMapAsset())).addimportScript(file)
+        } 
     }
 /*
 français :

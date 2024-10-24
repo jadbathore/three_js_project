@@ -32,6 +32,7 @@ dynamique par exemple.
 ```
   //document a.js
 
+
       const sphere = new THREE.Mesh(...)
       scene.add(sphere)
 

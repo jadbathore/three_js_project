@@ -6,7 +6,7 @@ import figlet from "figlet";
 import mongoose from 'mongoose';
 import path from 'path';
 import fs, { appendFile, appendFileSync, existsSync, truncateSync } from 'fs';
-import { allExeceptSetting, allFile, basenameExecptSetting, basenameFile,importscript } from "../CompilerSetUp/Utility/pathUtility.js";
+import PathUtility from "../app/CompilerSetUp/Utility/pathUtility.js";
 import commanderHelp from 'commander-help'
 import ora from 'ora'
 import BinUtility from "./BinUtility.js";
@@ -105,10 +105,10 @@ program
             {
                 const version = `UsableSave_${new mongoose.Types.ObjectId().toString()}`
                 const fileDictonary = {}
-                for(let i = 0;i < allFile.length;i++)
+                for(let file of PathUtility.getarrayFile())
                 {
-                    const content = fs.readFileSync(allFile[i],'utf-8')
-                    fileDictonary[allFile[i]] = content
+                    const content = fs.readFileSync(file,'utf-8')
+                    fileDictonary[file] = content
                 }
                 const add = new ReusableModel({
                     UsableName:version,
@@ -134,10 +134,10 @@ program
         } else {
             const hash = new mongoose.Types.ObjectId().toString()
             const versionName = `versions_${hash}`
-            const a = basenameFile.indexOf(option.single)
+            const a = PathUtility.getBasename().indexOf(option.single)
             if(a !== -1)
             {
-                const content = fs.readFileSync(allFile[a],'utf-8')
+                const content = fs.readFileSync(PathUtility.getarrayFile()[a],'utf-8')
                 const allConstArray = BinUtilityClass.getAllExportName(content)
                 let remplacement = {}
                 for(let i=0;i<allConstArray.length;i++)
@@ -156,13 +156,13 @@ program
                 //no option
             } else {
                 console.log(chalk.keyword('orange')('fichier non reconnu voici les fichiers acceptable.'))
-                BinUtilityClass.choiceCallback('fichier accetable',basenameExecptSetting,(result)=>{
+                BinUtilityClass.choiceCallback('fichier accetable',PathUtility.getBasenameExceptingSetting(),(result)=>{
                     setTimeout(async()=>
                     {
                         const spinner = ora(`Doing ${result.choice}...`).start();
                         spinner.succeed(chalk.green(`ok for ${result.choice}`))
-                        const choicesindex = basenameFile.indexOf(result.choice)
-                        const content = fs.readFileSync(allFile[choicesindex],'utf-8')
+                        const choicesindex = PathUtility.getBasename().indexOf(result.choice)
+                        const content = fs.readFileSync(PathUtility.getarrayFile()[choicesindex],'utf-8')
                         const allConstArray = BinUtilityClass.getAllExportName(content)
                         let remplacement = {}
                         for(let i=0;i<allConstArray.length;i++)
@@ -286,8 +286,8 @@ program.command('readFile').action(
             const spinner = ora(`Doing ${result.choice}...`).start();
             setTimeout(() => {
                 spinner.succeed(chalk.blue(`element : '${result.choice}' choisi`))
-                const choicesindex = basenameFile.indexOf(result.choice)
-                console.log(chalk.blue(fs.readFileSync(allFile[choicesindex],'utf-8'))) 
+                const choicesindex = PathUtility.getBasename().indexOf(result.choice)
+                console.log(chalk.blue(fs.readFileSync(PathUtility.getarrayFile()[choicesindex],'utf-8'))) 
             },100)
         })
     }
@@ -315,9 +315,9 @@ program.command('usable').action(
             setTimeout(async() => {
                 spinner.succeed(chalk.green(`element : '${result.choice}' choisi`))
                 const request = await ReusableModel.findOne({name:result.choice})
-                for(let i = 0;i<allFile.length;i++)
+                for(let i = 0;i<PathUtility.getarrayFile().length;i++)
                     {
-                        fs.rmSync(allFile[i],{recursive:true})
+                        fs.rmSync(PathUtility.getarrayFile()[i],{recursive:true})
                     }
                         
                 for (const key in request.content) {
@@ -350,20 +350,20 @@ English:
 program.command('clear').action(
     ()=>{
         // correspondant a uniquement loader et animate.js
-        if(allExeceptSetting.length !== 2)
+        if(PathUtility.getArrayFileExeceptSetting().length !== 2)
         {
-            for(let i = 0;i< allFile.length;i++)
+            for(let file of PathUtility.getarrayFile())
             {
-                fs.truncateSync(allFile[i])
-                const fileCoresponding = path.basename(allFile[i]).split('.js').join('.txt');
+                fs.truncateSync(file)
+                const fileCoresponding = path.basename(file).split('.js').join('.txt');
                 const filecorrespondingpath = path.join(process.cwd(),'makeFileRessource','clearDefault',fileCoresponding)
                 const exist = fs.existsSync(filecorrespondingpath);
                 if(exist)
                 {
                     const readable = fs.readFileSync(filecorrespondingpath);
-                    fs.appendFileSync(allFile[i],readable);
+                    fs.appendFileSync(file,readable);
                 } else {
-                    fs.rmSync(allFile[i],{recursive:true});
+                    fs.rmSync(file,{recursive:true});
                 }
             }
             console.log(chalk.keyword('yellow')('Dossier ThreeElement nettoyer et prés à l\'emploi 🧹'))
@@ -403,7 +403,8 @@ English:
 */
 program.command('importScripts').action(
     ()=>{
-        importscript()
+        BinUtility.importscript()
+        console.log(chalk.green('all the import statement have been place'))
         process.exit()
     }
 ).description('add import script to all ThreeElement file who\'s not already as some import script()this import script will not be read by the compiler')

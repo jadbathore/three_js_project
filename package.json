@@ -5,8 +5,8 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server/server.js"
+    "test": "node app/test/distFile/test.js",
+    "start": "node app/server/server.js"
   },
   "repository": {
     "type": "git",
@@ -14,7 +14,7 @@
   },
   "author": "jad bathore",
   "bin": {
-    "ThreeCli": "./bin/index.cjs"
+    "ThreeCli": "../bin/index.js"
   },
   "license": "ISC",
   "bugs": {
@@ -36,14 +36,18 @@
     "mongoose": "^8.5.0",
     "ora": "^8.0.1",
     "path": "^0.12.7",
+    "redis": "^4.7.0",
     "rollup-plugin-esbuild-minify": "^1.1.1",
     "rollup-plugin-watch": "^1.0.4",
+    "serve-index": "^1.9.1",
     "three": "^0.166.1"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^26.0.1",
     "@rollup/plugin-node-resolve": "^15.2.3",
+    "@types/node": "^22.7.6",
     "nodemon": "^3.1.4",
-    "rollup": "^4.19.1"
+    "rollup": "^4.19.1",
+    "typescript": "^5.6.3"
   }
 }
