@@ -5,7 +5,10 @@ dynamique par exemple.
 
 ### exemple :
 
-![Enregistrement de l’écran 2024-08-08 à 10 58 07](https://github.com/user-attachments/assets/ae2ed9c7-48ac-4dca-8ee6-7ac5abdf1fdb)
+![en utilisant le projet](https://github.com/user-attachments/assets/0ee77ce8-7565-401f-a247-b71919f994bf)
+
+
+
 
 > [!CAUTION]
 > Nécessité d'avoir une base de Donnée mongoDB  ou d'avoir le logiciel compase déjà installé pour utiliser le ThreeCli
