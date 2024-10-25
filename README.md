@@ -7,50 +7,74 @@ dynamique par exemple.
 
 ![en utilisant le projet](https://github.com/user-attachments/assets/0ee77ce8-7565-401f-a247-b71919f994bf)
 
-
-
-
+invité de commande
+---
 > [!CAUTION]
-> Nécessité d'avoir une base de Donnée mongoDB  ou d'avoir le logiciel compase déjà installé pour utiliser le ThreeCli
+> Une version dockerise est en cour pour l'ajout de base de données mongoDB sans avoir à installé mongoDB sur la machine cependant il est toujour nécessaire d'avoir mongo déja installé 
 <p>
   L'utilisation du Cli intégrés permet d'effectuer des actions rapide et d'optimiser l'utilisation de cette boilerplate plusieur action son
   possible comme démontré ci dessous.
 </p>
-<img width="1208" alt="Capture d’écran 2024-08-08 à 10 17 04" src="https://github.com/user-attachments/assets/53312eef-0df0-4120-ad9a-72941e77eb49">
+  
+<img width="1231" alt="Capture d’écran 2024-10-15 à 18 32 23" src="https://github.com/user-attachments/assets/885d6694-6663-45b8-a5ad-27ae21f21f2d">
 
-### arborescence du projet :
-
-<img width="1208" alt="Capture d’écran 2024-08-08 à 11 18 37" src="https://github.com/user-attachments/assets/00d691a9-6dfb-4743-b19f-63af467b811a">
-
-### Système de hachage
-<p>
-  Le projet possède un moyen de hachage dynamique pour chaque constant ce qui évite l'éventualité de double mention de constante.
-  Ce hashage s'effectue durant un "save"(action cli : ThreeCli save -s <file>) 
-</p>
-
-<img width="581" alt="Capture d’écran 2024-08-08 à 11 21 02" src="https://github.com/user-attachments/assets/5ca631ca-5f1b-4ad9-92be-5ef0b3453e8a">
-
-  ### exemple :
-  Le hash ce fait également automatiquement quand on fait l'erreur de déclaré 2 fois la même constante :
+ arborescence du projet :
+ ---
+ 
 ```
+├── threeElement
+│   ├── Animation
+│   │   └── animate.js(default)
+│   ├── Asset
+│   │   ├── (...)
+│   │   └── (...)
+│   ├── Loader
+│   │   ├── (...)
+│   │   └── (...)
+│   ├── Mesh
+│   │   ├── (...)
+│   │   └── (...)
+│   └── Setting
+│       ├── cameraSetting.js(default)
+│       ├── configImport.js(default)
+│       ├── RendererSetting.js(default)
+│       └── resizeSetting.js(default)
+└── Public
+    ├── versionning
+    │   ├── Compiling.js
+    │   └── linkfile.js
+    └── dist
+        └── Compiling.js(default)
+```
+
+1) Le Dossier ThreeElement va etre compiler en 1 class nommé Content dans le dossier Public/versionning/Compiling.js 
+2) Public/versionning/Compiling.js  va lui même etre compiler par rollup dans le dossier Public/dist/Compiling.js
+3) Public/dist/Compiling.js va être utilisé comme element script sur une page nommé index.ejs
+4) cette page et par la suite render grâce à un serveur Express (quelque élement static vont etre stocker dans un cache) 
+
+Systeme de ObjectNameSpace:
+---
+ Le systeme de Object nameSpace crée de manière automatique un nouvel object Javascript qui aura la fonction de "namespace" permettant de differencier 2 déclaration identiques
+#### Exemple:
+```javascript
   //document a.js
 
-
-      const sphere = new THREE.Mesh(...)
-      scene.add(sphere)
+  	const sphere = new THREE.Mesh(...)
+  	scene.add(sphere)
 
   //document b.js
 
-      const sphere = "b"
-      console.log(sphere)
+  	const sphere = "b"
+  	console.log(sphere)
 
-  //document compling.js (après compilation des deux documents)
+  //document fessant la compilation (après compilation des deux documents)
 
-      ---a.js---
-      const sphere = new THREE.Mesh(...)
-      ---b.js---
-      const sphere_66c3770bdbbd0e2d3bfd0137 = "b"
-      console.log(sphere_66c3770bdbbd0e2d3bfd0137)
-```
-  
+  	//---a.js---
+  	const sphere = new THREE.Mesh(...)
+  	//&end
+  	//---b.js---
+  	const _b_ = {}
+  	const _b_.sphere = "b"
+  	console.log(_b_.sphere)
+  	//&end
 
