@@ -1,4 +1,8 @@
-const {THREE,OrbitControls} = require('../../public/versionning/linkFile')
+const { THREE,
+	OrbitControls, glb, gltf,
+	hdr, img, renderer,
+	scene, camera, orbit,
+	loader, } = require('../../public/versionning/linkFile.js')
 
 const camera = new THREE.PerspectiveCamera(
     45,

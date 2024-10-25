@@ -9,16 +9,17 @@ export default class PathUtility {
         this.compilerFile = path.join(process.cwd(),'app','public','versionning','compling.js');
         this.linkFile = path.join(process.cwd(),'app','public','versionning','linkfile.js');
         this.rollupConfig = path.resolve(process.cwd(),'rollup.config.js');
-        this.rootDirProjectName = './app/threeElement/'
-        this.dirPathAssetName = './app/public/asset/'
+        this.rootDirProjectName = './app/threeElement/';
+        this.dirPathAssetName = './app/public/asset/';
+        this.dirPathPublic = './app/public/';
         this.viewerPathName = path.join(process.cwd(),'app','viewer');
     }
 
-    getPathSplit(path)
+    getPathSplit(pathFile)
     {
         const pathregex =/((\.)|(\/))/g
-        const replace = path.replace(pathregex,' ')
-        return replace?.split(' ')?.filter((e)=>e!='') ?? path;
+        const replace = pathFile.replace(pathregex,' ')
+        return replace?.split(' ')?.filter((e)=>e!='') ?? pathFile;
     }
 
     static getcompilerFile()
@@ -105,6 +106,12 @@ export default class PathUtility {
     {
         return path.join(process.cwd(),...this.self.getPathSplit(this.rootDirProjectName),...pathfile)
     }
+
+    static getPathFromPublic(...pathfile)
+    {
+        return path.join(process.cwd(),...this.self.getPathSplit(this.dirPathPublic),...pathfile)
+    }
+    
     static getMapAsset()
     {
         const mapAsset = new Map();

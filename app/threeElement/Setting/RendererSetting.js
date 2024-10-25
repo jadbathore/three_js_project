@@ -1,4 +1,8 @@
-const {THREE} = require('../../app/public/versionning/linkFile')
+const { THREE,
+	OrbitControls, glb, gltf,
+	hdr, img, renderer,
+	scene, camera, orbit,
+	loader, } = require('../../public/versionning/linkFile.js')
 
 
 const renderer = new THREE.WebGLRenderer({antialias:true})

@@ -1,7 +1,6 @@
 const { THREE,scene,camera,renderer } = require('../../public/versionning/linkFile')
 
-function animate(){
+requestAnimationFrame(()=>{
     renderer.render(scene,camera)
-}
-
-renderer.setAnimationLoop(animate);
+    this.file_animate()
+})

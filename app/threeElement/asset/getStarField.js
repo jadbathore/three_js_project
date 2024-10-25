@@ -1,4 +1,8 @@
-const {THREE, scene,img} = require('../../public/versionning/linkFile.js')
+const { THREE,
+	OrbitControls, glb, gltf,
+	hdr, img, renderer,
+	scene, camera, orbit,
+	loader, } = require('../../public/versionning/linkFile.js')
 
 
 function getStarfield({numStar = 500} = {})

@@ -1,9 +1,10 @@
 import inquirer from "inquirer"; 
 import boxen from 'boxen';
 import chalk from "chalk";
-import path from 'path';
+import path, { resolve } from 'path';
 import fs from 'fs';
-
+import PathUtility from "../app/CompilerSetUp/Utility/pathUtility.js";
+import Utility from "../app/CompilerSetUp/Utility/Utility.js";
 
 
 
@@ -102,15 +103,14 @@ English:
         }
     }
     makeAfile(ressource,filetoappend,dir = 'Mesh'){
-        const meshpath = path.join(process.cwd(),'makeFileRessource',dir,ressource)
+        const meshpath = PathUtility.getPathFromPublic('makeFileRessource',dir,ressource)
         if(fs.existsSync(meshpath))
         {
             let data = fs.readFileSync(meshpath,'utf-8');
             const regex = new RegExp('#name#','g')
             data = data.split(regex).join(filetoappend);
             const file = filetoappend + '.js'
-
-            const pathfile = path.join(process.cwd(),'threeElement',dir,file)
+            const pathfile = PathUtility.getPathFromElement(dir,file)
             if(fs.existsSync(pathfile))
             {
                 console.log(chalk.red(`le fichier ${file} existe déja`));
@@ -122,13 +122,46 @@ English:
         }
     }
 
-    importscript()
-    {
-        for(let file of PathUtility.getarrayFile())
+    repopulateUtility(){
+        const resourceFilePath = PathUtility.getPathFromPublic('makeFileRessource','clearDefault')
+        for(let file of fs.readdirSync(resourceFilePath))
         {
-            (new Utility(PathUtility.getarrayFile(),PathUtility.getMapAsset())).addimportScript(file)
+            const pathFileRead = PathUtility.getPathFromPublic('makeFileRessource','clearDefault',file)
+            const fileUtilityWrite = file.split('.txt').join('.js').split('_')
+            const pathFileWrite = PathUtility.getPathFromElement(...fileUtilityWrite)
+            const pathFileReadcontent = fs.readFileSync(pathFileRead,{encoding:'utf-8'})
+            fs.appendFileSync(pathFileWrite,pathFileReadcontent)
+        }
+    }
+
+    async *ReaderFilePromiseGenerator()
+    {
+        const CompilerUtility = new Utility(PathUtility.getarrayFile(),PathUtility.getMapAsset());
+        const content = fs.readFileSync(PathUtility.getlinkFile(),{encoding:'utf-8'});
+        CompilerUtility.setAllConstant(content);
+
+        for (let file of PathUtility.getarrayFile())
+        {
+            const repopulatePromise = await fs.promises.readFile(file,{encoding:"utf-8"}).then((buffer)=>{
+                let readPromiseContentString = buffer.toString()
+                readPromiseContentString = CompilerUtility.cleanerCommunJsDeclaration(readPromiseContentString)
+                readPromiseContentString = CompilerUtility.getImportStript()+ readPromiseContentString
+                return readPromiseContentString
+            })
+            yield [file,repopulatePromise]
         } 
     }
+
+    async WriterFilePromiseHandler()
+    {
+        for await (const [file,readPromise] of this.ReaderFilePromiseGenerator())
+        {
+            fs.promises.writeFile(file,readPromise)
+        } 
+
+        console.log(chalk.green(boxen('all the import statement have been place',{margin: 1,padding:1, borderStyle: 'double'})))  
+    }
+
 /*
 français :
     permet le remplacement des donné (utlisé pour le hashage des constantes)
@@ -142,6 +175,3 @@ English:
         return str;
     }
 }
-
-
-

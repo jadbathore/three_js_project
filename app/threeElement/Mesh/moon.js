@@ -2,12 +2,7 @@ const { THREE,
 	OrbitControls, glb, gltf,
 	hdr, img, renderer,
 	scene, camera, orbit,
-	loader, earthGroup, geo,
-	earthMesh, lightMesh, couldsMat,
-	cloudMesh, earthGroup, moonRotation,
-	moonMesh, fresnel, glowmesh,
-	star, sunLight, getFresnelMat,
-	getStarfield, } = require('../../public/versionning/linkFile.js')
+	loader, } = require('../../public/versionning/linkFile.js')
 
 
 const earthGroup = "d"

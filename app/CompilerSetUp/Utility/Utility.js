@@ -372,7 +372,7 @@ export default class Utility {
             }  
         compiledContent = this.cleanerCommunJsDeclaration(compiledContent)
         compiledContent += '\n}\n'
-        compiledContent += `\nwindow.onload = () => {\n\tnew Content()\n\tImagesCacheHandler.saveNameToLocalStorage()}\n `;
+        compiledContent += `\nwindow.onload = () => {\n\tnew Content()\n\t//ImagesCacheHandler.saveNameToLocalStorage()\n}\n `;
         const tregex = this.regexSectionMaker('Class_Content');
         compiledContent = compiledContent.replace(tregex,totalClass)
         return compiledContent.trim();
@@ -812,14 +812,15 @@ export default class Utility {
      * @public format a useful import script allowing the use of constants previously found by the getAllExportName() method
      * @returns {void} void
      */
-    getImportStript(){
+    getImportStript(jumpLine=true){
         let importScript = 'const { '
         for(let index in this.allConstant)
         {
             importScript += `${this.allConstant[index]},`
             importScript += (index%3 == 0)? '\n\t' :' ' ;
         } 
-        importScript+= `} = require('../../public/versionning/linkFile.js')\n`
+        importScript+= `} = require('../../public/versionning/linkFile.js')`
+        importScript+=(!jumpLine)?'\n':'';
         return importScript
     }
 

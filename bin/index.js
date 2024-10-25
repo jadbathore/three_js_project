@@ -282,12 +282,13 @@ English:
 */
 program.command('readFile').action(
     ()=>{
-        BinUtilityClass.choiceCallback('fichier à lire',basenameFile,(result)=>{
+        BinUtilityClass.choiceCallback('fichier à lire',PathUtility.getBasename(),(result)=>{
             const spinner = ora(`Doing ${result.choice}...`).start();
             setTimeout(() => {
                 spinner.succeed(chalk.blue(`element : '${result.choice}' choisi`))
                 const choicesindex = PathUtility.getBasename().indexOf(result.choice)
                 console.log(chalk.blue(fs.readFileSync(PathUtility.getarrayFile()[choicesindex],'utf-8'))) 
+                process.exit()
             },100)
         })
     }
@@ -329,9 +330,9 @@ program.command('usable').action(
                     }
                 }
                 const loader = path.join(process.cwd(),'threeElement','loader','loader.js')
-                if(!existsSync(loader))
+                if(!fs.existsSync(loader))
                 {
-                    appendFileSync(loader,'const loader = new THREE.TextureLoader();')
+                    fs.appendFileSync(loader,'const loader = new THREE.TextureLoader();')
                 }
                 console.log(chalk.green('tous les fichiers utilisable on été rechargé avec succée ✨'));
                 process.exit()
@@ -347,29 +348,22 @@ français:
 English:
     removes elements from threeElements
 */
-program.command('clear').action(
-    ()=>{
-        // correspondant a uniquement loader et animate.js
-        if(PathUtility.getArrayFileExeceptSetting().length !== 2)
+program
+.command('clear')
+.option('-f,--force','force cleaning')
+.action(
+    (option)=>{
+        if(PathUtility.getArrayFileExeceptSetting().length !== 2 || (option?.force))
         {
             for(let file of PathUtility.getarrayFile())
             {
-                fs.truncateSync(file)
-                const fileCoresponding = path.basename(file).split('.js').join('.txt');
-                const filecorrespondingpath = path.join(process.cwd(),'makeFileRessource','clearDefault',fileCoresponding)
-                const exist = fs.existsSync(filecorrespondingpath);
-                if(exist)
-                {
-                    const readable = fs.readFileSync(filecorrespondingpath);
-                    fs.appendFileSync(file,readable);
-                } else {
-                    fs.rmSync(file,{recursive:true});
-                }
+                fs.rmSync(file);
             }
-            console.log(chalk.keyword('yellow')('Dossier ThreeElement nettoyer et prés à l\'emploi 🧹'))
+            BinUtilityClass.repopulateUtility()
+            console.log(chalk.keyword('yellow')('ThreeElement dir clean and ready to roll 🧹'))
             process.exit()
         } else {
-            console.log(chalk.green('Dossier ThreeElement déja nettoyer'))
+            console.log(chalk.green('ThreeElement already clean ✨'))
             process.exit()
         }
     }
@@ -402,16 +396,10 @@ English:
     also to use the imports made in the threeElement/Setting/configImport file
 */
 program.command('importScripts').action(
-    ()=>{
-        BinUtility.importscript()
-        console.log(chalk.green('all the import statement have been place'))
-        process.exit()
+    async()=>{
+        await BinUtilityClass.WriterFilePromiseHandler()
     }
 ).description('add import script to all ThreeElement file who\'s not already as some import script()this import script will not be read by the compiler')
-
-program.helpInformation = ()=> {
-    return '';
-};
 //------------------------------------setting------------------------------------------------
 /*
 français:
@@ -419,6 +407,10 @@ français:
 English:
     display of commands usable through import command
 */
+program.helpInformation = ()=> {
+    return '';
+};
+
 program.on('--help', () => {
     console.log('\n',chalk.green(figlet.textSync('ThreeCli', { horizontalLayout: 'full',font:'Colossal'})))
     commanderHelp(program)

@@ -1,4 +1,8 @@
-const {THREE, scene} = require('../../public/versionning/linkFile.js')
+const { THREE,
+	OrbitControls, glb, gltf,
+	hdr, img, renderer,
+	scene, camera, orbit,
+	loader, } = require('../../public/versionning/linkFile.js')
 
 
 const sunLight = new THREE.DirectionalLight(0xFFFFFF)
