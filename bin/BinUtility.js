@@ -1,14 +1,16 @@
 import inquirer from "inquirer"; 
 import boxen from 'boxen';
 import chalk from "chalk";
-import path, { resolve } from 'path';
+import path, { basename, resolve } from 'path';
 import fs from 'fs';
 import PathUtility from "../app/CompilerSetUp/Utility/pathUtility.js";
 import Utility from "../app/CompilerSetUp/Utility/Utility.js";
+import { error } from "console";
 
 
 
 export default class BinUtility {
+
 /*
 français : 
     formate un message selon plusieur  option :
@@ -138,28 +140,45 @@ English:
     {
         const CompilerUtility = new Utility(PathUtility.getarrayFile(),PathUtility.getMapAsset());
         const content = fs.readFileSync(PathUtility.getlinkFile(),{encoding:'utf-8'});
-        CompilerUtility.setAllConstant(content);
-
-        for (let file of PathUtility.getarrayFile())
+        CompilerUtility.repopulatelinkFile(PathUtility.getlinkFile(),false)
+        this.CompilerUtilityArray = CompilerUtility.getfileDirarraySlice(1,-1);
+        for (let file of  this.CompilerUtilityArray)
         {
-            const repopulatePromise = await fs.promises.readFile(file,{encoding:"utf-8"}).then((buffer)=>{
+            const readPromise = await fs.promises.readFile(file,{encoding:"utf-8"}).then((buffer)=>{
                 let readPromiseContentString = buffer.toString()
                 readPromiseContentString = CompilerUtility.cleanerCommunJsDeclaration(readPromiseContentString)
-                readPromiseContentString = CompilerUtility.getImportStript()+ readPromiseContentString
+                const firstline = readPromiseContentString.split('\n')[0]
+                const linejumpCondition = (firstline.match(/[^\n]+/g) != null)
+                readPromiseContentString = CompilerUtility.getImportStript(linejumpCondition) + readPromiseContentString
                 return readPromiseContentString
+
             })
-            yield [file,repopulatePromise]
+            yield [file,readPromise]
         } 
     }
 
-    async WriterFilePromiseHandler()
+    async WriterFilePromiseHandler(spinner)
     {
+        const promiseBasket = []
         for await (const [file,readPromise] of this.ReaderFilePromiseGenerator())
         {
-            fs.promises.writeFile(file,readPromise)
+            const writepromise = fs.promises.writeFile(file,readPromise).then(()=>{
+                spinner.text = `${path.basename(file)} script is writed`
+            })
+            .catch((err)=>{
+                spinner.failed(err)
+            })
+            promiseBasket.push(writepromise)
         } 
 
-        console.log(chalk.green(boxen('all the import statement have been place',{margin: 1,padding:1, borderStyle: 'double'})))  
+        Promise.allSettled(promiseBasket).then((results) =>
+        {
+            if(results.length === this.CompilerUtilityArray.length)
+            {
+                spinner.succeed('all script are append to the file')
+                process.exit()
+            }
+        });
     }
 
 /*

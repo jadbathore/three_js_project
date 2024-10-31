@@ -1,20 +1,22 @@
 {
-  "compilerOptions": {
-      "module": "ES2015",
-      "target": "ES2015",
-      "moduleResolution": "node",
-      "noImplicitAny": true,
-      "removeComments": true,
-      "preserveConstEnums": true,
-      "outDir": "./app/cache",
-      // "outFile": "../../built/local/tsc.js",
-      "sourceMap": true,
-      "allowSyntheticDefaultImports":true
+  "compilerOptions": 
+  {
+    "module": "ES2015",
+    "target": "ES2015",
+    "moduleResolution": "node",
+    "noImplicitAny": true,
+    "removeComments": true,
+    "preserveConstEnums": true,
+    "rootDir": "app",
+    "sourceMap": true,
+    "isolatedModules":false,
+    "moduleDetection": "force",
+    "allowSyntheticDefaultImports":true
   },
   "include": [
-  "app/cache/**/*.ts"
+    "app/**/*.ts"
   ],
   "exclude": [
-  "app/cache/**/*.js"
+    "app/**/*.js"
   ]
 }

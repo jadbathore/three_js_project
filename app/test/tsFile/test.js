@@ -10,37 +10,52 @@ var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (
     return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
 };
 var _a, _ImagesCacheHandler_imagesList, _ImagesCacheHandler_instance;
-class ImagesCacheHandler {
-    constructor() { }
+import chalk from "chalk";
+export class ImagesCacheHandler {
     static get instance() {
         if (!__classPrivateFieldGet(_a, _a, "f", _ImagesCacheHandler_instance)) {
             __classPrivateFieldSet(_a, _a, new _a(), "f", _ImagesCacheHandler_instance);
         }
         return __classPrivateFieldGet(_a, _a, "f", _ImagesCacheHandler_instance);
     }
-    static saveNameToLocalStorage() {
-        for (const image of __classPrivateFieldGet(_a, _a, "f", _ImagesCacheHandler_imagesList)) {
-            console.log(image.url);
-        }
-    }
     addTolist(imageInterface) {
         if (!__classPrivateFieldGet(_a, _a, "f", _ImagesCacheHandler_imagesList).includes(imageInterface)) {
             __classPrivateFieldGet(_a, _a, "f", _ImagesCacheHandler_imagesList).push(imageInterface);
+        }
+    }
+    static saveNameToLocalStorage() {
+        for (const image of __classPrivateFieldGet(_a, _a, "f", _ImagesCacheHandler_imagesList)) {
+            console.log(chalk.green(image.url));
         }
     }
 }
 _a = ImagesCacheHandler;
 _ImagesCacheHandler_imagesList = { value: [] };
 _ImagesCacheHandler_instance = { value: void 0 };
-class ImageCache {
+export class ImageCache {
     constructor(url) {
-        this._instanceList = ImagesCacheHandler.instance;
+        this.instanceList = ImagesCacheHandler.instance;
         this._url = url;
     }
     get url() {
-        this._instanceList.addTolist(this);
+        this.instanceList.addTolist(this);
         return this._url;
     }
 }
-export { ImageCache, ImagesCacheHandler };
-//# sourceMappingURL=cacheImageUtility.js.map
+function randomfunction(a) {
+    console.log('test' + a);
+}
+const a = {
+    a: new ImageCache('test/a'),
+    b: new ImageCache('test/b'),
+    c: new ImageCache('test/c'),
+    d: new ImageCache('test/d'),
+};
+a.a.url;
+a.b.url;
+randomfunction(a.c.url);
+const name = {
+    map: a.d.url
+};
+ImagesCacheHandler.saveNameToLocalStorage();
+//# sourceMappingURL=test.js.map

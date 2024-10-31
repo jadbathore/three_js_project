@@ -1,6 +1,8 @@
 class ImagesCacheHandler{
     static #imagesList:imageInterface[] = []
     static #instance: ImagesCacheHandler;
+
+    private constructor(){}
     
     public static get instance(): ImagesCacheHandler {
         if (!ImagesCacheHandler.#instance) {

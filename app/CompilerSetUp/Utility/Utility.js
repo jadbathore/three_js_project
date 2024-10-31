@@ -56,13 +56,13 @@ export default class Utility {
     /(?:(?=(?<=import.{.))[A-z,\s]*|(?!import.{.)((?<=import.*.as.)[A-z]*))/g;
     *```
     */
-    #regexDeclaration = /(?:(?=(?<=import.{.))[A-z,\s]*|(?!import.{.)((?<=import.*.as.)[A-z]*))/g;
+    #regexDeclaration = /(?:(?=(?<=import.{.))[A-z,]*|(?!import.{.)((?<=import.*.as.)[A-z]\w+))/g;
     /**
     *```
     /(?<=from.')[A-z/.-]* /g;
     *```
     */
-    #regexpathimport = /(?<=from.')[A-z/.-]*/g;
+    #regexpathimport = /(?<=from.(\'|\"))[A-z/.-]*/g;
     /**
     *```
     /(\n\s|\n)* /g;
@@ -73,7 +73,7 @@ export default class Utility {
     /**
      * @property {array} allConstant all constant in file (default = [])
      */
-    allConstant = []
+    #allConstant = []
 
     /**
      * @param {array} array - fileDirArray is a array of unsorted file
@@ -88,11 +88,16 @@ export default class Utility {
 
     setAllConstant(text){
         const objectmatchDelcaration = this.getTotaldeclaration(RecursiveMatcher.contentCleanerRecursion(text))
-        this.allConstant = Object.values(objectmatchDelcaration).flat().filter(e=>e!=null) ?? [];
+        this.#allConstant = Object.values(objectmatchDelcaration).flat().filter(e=>e!=null) ?? [];
     }
 
     addToAllConstant(...array){
-        this.allConstant = this.allConstant?.concat(array) ?? array
+        this.#allConstant = this.#allConstant?.concat(array) ?? array
+    }
+
+    getfileDirarraySlice(start,end)
+    {
+        return this.fileDirArray.slice(start,end)
     }
 
     /*
@@ -114,7 +119,6 @@ export default class Utility {
     */
     setMapFile(fileArray)
     {
-        const mapContent = new Map();
         let ii = 1;
         const organisedArray = [];
         const iterator = fileArray[Symbol.iterator]();
@@ -541,7 +545,7 @@ export default class Utility {
             replacingContent = this.cleanerCommunJsDeclaration(replacingContent);   
             let totaltext = textToreplace.replace(tRegex,replacingContent)
             this.setAllConstant(totaltext)
-            const optionalNamespace = await this.doubleDeclarationHandler(this.allConstant,endFile)
+            const optionalNamespace = await this.doubleDeclarationHandler(this.#allConstant,endFile)
             if(optionalNamespace !==null)
             {
                 let tempsContent = this.replaceContent(replacingContent,optionalNamespace.double,optionalNamespace.objNameSpace)
@@ -658,7 +662,7 @@ export default class Utility {
      * fonction might trigget 2 time when it's watched because of the pre-programming enviroment work that way)  
      * @returns {void} void
      */
-    async repopulateComposer(file)
+    async repopulateComposer(file,composerContext=true)
     {
         await this.compilerContentPromise(this.fileDirArray,'composer')
         .then((data)=>{
@@ -674,7 +678,7 @@ export default class Utility {
             } else {
                 fs.appendFileSync(file,this.removeAllBlank(data))
             }
-        console.log(chalk.green(`fichier compiler mise à jour ${new Date(Date.now()).toString()}`))
+        (composerContext)?console.log(chalk.green(`fichier compiler mise à jour ${new Date(Date.now()).toString()}`)):'';
         })
         .catch((err)=>{
             console.log(`${err}\n${new Date(Date.now()).toString()}`)
@@ -692,7 +696,7 @@ export default class Utility {
         time when it's watched because of the pre-programming enviroment work that way)
      * @returns {void} void
      */
-    async repopulatelinkFile(file)
+    async repopulatelinkFile(file,composerContext=true)
     {
             await this.compilerContentPromise(this.fileDirArray.slice(1,this.fileDirArray.length-1),'linkfile')
             .then((data)=>{
@@ -709,7 +713,7 @@ export default class Utility {
                     } else {
                         fs.appendFileSync(file,data)
                     }
-                    console.log(chalk.green(`fichier link mise à jour ${new Date(Date.now()).toString()}`))
+                    (composerContext)?console.log(chalk.green(`fichier linkfile mise à jour ${new Date(Date.now()).toString()}`)):'';
             }).catch((err)=>{
                 console.log(chalk.red(`${err} \n${new Date(Date.now()).toString()}`))
             })
@@ -814,13 +818,13 @@ export default class Utility {
      */
     getImportStript(jumpLine=true){
         let importScript = 'const { '
-        for(let index in this.allConstant)
+        for(let index in this.#allConstant)
         {
-            importScript += `${this.allConstant[index]},`
+            importScript += `${this.#allConstant[index]},`
             importScript += (index%3 == 0)? '\n\t' :' ' ;
         } 
         importScript+= `} = require('../../public/versionning/linkFile.js')`
-        importScript+=(!jumpLine)?'\n':'';
+        importScript+=(jumpLine)?'\n':'';
         return importScript
     }
 
@@ -894,7 +898,7 @@ export default class Utility {
         const importpath = contentConfig.match(this.#regexpathimport)
         for(let i = 0;i<declaration.length;i++)
         {
-            elementDict[declaration[i].trim()] = importpath[i]
+            elementDict[declaration[i].split(',')] = importpath[i]
         }
         return elementDict;
     }

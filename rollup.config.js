@@ -12,6 +12,6 @@ export default {
     plugins:[
         resolve(),
         commonjs(),
-        // minify()
+        minify()
     ]
 }

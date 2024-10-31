@@ -1,7 +1,9 @@
 version: '4.2'
-services: 
-  web:
+services:     
+  bin:
+    container_name: bin_ThreeCli
+    env_file: .env
     build: .
-    command: npm run start
-    ports:
-      - "3000:3000"
+    command: bin/index.js
+    # image: three_js_project-bin
+  

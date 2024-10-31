@@ -5,12 +5,13 @@ import chalk from "chalk";
 import figlet from "figlet";
 import mongoose from 'mongoose';
 import path from 'path';
-import fs, { appendFile, appendFileSync, existsSync, truncateSync } from 'fs';
+import fs from 'fs';
 import PathUtility from "../app/CompilerSetUp/Utility/pathUtility.js";
 import commanderHelp from 'commander-help'
 import ora from 'ora'
-import BinUtility from "./BinUtility.js";
-
+import BinUtility from "./BinUtility.js"
+import gradient from 'gradient-string';
+import { ConnectionUtilityMongoDB,UsableTest } from "../app/databaseConnection/dbConnection.js";
 /*
 francais :
     code du cli 
@@ -25,38 +26,42 @@ francais :
 english:
     development of tables to be used during the different actions
 */
+
 const BinUtilityClass = new BinUtility()
-mongoose.connect('mongodb://127.0.0.1:27017/versionningThreeJs')
+const Connection = new ConnectionUtilityMongoDB("mongodb://127.0.0.1:27017/versionningThreeJs")
 
-const mongooseSchema = mongoose.Schema(
-    {
-        versionName:String,
-        date:{type:Date,default:Date.now},
-        content:String
-    }
-)
+// mongoose.connect('mongodb://127.0.0.1:27017/versionningThreeJs')
 
-const VersionningModel = new mongoose.model('versions',mongooseSchema);
 
-const mongooseSchema2 = mongoose.Schema(
-    {
-        versionName:String,
-        fileName:String,
-        date:{type:Date,default:Date.now},
-        content:String
-    }
-)
-const VersionningModel2 = new mongoose.model('single',mongooseSchema2);
+// const mongooseSchema = mongoose.Schema(
+//     {
+//         versionName:String,
+//         date:{type:Date,default:Date.now},
+//         content:String
+//     }
+// )
 
-const mongooseSchema3 = mongoose.Schema(
-    {
-        UsableName:String,
-        name:String,
-        date:{type:Date,default:Date.now},
-        content: {}
-    }
-)
-const ReusableModel = new mongoose.model('usable',mongooseSchema3);
+// const VersionningModel = new mongoose.model('versions',mongooseSchema);
+
+// const mongooseSchema2 = mongoose.Schema(
+//     {
+//         versionName:String,
+//         fileName:String,
+//         date:{type:Date,default:Date.now},
+//         content:String
+//     }
+// )
+// const VersionningModel2 = new mongoose.model('single',mongooseSchema2);
+
+// const mongooseSchema3 = mongoose.Schema(
+//     {
+//         UsableName:String,
+//         name:String,
+//         date:{type:Date,default:Date.now},
+//         content: {}
+//     }
+// )
+// const ReusableModel = new mongoose.model('usable',mongooseSchema3);
 //---------------------------------ThreeCli----------------------------------------------
 /*
 français : 
@@ -68,11 +73,19 @@ program
 .name('ThreeCli')
 .description('Cli three js to render different build')
 .option("-h, -help", "list helper").action(()=>{
-    console.log('\n',chalk.green(figlet.textSync('ThreeCLI', { horizontalLayout: 'full',font:'Colossal'})))
+    console.log('\n',gradient(['green','blue', 'red']).multiline(figlet.textSync('ThreeCli', { horizontalLayout: 'full',font:'Colossal'})))
     commanderHelp(program)
     process.exit();
 })
 .version('1.0.0')
+//---------------------------------TestConnection---------------------------------------
+program
+.command('testConnection') 
+.action(async()=>{
+
+    UsableTest(Connection)
+})
+.description('test the connection of the database and return the status')
 //---------------------------------save-------------------------------------------------
 /*
 français : 
@@ -305,7 +318,8 @@ English:
 */
 program.command('usable').action(
     async()=>{
-        const request = await ReusableModel.find({})
+        const UsableModel = await Connection.CreateModel().usable
+        const request = await UsableModel.find({})
         const nameArray = []
         for(let i = 0; i < request.length; i++)
         {
@@ -315,14 +329,14 @@ program.command('usable').action(
             const spinner = ora(`Doing ${result.choice}...`).start();
             setTimeout(async() => {
                 spinner.succeed(chalk.green(`element : '${result.choice}' choisi`))
-                const request = await ReusableModel.findOne({name:result.choice})
+                const request = await UsableModel.findOne({name:result.choice})
                 for(let i = 0;i<PathUtility.getarrayFile().length;i++)
                     {
                         fs.rmSync(PathUtility.getarrayFile()[i],{recursive:true})
                     }
                         
                 for (const key in request.content) {
-                    if(existsSync(key)){
+                    if(fs.existsSync(key)){
                         fs.truncateSync(key)
                         fs.appendFileSync(key,request.content[key])
                     } else {
@@ -397,9 +411,13 @@ English:
 */
 program.command('importScripts').action(
     async()=>{
-        await BinUtilityClass.WriterFilePromiseHandler()
-    }
-).description('add import script to all ThreeElement file who\'s not already as some import script()this import script will not be read by the compiler')
+        const spinner = ora('script writing in progress...').start()
+        spinner.color = 'green'
+        setTimeout(async()=>{
+            await BinUtilityClass.WriterFilePromiseHandler(spinner)
+        },500)
+
+}).description('add import script to all ThreeElement file who\'s not already as some import script()this import script will not be read by the compiler')
 //------------------------------------setting------------------------------------------------
 /*
 français:
@@ -412,7 +430,7 @@ program.helpInformation = ()=> {
 };
 
 program.on('--help', () => {
-    console.log('\n',chalk.green(figlet.textSync('ThreeCli', { horizontalLayout: 'full',font:'Colossal'})))
+    console.log('\n',gradient(['green','blue', 'red']).multiline(figlet.textSync('ThreeCli', { horizontalLayout: 'full',font:'Colossal'})))
     commanderHelp(program)
     process.exit()
 });

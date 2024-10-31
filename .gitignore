@@ -5,8 +5,11 @@
 .AppleDouble
 .LSOverride
 /node_modules
+.env
+/testDockerFile
 
-# ignore ALL files in ANY directory named public/versonning ""
+
+# ignore ALL files in ANY directory named public/versonning||dist ""
 app/public/versionning/*
 app/public/dist/*
 # Icon must end with two \r
