@@ -15,8 +15,7 @@ invité de commande
   L'utilisation du Cli intégrés permet d'effectuer des actions rapide et d'optimiser l'utilisation de cette boilerplate plusieur action son
   possible comme démontré ci dessous.
 </p>
-  
-<img width="1231" alt="Capture d’écran 2024-10-15 à 18 32 23" src="https://github.com/user-attachments/assets/885d6694-6663-45b8-a5ad-27ae21f21f2d">
+  <img width="1509" alt="Capture d’écran 2024-11-05 à 16 14 50" src="https://github.com/user-attachments/assets/62435a55-b798-4465-95ac-77d5896c1206">
 
  arborescence du projet :
  ---
