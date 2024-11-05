@@ -79,31 +79,19 @@ français :
 English:
     handles the various requests concerning the addition
 */
-    appendFileWithMango(mangoRequest,option = null)
+    appendFileWithMango(mangoRequest)
     {
-        const createdPath = path.join(process.cwd(),'threeElement','AppendElement')
+        
+        const createdPath = PathUtility.getPathFromElement('AppendElement')
         if(!fs.existsSync(createdPath))
         {
-            fs.mkdir(createdPath,(error)=>{
-                error ? console.log(chalk.red(`erreur : ${error}`)) : 
-                console.log(chalk.green('dossier ajouter avec succées ✨')) 
-            })
+            fs.mkdirSync(createdPath)
         }
-        if(option == 'single')
-        {
-            const filename = 'appendElement_' + mangoRequest.versionName + '.js'
-            const pathcreatedFile =  path.join(process.cwd(),'ThreeElement','AppendElement',filename)
-            return fs.appendFileSync(pathcreatedFile,mangoRequest.content);
-        }else if(option =='singleVersion'){
-            const filename = mangoRequest.versionName + '.js'
-            const pathcreatedFile =  path.join(process.cwd(),'public','versionning',filename)
-            return fs.appendFileSync(pathcreatedFile,mangoRequest.content);
-        } else {
-            const filename = mangoRequest[0].versionName + '.js'
-            const pathcreatedFile =  path.join(process.cwd(),'public','versionning',filename)
-            return fs.appendFileSync(pathcreatedFile,mangoRequest[0].content);
-        }
+        const filename = mangoRequest[0].versionName + '.js'
+        const pathcreatedFile =  PathUtility.getPathFromElement('AppendElement',filename)
+        return fs.appendFileSync(pathcreatedFile,mangoRequest[0].content);
     }
+
     makeAfile(ressource,filetoappend,dir = 'Mesh'){
         const meshpath = PathUtility.getPathFromPublic('makeFileRessource',dir,ressource)
         if(fs.existsSync(meshpath))
@@ -124,6 +112,9 @@ English:
         }
     }
 
+    appendFileIfnotExist(path,content){
+        return(fs.existsSync(path)) ? '':fs.appendFileSync(path,content);
+    }
     repopulateUtility(){
         const resourceFilePath = PathUtility.getPathFromPublic('makeFileRessource','clearDefault')
         for(let file of fs.readdirSync(resourceFilePath))
@@ -139,7 +130,6 @@ English:
     async *ReaderFilePromiseGenerator()
     {
         const CompilerUtility = new Utility(PathUtility.getarrayFile(),PathUtility.getMapAsset());
-        const content = fs.readFileSync(PathUtility.getlinkFile(),{encoding:'utf-8'});
         CompilerUtility.repopulatelinkFile(PathUtility.getlinkFile(),false)
         this.CompilerUtilityArray = CompilerUtility.getfileDirarraySlice(1,-1);
         for (let file of  this.CompilerUtilityArray)
@@ -194,3 +184,4 @@ English:
         return str;
     }
 }
+

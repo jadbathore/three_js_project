@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/jadbathore/three_js_project#readme",
   "dependencies": {
+    "@inquirer/input": "^4.0.1",
     "@types/three": "^0.167.0",
     "boxen": "^4.2.0",
     "cannon-es": "^0.20.0",
@@ -40,6 +41,7 @@
     "redis": "^4.7.0",
     "rollup-plugin-esbuild-minify": "^1.1.1",
     "rollup-plugin-watch": "^1.0.4",
+    "rxjs": "^7.8.1",
     "serve-index": "^1.9.1",
     "three": "^0.166.1"
   },

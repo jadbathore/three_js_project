@@ -1,13 +1,4 @@
-const { THREE,
-	OrbitControls, glb, gltf,
-	hdr, img, renderer,
-	scene, camera, orbit,
-	loader, earthGroup, geo,
-	earthMesh, lightMesh, couldsMat,
-	cloudMesh, __moon__, moonRotation,
-	moonMesh, fresnel, glowmesh,
-	star, sunLight, getFresnelMat,
-	getStarfield, } = require('../../public/versionning/linkFile.js')
 
+const {renderer,scene,camera,orbit,loader,test,earthGroup,geo,earthMesh,lightMesh,couldsMat,cloudMesh,moonRotation,moonMesh,fresnel,glowmesh,getFresnelMat,star,getStarfield,sunLight,THREE,OrbitControls,cacheImageUtility,img} = require('../../public/versionning/linkFile.js')
 const loader = new THREE.TextureLoader();
 

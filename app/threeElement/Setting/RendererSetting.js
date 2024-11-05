@@ -1,13 +1,4 @@
-const { THREE,
-	OrbitControls, glb, gltf,
-	hdr, img, renderer,
-	scene, camera, orbit,
-	loader, earthGroup, geo,
-	earthMesh, lightMesh, couldsMat,
-	cloudMesh, __moon__, moonRotation,
-	moonMesh, fresnel, glowmesh,
-	star, sunLight, getFresnelMat,
-	getStarfield, } = require('../../public/versionning/linkFile.js')
+const {THREE} = require('../../app/public/versionning/linkFile')
 
 
 const renderer = new THREE.WebGLRenderer({antialias:true})

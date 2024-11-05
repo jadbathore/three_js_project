@@ -4,7 +4,7 @@ const { THREE,
 	scene, camera, orbit,
 	loader, earthGroup, geo,
 	earthMesh, lightMesh, couldsMat,
-	cloudMesh, __moon__, moonRotation,
+	cloudMesh, earthGroup, moonRotation,
 	moonMesh, fresnel, glowmesh,
 	star, sunLight, getFresnelMat,
 	getStarfield, } = require('../../public/versionning/linkFile.js')

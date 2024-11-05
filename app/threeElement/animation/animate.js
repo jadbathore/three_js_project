@@ -1,13 +1,3 @@
-const { THREE,
-	OrbitControls, glb, gltf,
-	hdr, img, renderer,
-	scene, camera, orbit,
-	loader, earthGroup, geo,
-	earthMesh, lightMesh, couldsMat,
-	cloudMesh, __moon__, moonRotation,
-	moonMesh, fresnel, glowmesh,
-	star, sunLight, getFresnelMat,
-	getStarfield, } = require('../../public/versionning/linkFile.js')
 requestAnimationFrame(()=>{
     earthMesh.rotateY(0.002)
     lightMesh.rotateY(0.002)
@@ -23,3 +13,4 @@ requestAnimationFrame(()=>{
 
 
 
+const {gltf,img,renderer,scene,camera,orbit,earthGroup,loader,earthMesh,lightMesh,couldsMat,cloudMesh,moonRotation,moonMesh,getFresnelMat,getStarfield,randomSpherePoint,animate,THREE} = require('../../public/versionning/linkFile.js')

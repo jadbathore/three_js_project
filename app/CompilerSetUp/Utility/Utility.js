@@ -99,6 +99,9 @@ export default class Utility {
     {
         return this.fileDirArray.slice(start,end)
     }
+    get allConstant(){
+        return this.#allConstant;
+    }
 
     /*
     français:
@@ -129,7 +132,7 @@ export default class Utility {
                     organisedArray[0] = value;
                 break;
                 case'RendererSetting.js':organisedArray[1] = value;break;
-                case'cameraSetting.js':organisedArray[2] = value;;break;
+                case'cameraSetting.js':organisedArray[2] = value;break;
                 case'loader.js':organisedArray[3] = value;break;
                 case'animate.js': organisedArray[fileArray.length - 2] = value;break;
                 case'resizeSetting.js':organisedArray[fileArray.length - 1] = value;break;
