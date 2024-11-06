@@ -16,7 +16,6 @@ app.set('views',PathUtility.getViewerFile())
 app.use(express.static('app/public',optionStaticFileExpress))
 
 
-
 app.get('/',(req,res)=>{
     res.render(
         'index',

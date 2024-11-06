@@ -26,7 +26,7 @@ export default class Utility {
     /(?<=\b(const(\s)+?)\b)(([A-z]|[A-z]\w+)*)/g;
     *```
     */
-    #matchregexConstantDelcaration = /(?<=\b(const(\s)+?)\b)(([A-z]|[A-z]\w+)*)/g;
+    #matchregexConstantDelcaration = /(?<=\b(const(\s)+?)\b)(([A-z]|[A-z0-9]+)*)/g
     /**
     *```
     /(?<=(\bthis[.]\b))((([A-z])|[A-z]\w+)*)(?=((\s?)+?)[=])/g;
@@ -564,7 +564,6 @@ export default class Utility {
     }
 
     /**
-     * 
      * @param {string} beginingFile the begining file (file who's replace)
      * @param {string} endFile the End file  (file take to replace the begining file)
      * @returns {fs.promises} fs.promises is return this one will write in the  fileToReplace directory the replacement.

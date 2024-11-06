@@ -280,7 +280,7 @@ program
     const table = (condition)? optionnalQuestion.choice :option.table
     const tableToUpdate = await Connection.findObject(table) 
     const tableChoice = []
-    if(tableToUpdate.length >= 1)
+    if(tableToUpdate.length <= 1)
         {
             console.log(chalk.blue('the table is empty'))
             process.exit()
@@ -370,7 +370,7 @@ program
     const table = (condition)? optionnalQuestion.choice :option.table
     const tableToUpdate = await Connection.findObject(table) 
     const tableChoice = []
-    if(tableToUpdate.length >= 1)
+    if(tableToUpdate.length <= 1)
     {
         console.log(chalk.blue('the table is empty'))
         process.exit()

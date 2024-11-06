@@ -15,7 +15,7 @@ invité de commande
   L'utilisation du Cli intégrés permet d'effectuer des actions rapide et d'optimiser l'utilisation de cette boilerplate plusieur action son
   possible comme démontré ci dessous.
 </p>
-  <img width="1509" alt="Capture d’écran 2024-11-05 à 16 14 50" src="https://github.com/user-attachments/assets/62435a55-b798-4465-95ac-77d5896c1206">
+  <img width="1509" alt="Capture d’écran 2024-11-05 à 16 14 50" src="https://github.com/user-attachments/assets/62435a55-b798-4465-95ac-77d5896c1206">
 
  arborescence du projet :
  ---
@@ -76,4 +76,5 @@ Systeme de ObjectNameSpace:
   	const _b_.sphere = "b"
   	console.log(_b_.sphere)
   	//&end
+
 
