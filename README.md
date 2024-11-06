@@ -9,13 +9,39 @@ dynamique par exemple.
 
 invité de commande
 ---
-> [!CAUTION]
-> Une version dockerise est en cour pour l'ajout de base de données mongoDB sans avoir à installé mongoDB sur la machine cependant il est toujour nécessaire d'avoir mongo déja installé 
 <p>
   L'utilisation du Cli intégrés permet d'effectuer des actions rapide et d'optimiser l'utilisation de cette boilerplate plusieur action son
   possible comme démontré ci dessous.
 </p>
   <img width="1509" alt="Capture d’écran 2024-11-05 à 16 14 50" src="https://github.com/user-attachments/assets/62435a55-b798-4465-95ac-77d5896c1206">
+
+### docker:
+
+> [!TIP]
+> Une version de L'invité de commande en docker est disponible si vous ne souhaiter pas installer mongo sur votre machine
+
+Pour build le container pour la première fois assuré vous d'être dans le répertoir faite la commande :
+```
+Docker-compose up
+```
+Par la suite pour utiliser le cli faite la commande : 
+```
+docker exec -it ThreeCli sh -c "node bin/index.js"
+```
+Si tout a bien fonctionner vous devriez voir s'afficher le tableau si dessus .
+#### utilisation:
+> [!TIP]
+> pour utiliser le cli vous devrier tapper directement les commande à la suite en faisant abstraction du ThreeCLi
+
+#### Exemple:
+```
+docker exec -it ThreeCli sh -c "node bin/index.js <command> <option> <param>"
+                                                    │           │        │ 
+                                                    V           V        V
+                                                   save        -u       cube
+                                                   fork        -sf      moon.js
+                                                  (...)       (...)     (...)
+```
 
  arborescence du projet :
  ---
