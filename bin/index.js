@@ -18,7 +18,6 @@ import { input } from '@inquirer/prompts';
 const BinUtilityClass = new BinUtility()
 const CompilerUtilityClass = new Utility(PathUtility.getarrayFile(),PathUtility.getMapAsset())
 const DB_URI = process.env.DB_URI || "mongodb://127.0.0.1:27017/versionningThreeJs"
-console.log(DB_URI)
 const Connection = new ConnectionUtilityMongoDB(DB_URI)
 
 //---------------------------------ThreeCli----------------------------------------------
