@@ -1,9 +1,23 @@
 version: '4.2'
-services:     
+services:  
+  mongo:
+    env_file: .env
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INIT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INIT_PASSWORD}
+      DB_URI: ${DB_URI}
+    ports:
+      - ${MONGO_PORT}:${MONGO_PORT}
+    volumes:
+      - mongo:/data/db
+    depends_on:
+      - bin 
+     
   bin:
-    container_name: bin_ThreeCli
+    container_name: ThreeCli
     env_file: .env
     build: .
-    command: bin/index.js
-    # image: three_js_project-bin
-  
+volumes:
+  mongo:
+    driver: local

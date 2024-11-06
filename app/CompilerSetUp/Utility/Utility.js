@@ -379,7 +379,7 @@ export default class Utility {
             }  
         compiledContent = this.cleanerCommunJsDeclaration(compiledContent)
         compiledContent += '\n}\n'
-        compiledContent += `\nwindow.onload = () => {\n\tnew Content()\n\t//ImagesCacheHandler.saveNameToLocalStorage()\n}\n `;
+        compiledContent += `\nwindow.onload = async() => {\n\tnew Content()\n\t//await ImagesCacheHandler.saveNameToLocalStorage()\n}\n `;
         const tregex = this.regexSectionMaker('Class_Content');
         compiledContent = compiledContent.replace(tregex,totalClass)
         return compiledContent.trim();

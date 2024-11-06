@@ -6,5 +6,6 @@ COPY ./bin ./bin
 COPY ./app ./app
 
 
-CMD ["node"]
-# CMD ["ThreeCli","node bin/index.js"]
+
+CMD ["tail", "-f", "/dev/null"]
+
