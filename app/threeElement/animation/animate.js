@@ -1,13 +1,16 @@
-const { THREE,scene,camera,renderer,__cube__,cube, cube2,cube3,cube4} = require('../../public/versionning/linkFile')
-
 requestAnimationFrame(()=>{
+    earthMesh.rotateY(0.002)
+    lightMesh.rotateY(0.002)
+    cloudMesh.rotateY(0.0025)
+    glowmesh.rotateY(0.002)
     renderer.render(scene,camera)
-    cube.rotateX(0.1);
-    cube2.rotateY(-0.05);
-    cube3.rotateY(0.025);
-    cube3.rotateX(0.025);
-    cube4.rotateX(-0.01)
-    cube4.rotateY(-0.01)
+    moonMesh.rotateY(0.02)
+    moonRotation.rotateY(0.00514)
     this.file_animate()
 })
 
+
+
+
+
+const {gltf,img,renderer,scene,camera,orbit,earthGroup,loader,earthMesh,lightMesh,couldsMat,cloudMesh,moonRotation,moonMesh,getFresnelMat,getStarfield,randomSpherePoint,animate,THREE} = require('../../public/versionning/linkFile.js')

@@ -1,5 +1,6 @@
 import fs from 'fs'
 import path from 'path';
+import ThreeTreeConfig from '../../../threeTree.config.js'
 
 
 export default class PathUtility {
@@ -9,9 +10,9 @@ export default class PathUtility {
         this.compilerFile = path.join(process.cwd(),'app','public','versionning','compling.js');
         this.linkFile = path.join(process.cwd(),'app','public','versionning','linkfile.js');
         this.rollupConfig = path.resolve(process.cwd(),'rollup.config.js');
-        this.rootDirProjectName = './app/threeElement/';
-        this.dirPathAssetName = './app/public/asset/';
-        this.dirPathPublic = './app/public/';
+        this.rootDirProjectName = ThreeTreeConfig.rootDirProjectName;
+        this.dirPathAssetName = ThreeTreeConfig.dirPathAssetName;
+        this.dirPathPublic = ThreeTreeConfig.dirPathPublic;
         this.viewerPathName = path.join(process.cwd(),'app','viewer');
     }
 
