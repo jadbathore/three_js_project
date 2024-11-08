@@ -98,7 +98,7 @@ Systeme de ObjectNameSpace:
   	//&end
   	//---b.js---
   	const _b_ = {}
-  	const _b_.sphere = "b"
+    _b_.sphere = "b"
   	console.log(_b_.sphere)
   	//&end
 
