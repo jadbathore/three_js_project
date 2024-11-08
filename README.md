@@ -83,23 +83,23 @@ Systeme de ObjectNameSpace:
 ```javascript
   //document a.js
 
-  	const sphere = new THREE.Mesh(...)
-  	scene.add(sphere)
+const sphere = new THREE.Mesh(...)
+scene.add(sphere)
 
   //document b.js
 
-  	const sphere = "b"
-  	console.log(sphere)
+const sphere = "b"
+console.log(sphere)
 
   //document fessant la compilation (après compilation des deux documents)
 
-  	//---a.js---
-  	const sphere = new THREE.Mesh(...)
-  	//&end
-  	//---b.js---
-  	const _b_ = {}
-    _b_.sphere = "b"
-  	console.log(_b_.sphere)
-  	//&end
+//---a.js---
+const sphere = new THREE.Mesh(...)
+//&end
+//---b.js---
+const _b_ = {}
+_b_.sphere = "b"
+console.log(_b_.sphere)
+//&end
 
 
