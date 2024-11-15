@@ -10,9 +10,9 @@ export default class PathUtility {
         this.compilerFile = path.join(process.cwd(),'app','public','versionning','compling.js');
         this.linkFile = path.join(process.cwd(),'app','public','versionning','linkfile.js');
         this.rollupConfig = path.resolve(process.cwd(),'rollup.config.js');
-        this.rootDirProjectName = ThreeTreeConfig.rootDirProjectName;
-        this.dirPathAssetName = ThreeTreeConfig.dirPathAssetName;
-        this.dirPathPublic = ThreeTreeConfig.dirPathPublic;
+        this.rootDirProjectName = ThreeTreeConfig.path.rootDirProjectName;
+        this.dirPathAssetName = ThreeTreeConfig.path.dirPathAssetName;
+        this.dirPathPublic = ThreeTreeConfig.path.dirPathPublic;
         this.viewerPathName = path.join(process.cwd(),'app','viewer');
     }
 

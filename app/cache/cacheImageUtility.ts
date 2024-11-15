@@ -1,3 +1,5 @@
+
+
 class ImagesCacheHandler{
     static #imagesList:imageInterface[] = []
     static #instance: ImagesCacheHandler;
@@ -11,12 +13,10 @@ class ImagesCacheHandler{
         return ImagesCacheHandler.#instance;
     }
 
-    public static async saveNameToLocalStorage():Promise<void>
+    public static saveNameToLocalStorage():void
     {
-        const cacheStorage = await caches.open('V1');
         for (const image of ImagesCacheHandler.#imagesList) {
-            await cacheStorage.add(image.url);
-            await image.cacheFetchPromise();
+            localStorage.getItem(image.url) ?? localStorage.setItem(image.url,image.url)
         }
     }
 
@@ -32,7 +32,6 @@ class ImagesCacheHandler{
 
 interface imageInterface {
     get url(): string;
-    cacheFetchPromise():Promise<void|boolean>;
 }
 
 
@@ -49,15 +48,6 @@ class ImageCache implements imageInterface {
     public get url():string{
         this._instanceList.addTolist(this)
         return this._url
-    }
-    
-    public async cacheFetchPromise():Promise<void|boolean>{
-        const cacheStorage = await caches.open('V1');
-        const cachedResponse = await cacheStorage.match(this._url);
-        if (!cachedResponse || !cachedResponse.ok) {
-            return false;
-        }
-        return await cachedResponse.json();
     }
 }
 

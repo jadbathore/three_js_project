@@ -20,6 +20,7 @@ const CompilerUtilityClass = new Utility(PathUtility.getarrayFile(),PathUtility.
 const DB_URI = process.env.DB_URI || "mongodb://127.0.0.1:27017/versionningThreeJs"
 const Connection = new ConnectionUtilityMongoDB(DB_URI)
 
+
 //---------------------------------ThreeCli----------------------------------------------
 /*
 français : 
@@ -518,6 +519,18 @@ program.command('importScripts').action(
         },500)
 
 }).description('add import script to all ThreeElement file who\'s not already as some import script()this import script will not be read by the compiler')
+//------------------------------------compile------------------------------------------------
+program.command('compile').action(()=>{
+    CompilerUtilityClass.repopulateComposer(PathUtility.getcompilerFile())
+    CompilerUtilityClass.repopulatelinkFile(PathUtility.getlinkFile())
+    process.exit()
+}).description('add import')
+//------------------------------------start_server------------------------------------------------
+// program.command('startServer').action(()=>{
+//     CompilerUtilityClass.repopulateComposer(PathUtility.getcompilerFile())
+//     CompilerUtilityClass.repopulatelinkFile(PathUtility.getlinkFile())
+//     process.exit()
+// }).description('add import')
 //------------------------------------setting------------------------------------------------
 /*
 français:

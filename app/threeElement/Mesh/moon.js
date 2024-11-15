@@ -4,13 +4,11 @@ const { THREE,
 	scene, camera, orbit,
 	loader, earthGroup, geo,
 	earthMesh, lightMesh, couldsMat,
-	cloudMesh, earthGroup, moonRotation,
+	cloudMesh, __moon__, moonRotation,
 	moonMesh, fresnel, glowmesh,
 	star, sunLight, getFresnelMat,
 	getStarfield, } = require('../../public/versionning/linkFile.js')
 
-
-const earthGroup = "d"
 const moonRotation = new THREE.Object3D();
 scene.add(moonRotation);
 
@@ -21,7 +19,7 @@ const moonMesh = new THREE.Mesh(
         bumpMap:loader.load(img.moonbump4k),
         bumpScale:4,
     })
-)
+) 
 moonRotation.add(moonMesh);
 moonMesh.position.x = 8
 moonMesh.castShadow = true

@@ -3,17 +3,16 @@ import chalk from 'chalk';
 import boxen from 'boxen';
 import compression from 'compression';
 import PathUtility from '../CompilerSetUp/Utility/pathUtility.js';
-import optionStaticFileExpress from './optionStaticFileExpress.js';
+import { option } from './optionStaticFileExpress.js';
 
 
 const app = express();
-const port = process.env.port || 3000;
-
+const port = process.env.EXPRESS_PORT || 3000;
 
 app.use(compression())
 app.set('view engine','ejs')
 app.set('views',PathUtility.getViewerFile())
-app.use(express.static('app/public',optionStaticFileExpress))
+app.use(express.static('app/public',option))
 
 
 app.get('/',(req,res)=>{
