@@ -5,10 +5,11 @@ import Utility from './Utility/Utility.js';
 import PathUtility from './Utility/pathUtility.js';
 import {loadConfigFile} from 'rollup/loadConfigFile'
 import {rollup,watch} from 'rollup';
+import {CompilerWatchSubject,ObserverWatch} from '../oberserver/oberserver.js'
 
 const complierFile = PathUtility.getcompilerFile()
 const linkFile = PathUtility.getlinkFile()
-
+const subject = new CompilerWatchSubject()
 /*
 français :
     fait fonctionner l'a connection entre rollup et le compiling.js avec l'option watch qui vas regarder les changement effectuer sur compling
@@ -39,38 +40,24 @@ English:
     composer allows the compilation of the data of the threeElement into a single file
 */
 
-/**
- * @public watching a the file 
- * @return void 
- */
-export const composer = () =>
+export const compiler = () =>
 {
+    const observer = new ObserverWatch()
     UtilityClass.repopulateComposer(PathUtility.getcompilerFile())
     UtilityClass.repopulatelinkFile(PathUtility.getlinkFile())
     for(const [key,value] of PathUtility.getMapFile())
         {
             if(key !== undefined)
                 {
-                    /*
-                    français: 
-                        syntaxe effectuer en accort avec la documentation de fs:node 
-                        chaque abort controller est relier à un dossier par exemple tout les dossier mesh sont relier au meme abort contrôler 
-                        c'est pour cela que c'est possible de supprimé un fichier durant l'activation du server mais c'est tout de même déconseiller 
-                        par contre on peux ajouté sans problème des fichiers (mais pas des dossiers). il faudra le faire quand le server ne tourne pas.
-                    English:
-                        syntax performed in accordance with the fs:node documentation
-                        each abort controller is linked to a folder for example all mesh folders are linked to the same abort controller
-                        this is why it is possible to delete a file during server activation but it is still not recommended
-                        on the other hand we can add files without problem (but not folders).You must doing it during the server is not running.
-                    */
                     const ac = new AbortController()
                     const { signal } = ac;
                     (
-                        async () => {
+                        async ()=> {
                             try {
                                 const watcher = fs.promises.watch(PathUtility.getPathFromElement(key),{signal})
                                 for await(const event of watcher)
                                 {
+                                    console.log(event)
                                     const pathFileChanging = PathUtility.getPathFromElement(key,event.filename)
                                     switch(event.eventType)
                                     {
@@ -102,7 +89,7 @@ export const composer = () =>
                                         } else {
                                             console.log(chalk.keyword('violet')(`the file ${event.filename} is now added 🔮`));
                                             UtilityClass.fileDirArray.push(pathFileChanging)
-                                            UtilityClass.fileDirArray = UtilityClass.mapContent(UtilityClass.fileDirArray)
+                                            UtilityClass.fileDirArray = UtilityClass.setMapFile(UtilityClass.fileDirArray)
                                             value.push(event.filename)
                                             UtilityClass.addimportScript(pathFileChanging)
                                         }

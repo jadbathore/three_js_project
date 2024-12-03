@@ -4,7 +4,8 @@ import boxen from 'boxen';
 import compression from 'compression';
 import PathUtility from '../CompilerSetUp/Utility/pathUtility.js';
 import { option } from './optionStaticFileExpress.js';
-
+import livereload from 'livereload';
+import connectLiveReload from 'connect-livereload'
 
 const app = express();
 const port = process.env.EXPRESS_PORT || 3000;
@@ -14,8 +15,14 @@ app.set('view engine','ejs')
 app.set('views',PathUtility.getViewerFile())
 app.use(express.static('app/public',option))
 
+async function callCompiler()
+{
+    const {compiler} =  await import('../CompilerSetUp/Compiler.js')
+    return compiler()
+}
 
 app.get('/',(req,res)=>{
+  
     res.render(
         'index',
         {
@@ -23,12 +30,6 @@ app.get('/',(req,res)=>{
         }
     );
 })
-
-async function callCompiler()
-{
-    const {composer} =  await import('../CompilerSetUp/Compiler.js')
-    return composer()
-}
 
 callCompiler()
     .then(()=>{

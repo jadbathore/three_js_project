@@ -115,6 +115,7 @@ export default class RecursiveMatcher{
         return matchedFunction 
      * ```
      */
+    
     static getAllFunctionContent(text)
     {
         if(typeof text == 'object')

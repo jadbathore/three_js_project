@@ -232,7 +232,7 @@ export class ConnectionUtilityMongoDB {
         return promise
     };
 
-    private async testTheConnectionPromise():Promise<string>{
+    public async testTheConnectionPromise():Promise<string>{
         await this.setStatus();
         const PromisePending:Promise<string>= new Promise((resolve,rejects)=>{
             if(this._status == StatutsConnection.Connected){
@@ -245,11 +245,14 @@ export class ConnectionUtilityMongoDB {
         }
 
     public testConnnectionAwaited(spinner:Ora):Awaited<void>{
-        this.testTheConnectionPromise().then((status)=>{
+        let statusConnection:StatutsConnection;
+        this.testTheConnectionPromise().then((status:StatutsConnection)=>{
+            statusConnection = status
             spinner.succeed(`status:" ${chalk.green(status)} "`)
             console.log(chalk.green('\nThe status mean that the connection is good and ready to roll'))
-        }).catch((status)=>{
+        }).catch((status:StatutsConnection)=>{
             spinner.fail(`status:" ${chalk.red(status)} "`)
+            statusConnection = status
             switch(status){
                 case StatutsConnection.discontinued:
                     console.log(chalk.red('\nThis status mean that the connection was aborted because the connection time is too long', 

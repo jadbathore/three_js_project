@@ -190,11 +190,14 @@ export class ConnectionUtilityMongoDB {
         });
     }
     testConnnectionAwaited(spinner) {
+        let statusConnection;
         this.testTheConnectionPromise().then((status) => {
+            statusConnection = status;
             spinner.succeed(`status:" ${chalk.green(status)} "`);
             console.log(chalk.green('\nThe status mean that the connection is good and ready to roll'));
         }).catch((status) => {
             spinner.fail(`status:" ${chalk.red(status)} "`);
+            statusConnection = status;
             switch (status) {
                 case StatutsConnection.discontinued:
                     console.log(chalk.red('\nThis status mean that the connection was aborted because the connection time is too long', '\ncheck if your mongoDB service is running.'));

@@ -116,7 +116,7 @@ export default class Utility {
     */
 
     /**
-    * @private sorting all the file array 1. configImport.js 2. RendererSetting.js 3. cameraSetting.js 4. loader.js 5. any other element + other 6. animate.js 7. resizing.js
+    * @public sorting all the file array 1. configImport.js 2. RendererSetting.js 3. cameraSetting.js 4. loader.js 5. any other element + other 6. animate.js 7. resizing.js
     * @param {array} array arrat of file  use privately to sort the array needed
     * @returns {array} array sorted well
     */

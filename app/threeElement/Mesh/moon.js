@@ -22,4 +22,4 @@ const moonMesh = new THREE.Mesh(
 ) 
 moonRotation.add(moonMesh);
 moonMesh.position.x = 8
-moonMesh.castShadow = true
+moonMesh.castShadow = true;

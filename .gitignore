@@ -7,7 +7,7 @@
 /node_modules
 .env
 /testDockerFile
-
+/app/generated
 
 # ignore ALL files in ANY directory named public/versonning||dist ""
 app/public/versionning/*
