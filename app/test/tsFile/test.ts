@@ -1,3 +1,5 @@
+import { Console } from "console";
+
 type Event = {
     eventType:string;
     filename:string;
@@ -8,14 +10,15 @@ type EventPromise = Promise<Event>
 interface Subject {
     attach(observer:Observer):void;
     detach(observer:Observer):void;
-    getChange(event:Event):void;
+    notify(event:Event):void;
     addEventObserver(observer:Observer,eventPromise:EventPromise):void
 }
 
 interface Observer {
     update(subject:Subject,event:Event):AsyncGenerator<any, any, unknown>;
     addEvent(event:Event):void;
-    get events():Event[]
+    get events():Event[];
+    get path():String;
 }
 
 //___________________________
@@ -38,7 +41,7 @@ export class CompilerWatchSubject implements Subject {
         this.observers.splice(obeserverIndex,1)
     }
 
-    public async getChange(event:Event):Promise<void>
+    public async notify(event:Event):Promise<void>
     {
         for (const observer of this.observers){
             const iterator:AsyncGenerator<any, any, unknown> = observer.update(this,event)
@@ -58,7 +61,14 @@ export class CompilerWatchSubject implements Subject {
 }
 //___________________________
 export class ObserverWatch implements Observer {
-    private _events:Event[]=[]
+    private _events:Event[]=[];
+    private _path:string;
+
+
+    public constructor(path:string)
+    {
+        this._path = path
+    }
 
     public async *update(subject: Subject,event:Event):AsyncGenerator<any, any, EventPromise>
     {
@@ -77,45 +87,79 @@ export class ObserverWatch implements Observer {
     {
         return this._events
     }
-}
 
-const subject = new CompilerWatchSubject()
-const observer = new ObserverWatch()
-
-const EventsHandler:ProxyHandler<Event[]> = {
-    get:function(target:Event[], p:string, receiver:any)
+    get path():string
     {
-        if(p){
-            const index:number = parseInt(p)
-            return target[index]
-        }
-        return target
+        return this._path
     }
 }
 
-const testProxy:Event[] = new Proxy<Event[]>(observer.events,EventsHandler)
+const subject = new CompilerWatchSubject()
+const observer = new ObserverWatch('/')
 
-Object.defineProperty(testProxy,'push', 
-    {
-        value: function():void
+
+export function ProxyObserver(observer:Observer,callBack:(event:Event,path:String)=>void):void
+{
+    const _array:Event[] = []
+
+    const raiseEvent = (event:Event,path:String) => {
+        callBack(event,path)
+    }
+
+    const EventsHandler:ProxyHandler<Event[]> = {
+        get:function(target:Event[], p:string, receiver:any)
         {
-            
+            if(p){
+                const index:number = parseInt(p)
+                return target[index]
+            }
+            return target
         },
-        writable: false,
+        set:function(target:Event[],p:string,newvalue:any,receiver:any):boolean{
+            const index:number = parseInt(p)
+            target[index] = newvalue
+            return true
+        }
+    }
+    const ProxyObserver:Event[] = new Proxy<Event[]>(observer.events,EventsHandler)
+
+    Object.defineProperty(ProxyObserver,'push', 
+        {
+            value: function():void
+            {
+                _array.push(...arguments)
+                raiseEvent(arguments[0],observer.path)
+            },
+            writable: false,
     })
 
-const funcTest = async(observer:Observer) =>
-{
-    subject.attach(observer)
-    await subject.getChange({eventType:'change',filename:'baba.js'})
-    await subject.getChange({eventType:'change',filename:'baba1.js'})
-    await subject.getChange({eventType:'change',filename:'baba2.js'})
-    setTimeout(async()=>{
-        await subject.getChange({eventType:'change',filename:'baba3.js'})
-    },1000)
 }
 
-funcTest(observer);
+
+// ProxyObserver(observer,(event:Event,path:string)=>{
+//     if(event.eventType == 'change'){
+//         console.log(event,path)
+//     }
+//     console.log('test2')
+// })
+
+// const funcTest = async(observer:Observer) =>
+// {
+//     subject.attach(observer)
+//     await subject.notify({eventType:'change',filename:'baba.js'})
+//     await subject.notify({eventType:'rename',filename:'baba1.js'})
+//     await subject.notify({eventType:'change',filename:'baba2.js'})
+//     setTimeout(async()=>{
+//         await subject.notify({eventType:'change',filename:'baba3.js'})
+//     },1000)
+//     setTimeout(async()=>{
+//         await subject.notify({eventType:'change',filename:'baba4.js'})
+//     },2000)
+// }
+
+
+// funcTest(observer);
+
 
 
 

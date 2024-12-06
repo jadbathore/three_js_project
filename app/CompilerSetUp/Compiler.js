@@ -5,11 +5,11 @@ import Utility from './Utility/Utility.js';
 import PathUtility from './Utility/pathUtility.js';
 import {loadConfigFile} from 'rollup/loadConfigFile'
 import {rollup,watch} from 'rollup';
-import {CompilerWatchSubject,ObserverWatch} from '../oberserver/oberserver.js'
+
 
 const complierFile = PathUtility.getcompilerFile()
 const linkFile = PathUtility.getlinkFile()
-const subject = new CompilerWatchSubject()
+
 /*
 français :
     fait fonctionner l'a connection entre rollup et le compiling.js avec l'option watch qui vas regarder les changement effectuer sur compling
@@ -40,9 +40,9 @@ English:
     composer allows the compilation of the data of the threeElement into a single file
 */
 
-export const compiler = () =>
+export const compiler = (subject,observer) =>
 {
-    const observer = new ObserverWatch()
+    subject.attach(observer)
     UtilityClass.repopulateComposer(PathUtility.getcompilerFile())
     UtilityClass.repopulatelinkFile(PathUtility.getlinkFile())
     for(const [key,value] of PathUtility.getMapFile())
@@ -52,12 +52,12 @@ export const compiler = () =>
                     const ac = new AbortController()
                     const { signal } = ac;
                     (
-                        async ()=> {
+                        async () => {
                             try {
                                 const watcher = fs.promises.watch(PathUtility.getPathFromElement(key),{signal})
                                 for await(const event of watcher)
                                 {
-                                    console.log(event)
+                                    subject.notify(event)
                                     const pathFileChanging = PathUtility.getPathFromElement(key,event.filename)
                                     switch(event.eventType)
                                     {

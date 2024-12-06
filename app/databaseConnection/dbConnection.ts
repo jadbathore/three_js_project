@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import chalk from 'chalk';
-import { Ora } from 'ora';
+import ora, { Ora } from 'ora';
 
 
 enum StatutsConnection {

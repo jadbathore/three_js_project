@@ -43,7 +43,7 @@ export class CompilerWatchSubject {
         }
         this.observers.splice(obeserverIndex, 1);
     }
-    getChange(event) {
+    notify(event) {
         return __awaiter(this, void 0, void 0, function* () {
             var _a, e_1, _b, _c;
             for (const observer of this.observers) {
@@ -73,8 +73,9 @@ export class CompilerWatchSubject {
     }
 }
 export class ObserverWatch {
-    constructor() {
+    constructor(path) {
         this._events = [];
+        this._path = path;
     }
     update(subject, event) {
         return __asyncGenerator(this, arguments, function* update_1() {
@@ -90,32 +91,38 @@ export class ObserverWatch {
     get events() {
         return this._events;
     }
+    get path() {
+        return this._path;
+    }
 }
 const subject = new CompilerWatchSubject();
-const observer = new ObserverWatch();
-const EventsHandler = {
-    get: function (target, p, receiver) {
-        if (p) {
+const observer = new ObserverWatch('/');
+export function ProxyObserver(observer, callBack) {
+    const _array = [];
+    const raiseEvent = (event, path) => {
+        callBack(event, path);
+    };
+    const EventsHandler = {
+        get: function (target, p, receiver) {
+            if (p) {
+                const index = parseInt(p);
+                return target[index];
+            }
+            return target;
+        },
+        set: function (target, p, newvalue, receiver) {
             const index = parseInt(p);
-            return target[index];
+            target[index] = newvalue;
+            return true;
         }
-        return target;
-    }
-};
-const testProxy = new Proxy(observer.events, EventsHandler);
-Object.defineProperty(testProxy, 'push', {
-    value: function () {
-    },
-    writable: false,
-});
-const funcTest = (observer) => __awaiter(void 0, void 0, void 0, function* () {
-    subject.attach(observer);
-    yield subject.getChange({ eventType: 'change', filename: 'baba.js' });
-    yield subject.getChange({ eventType: 'change', filename: 'baba1.js' });
-    yield subject.getChange({ eventType: 'change', filename: 'baba2.js' });
-    setTimeout(() => __awaiter(void 0, void 0, void 0, function* () {
-        yield subject.getChange({ eventType: 'change', filename: 'baba3.js' });
-    }), 1000);
-});
-funcTest(observer);
+    };
+    const ProxyObserver = new Proxy(observer.events, EventsHandler);
+    Object.defineProperty(ProxyObserver, 'push', {
+        value: function () {
+            _array.push(...arguments);
+            raiseEvent(arguments[0], observer.path);
+        },
+        writable: false,
+    });
+}
 //# sourceMappingURL=test.js.map

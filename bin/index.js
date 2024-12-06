@@ -20,8 +20,6 @@ const CompilerUtilityClass = new Utility(PathUtility.getarrayFile(),PathUtility.
 const DB_URI = process.env.DB_URI || "mongodb://127.0.0.1:27017/versionningThreeJs"
 const Connection = new ConnectionUtilityMongoDB(DB_URI)
 
-
-
 class Bin {
 
     constructor()
@@ -31,7 +29,6 @@ class Bin {
         this.bin_testConnection();
         this.bin_make();
         this.bin_importscript();
-        this.bin_readfile();
         Connection.testTheConnectionPromise().then(()=>
         {
             this.bin_fork()
