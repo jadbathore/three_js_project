@@ -1,5 +1,5 @@
 import chalk from 'chalk';
-import path, { basename } from 'path';
+import path from 'path';
 import fs from 'fs'
 import RecursiveMatcher from './RecursiveMatcher.js'
 import PathUtility from './pathUtility.js';

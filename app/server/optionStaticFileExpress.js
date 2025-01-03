@@ -5,16 +5,20 @@ const option =
     dotfiles: 'ignore',
     etag: true,
     index: false,  
-    redirect: false,
+    redirect: true,
     maxAge:'1d',
+    // setHeaders:(res,path)=>{
+        
+    // }
 }
 
-if (!threeTreeConfig.server.caching_Script){
-    option['setHeaders'] = (res,path) =>{
-        res.set({
-            'Cache-Control':(express.static.mime.lookup(path) === 'application/javascript')?'public,maxAge=0':'public'
-        })
-    }
-}
+// if (!threeTreeConfig.server.caching_Script){
+//     option['setHeaders'] = (res,path) =>{
+//         res.header('Cache-Control', [(express.static.mime.lookup(path) === 'application/javascript')?'public,maxAge=0':'public'])
+//         // res.set({
+//         //     'Cache-Control':(express.static.mime.lookup(path) === 'application/javascript')?'public,maxAge=0':'public'
+//         // })
+//     }
+// }
 
 export { option }

@@ -120,7 +120,8 @@ export function ProxyObserver(observer, callBack) {
             _array.push(...arguments);
             raiseEvent(arguments[0], observer.path);
         },
-        writable: false,
+        writable: true,
+        configurable: true
     });
 }
 //# sourceMappingURL=oberserver.js.map

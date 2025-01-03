@@ -18,7 +18,6 @@ interface Observer {
     get events():Event[];
     get path():String;
 }
-
 //___________________________
 export class CompilerWatchSubject implements Subject {
     public observers:Observer[] = []
@@ -124,6 +123,7 @@ export function ProxyObserver(observer:Observer,callBack:(event:Event,path:Strin
                 _array.push(...arguments)
                 raiseEvent(arguments[0],observer.path)
             },
-            writable: false,
+            writable: true,
+            configurable: true
     })
 }

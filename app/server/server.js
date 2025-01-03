@@ -11,12 +11,12 @@ import { CompilerWatchSubject,ObserverWatch,ProxyObserver } from '../oberserver/
 
 const app = express();
 const port = process.env.EXPRESS_PORT || 3000;
-const liveReloadServer = livereload.createServer()
+const liveReloadServer = livereload.createServer();
 
 app.use(compression())
 app.set('view engine','ejs')
 app.set('views',PathUtility.getViewerFile())
-app.use(express.static('app/public',option))
+app.use(express.static('app/public'))
 
 async function callCompiler(subject,oberserver)
 {
@@ -29,9 +29,16 @@ app.use(connectLiveReload())
 const subject = new CompilerWatchSubject()
 const oberserver = new ObserverWatch('/')
 
-ProxyObserver(oberserver,(event,path)=>{
-    liveReloadServer.refresh(path);
-})
+
+app.use((req,res,next)=>{
+    ProxyObserver(oberserver,(event,path)=>{
+        // res.render('index');
+        liveReloadServer.refresh(path);
+    })
+    next();
+});
+
+
 
 
 app.get('/',(req,res)=>
@@ -43,7 +50,6 @@ app.get('/',(req,res)=>
         }
     );
 })
-
 
 
 callCompiler(subject,oberserver)

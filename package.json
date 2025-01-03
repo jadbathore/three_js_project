@@ -23,6 +23,7 @@
   "homepage": "https://github.com/jadbathore/three_js_project#readme",
   "dependencies": {
     "@inquirer/input": "^4.0.1",
+    "@types/express": "^5.0.0",
     "@types/three": "^0.167.0",
     "boxen": "^4.2.0",
     "cannon-es": "^0.20.0",
