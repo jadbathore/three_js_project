@@ -1,245 +1,146 @@
-// import express,{Request,Response} from "express";
+// import express from 'express';
+// import chalk from 'chalk';
+// import boxen from 'boxen';
+// import compression from 'compression';
+// import livereload from 'livereload';
+// import fs from 'fs';
+// import https from "https";
+// import connectLiveReload from 'connect-livereload'
+// import { optionServer } from '../../server/optionStaticFileExpress';
+// import PathUtility from '../../CompilerSetUp/Utility/pathUtility';
+// import { ObserverWatch,CompilerWatchSubject,ProxyObserver } from '../../oberserver/oberserver';
+// import { compiler } from '../../CompilerSetUp/Compiler'
 
 // const app = express();
+// const key = (fs.existsSync(PathUtility.keySLL))?fs.readFileSync(PathUtility.keySLL):null;
+// const cert = (fs.existsSync(PathUtility.certSLL))?fs.readFileSync(PathUtility.certSLL):null;
+// const server = (key && cert)? https.createServer({key: key, cert: cert }, app):app;
+// const port = process.env.EXPRESS_PORT || 3000;
+// const liveReloadServer = livereload.createServer();
+// app.use(compression())
+// app.use(connectLiveReload())
+// app.set('view engine','ejs')
+// app.set('views',PathUtility.getViewerFile())
+// app.use(express.static('app/public',optionServer))
 
-// // app.getPrototypeOf()
-// enum method {
-//     GET = "GET",
-//     POST = "POST",
-//     PATCH = "PATCH",
-//     DELETE = "DELETE",
-//     PUT = "PUT",
+// async function callCompiler(
+//     subject:LibFile.Subject,
+//     oberserver:LibFile.Observer
+// )
+// {
+//     return compiler(subject,oberserver)
 // }
 
-// // interface methodOverload{
-// //     (foo: string): 
-// //     (foo: number): number
-// // }
+// const subject:LibFile.Subject = new CompilerWatchSubject()
+// const oberserver:LibFile.Observer = new ObserverWatch("/")
 
-// interface ExpressInput{
-    
-//     routeName:String,
-//     callback:(req:Request,res:Response)=>void,
-//     method:method
-// }
+// app.use((req,res,next)=>{
+//     const oberserver:LibFile.Observer = new ObserverWatch(req.path)
+//     ProxyObserver(oberserver,(event:EventFile,path:string)=>{
+//         // res.render('index');
+//         liveReloadServer.refresh(path);
+//     })
+//     next();
+// });
 
-// interface ExpressRouteComponent {
-//     get input():ExpressInput;
-//     invokeRoute():void;
-// }
-
-
-
-// class ConcreteRouteComponent implements ExpressRouteComponent {
-
-//     private _input:ExpressInput;
-
-//     constructor(
-//         input:ExpressInput
-//     ){
-//         this._input = input;
-//     }
-
-//     public CallRoute(): void {
-//         const method:string = this._input.method.toLocaleLowerCase();
-//     }
-
-//     private invoke(app:string,methodName:CallableFunction)
-//     {
-//         app.prototype.methodName();
-//     }
-
-//     public get input(): ExpressInput {
-//         return this._input;
-//     }
-
-// }
-
-// /**
-//  * Iterator Design Pattern
-//  *
-//  * Intent: Lets you traverse elements of a collection without exposing its
-//  * underlying representation (list, stack, tree, etc.).
-//  */
-
-// interface Iterator<T> {
-//     get current(): T;
-//     next(): void;
-//     key(): number;
-//     valid(): boolean;
-//     rewind(): void;
-// }
-
-// interface Aggregator {
-//     getIterator(): Iterator<ExpressInput>;
-// }
-
-// class RouteIterator implements Iterator<ExpressInput> {
-//     private collection: RouteAggregator;
-//     private index: number = 0;
-//     private reverse: boolean = false;
-
-//     constructor(collection: RouteAggregator, reverse: boolean = false) {
-//         this.collection = collection;
-//         this.reverse = reverse;
-//         if (reverse) {
-//             this.index = collection.count - 1;
+// app.get('/',(req,res)=>
+// {
+//     res.render(
+//         'index',
+//         {
+//             title:'test_app'
 //         }
-//     }
-
-//     public rewind() {
-//         this.index = this.reverse ?
-//             this.collection.count - 1 :
-//             0;
-//     }
-
-//     public get current(): ExpressInput {
-//         return this.collection.items[this.index];
-//     }
-
-//     public key(): number {
-//         return this.index;
-//     }
-
-//     public next(): void {
-//         const item = this.collection.items[this.index];
-//         this.index += this.reverse ? -1 : 1;
-//     }
-
-//     public valid(): boolean {
-//         if (this.reverse) {
-//             return this.index >= 0;
-//         }
-//         return this.index < this.collection.count;
-//     }
-// }
-
-// class RouteAggregator implements Aggregator {
-//     private _items: ExpressInput[] = [];
-
-//     public get items(): ExpressInput[] {
-//         return this._items;
-//     }
-
-//     public get count(): number {
-//         return this._items.length;
-//     }
-
-//     public addItem(item: ExpressInput): void {
-//         this._items.push(item);
-//     }
-
-//     public getIterator(): Iterator<ExpressInput> {
-//         return new RouteIterator(this);
-//     }
-
-//     public getReverseIterator(): Iterator<ExpressInput> {
-//         return new RouteIterator(this, true);
-//     }
-// }
-
-// const routeList:ExpressInput[] = [
-// {
-//     routeName:'/',
-//     callback: (req:Request, res:Response)=>{
-//         res.render(
-//             'index',
-//             {
-//                 title:'test_app'
-//             }
-//         );
-//     },
-//     method: method.GET
-// },
-// {
-//     routeName:'/test',
-//     callback: (req:Request, res:Response)=>{
-//         res.render(
-//             'index',
-//             {
-//                 title:'test_app'
-//             }
-//         );
-//     },
-//     method: method.GET
-// },
-// ];
-
-// function makeExpressRoute()
-// {
-//     const routeAggregator:RouteAggregator = new RouteAggregator();
-
-//     routeList.forEach((element:ExpressInput) => {
-//         routeAggregator.addItem(element);
-//     });
-
-//     const iterator = routeAggregator.getIterator();
-
-//     while (iterator.valid()) {
-//         console.log(iterator.current.routeName)
-//         iterator.next();
-//     }
-// }
-
-// makeExpressRoute();
+//     );
+// })
 
 
+// callCompiler(subject,oberserver)
+//     .then(()=>{
+//         app.listen(port,()=>{
+//         console.log('\n'+chalk.green(
+//                     boxen(`Server is running on port : ${port}`,
+//                 {
+//                     padding: 1,
+//                 }
+//                 ))
+//                 + '\n')
+//             })
+//     })
 
-// class ConcreteComponentB implements Component {
 
-//     public accept(visitor: Visitor): void {
-//         visitor.visitConcreteComponentB(this);
-//     }
+/**
+ * Concrete Iterators implement various traversal algorithms. These classes
+ * store the current traversal position at all times.
+ */
 
-//     public specialMethodOfConcreteComponentB(): string {
-//         return 'B';
-//     }
-// }
+class TestIterator implements Server.Iterator<string> {
+    private _collection: Server.Aggregator<string>;
+    private _index: number = 0;
+    private _reverse: boolean = false;
 
-// interface Visitor {
-//     visitConcreteComponentA(element: ConcreteRouteComponent): void;
-//     // visitConcreteComponentB(element: ConcreteComponentB): void;
-// }
+    constructor(collection: Server.Aggregator<string>,reverse: boolean = false) {
+        this._collection = collection;
+        this._reverse = reverse;
+        this._index = this._collection.getExtremity(reverse);
 
-// class ConcreteVisitor1 implements Visitor {
-//     public visitConcreteComponentA(element: ConcreteComponentA): void {
-//         console.log(`${element.exclusiveMethodOfConcreteComponentA()} + ConcreteVisitor1`);
-//     }
+    }
 
-//     public visitConcreteComponentB(element: ConcreteComponentB): void {
-//         console.log(`${element.specialMethodOfConcreteComponentB()} + ConcreteVisitor1`);
-//     }
-// }
+    public rewind() {
+        this._index = this._collection.getExtremity(this._reverse);
+    }
 
-// class ConcreteVisitor2 implements Visitor {
-//     public visitConcreteComponentA(element: ConcreteComponentA): void {
-//         console.log(`${element.exclusiveMethodOfConcreteComponentA()} + ConcreteVisitor2`);
-//     }
+    public current(): string {
+        return this._collection.getItems()[this._index];
+    }
 
-//     public visitConcreteComponentB(element: ConcreteComponentB): void {
-//         console.log(`${element.specialMethodOfConcreteComponentB()} + ConcreteVisitor2`);
-//     }
-// }
+    public next(): string {
+        const item = this.current();
+        this._index += this._reverse ? -1 : 1;
+        return item;
+    }
 
-// function clientCode(components: Component[], visitor: Visitor) {
-//     // ...
-//     for (const component of components) {
-//         component.accept(visitor);
-//     }
-//     // ...
-// }
+    public valid(): boolean {
+        if (this._reverse) {
+            return this._index >= this._collection.getExtremity(this._reverse);
+        }
+        return this._index <= this._collection.getExtremity(this._reverse);
+    }
+}
 
-// const components = [
-//     new ConcreteComponentA(),
-//     new ConcreteComponentB(),
-// ];
+class WordsCollection implements Server.Aggregator<string> {
 
-// console.log('The client code works with all visitors via the base Visitor interface:');
-// const visitor1 = new ConcreteVisitor1();
-// clientCode(components, visitor1);
-// console.log('');
+    private _items:string[] = [];
 
-// console.log('It allows the same client code to work with different types of visitors:');
-// const visitor2 = new ConcreteVisitor2();
-// clientCode(components, visitor2);
+    public getCount(): number {
+        return this._items.length;
+    }
+    public getIterator(): Server.Iterator<string> {
+        return new TestIterator(this);
+    }
+    public getReverseIterator(): Server.Iterator<string> {
+        return new TestIterator(this,true);
+    }
 
+    public addItem(item:string): void {
+        this._items.push(item);
+    }
+
+    public getItems():string[]{
+        return this._items;
+    }
+
+    public getExtremity(reverse: boolean): number {
+        return (reverse)?0:this._items.length -1;
+    }
+}
+
+
+const collection = new WordsCollection();
+collection.addItem('First');
+collection.addItem('Second');
+collection.addItem('Third');
+
+const reverseIterator = collection.getReverseIterator();
+while (reverseIterator.valid()) {
+    console.log(reverseIterator.next());
+}

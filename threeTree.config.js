@@ -6,6 +6,6 @@ export default
         dirPathPublic:'./app/public/',
     },
     server:{
-        caching_Script:false,
+        caching_Script:true,
     }
 }

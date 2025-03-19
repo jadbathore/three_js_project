@@ -147,9 +147,9 @@ export default class Utility {
 
     /**
      * @public replace any given name with a distinct hash to avoid constant or variable naming conflicts during compilation
-     * @param {String} string -text : take a text to remplace 
-     * @param {array} array - wordConst: nullable a array of word representing constant in the text
-     * @param {array} array - variable: nullable a array of raw line representing variable (let) in the text
+     * @param {String} text : take a text to remplace 
+     * @param {array} wordConst: nullable a array of word representing constant in the text
+     * @param {array} objNameSpace : nullable a array of raw line representing variable (let) in the text
      * @returns {string} string of the text remplaced content
      */
 
@@ -201,7 +201,7 @@ export default class Utility {
 
     /**
      * @public this method is there to get all the déclaration in a text(string) like the constant and variable 
-     * @param {string} string a text string to match all you want 
+     * @param {string} text a text string to match all you want 
      * @returns {Object} return a array object reusable like so (const a = thisgetTotaldecaration(text) ; console.log(a[0]))
      */
     getTotaldeclaration(text){

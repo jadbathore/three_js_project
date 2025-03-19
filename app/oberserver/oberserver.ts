@@ -1,35 +1,15 @@
-type Event = {
-    eventType:string;
-    filename:string;
-}
+export class CompilerWatchSubject implements LibFile.Subject {
+    public observers:LibFile.Observer[] = []
 
-type EventPromise = Promise<Event>
-
-interface Subject {
-    attach(observer:Observer):void;
-    detach(observer:Observer):void;
-    notify(event:Event):void;
-    addEventObserver(observer:Observer,eventPromise:EventPromise):void
-}
-
-interface Observer {
-    update(subject:Subject,event:Event):AsyncGenerator<any, any, unknown>;
-    addEvent(event:Event):void;
-    get events():Event[];
-    get path():String;
-}
-//___________________________
-export class CompilerWatchSubject implements Subject {
-    public observers:Observer[] = []
-
-    public attach(observer: Observer): void {
+    public attach(observer: LibFile.Observer): void {
         if(!this.observers.includes(observer))
         {
             this.observers.push(observer)
         }
     }
+    
 
-    public detach(observer: Observer): void {
+    public detach(observer: LibFile.Observer): void {
         const obeserverIndex = this.observers.indexOf(observer)
         if(obeserverIndex === -1)
         {
@@ -38,7 +18,7 @@ export class CompilerWatchSubject implements Subject {
         this.observers.splice(obeserverIndex,1)
     }
 
-    public async notify(event:Event):Promise<void>
+    public async notify(event:EventFile):Promise<void>
     {
         for (const observer of this.observers){
             const iterator:AsyncGenerator<any, any, unknown> = observer.update(this,event)
@@ -48,17 +28,17 @@ export class CompilerWatchSubject implements Subject {
         }
     }
 
-    public addEventObserver(observer:Observer,eventPromise:EventPromise):Awaited<void>
+    public addEventObserver(observer:LibFile.Observer,eventPromise:EventPromise):Awaited<void>
     {
-        eventPromise.then((event:Event)=>{
+        eventPromise.then((event:EventFile)=>{
             observer.addEvent(event)
         })
     } 
 
 }
 //___________________________
-export class ObserverWatch implements Observer {
-    private _events:Event[]=[];
+export class ObserverWatch implements LibFile.Observer {
+    private _events:EventFile[]=[];
     private _path:string;
 
 
@@ -67,7 +47,7 @@ export class ObserverWatch implements Observer {
         this._path = path
     }
 
-    public async *update(subject: Subject,event:Event):AsyncGenerator<any, any, EventPromise>
+    public async *update(subject: LibFile.Subject,event:EventFile):AsyncGenerator<any, any, EventPromise>
     {
         const emitPromise:EventPromise =  new Promise((resolve,rejects)=>{
             resolve(event)
@@ -75,12 +55,12 @@ export class ObserverWatch implements Observer {
         yield subject.addEventObserver(this,emitPromise)
     }
 
-    public addEvent(event:Event):void
+    public addEvent(event:EventFile):void
     {
         this._events.push(event)
     }
 
-    get events():Event[]
+    get events():EventFile[]
     {
         return this._events
     }
@@ -91,16 +71,16 @@ export class ObserverWatch implements Observer {
     }
 }
 
-export function ProxyObserver(observer:Observer,callBack:(event:Event,path:String)=>void):void
+export function ProxyObserver(observer:LibFile.Observer,callBack:(event:EventFile,path:String)=>void):void
 {
-    const _array:Event[] = []
+    const _array:EventFile[] = []
 
-    const raiseEvent = (event:Event,path:String) => {
+    const raiseEvent = (event:EventFile,path:String) => {
         callBack(event,path)
     }
 
-    const EventsHandler:ProxyHandler<Event[]> = {
-        get:function(target:Event[], p:string, receiver:any)
+    const EventsHandler:ProxyHandler<EventFile[]> = {
+        get:function(target:EventFile[], p:string, receiver:any)
         {
             if(p){
                 const index:number = parseInt(p)
@@ -108,13 +88,13 @@ export function ProxyObserver(observer:Observer,callBack:(event:Event,path:Strin
             }
             return target
         },
-        set:function(target:Event[],p:string,newvalue:any,receiver:any):boolean{
+        set:function(target:EventFile[],p:string,newvalue:any,receiver:any):boolean{
             const index:number = parseInt(p)
             target[index] = newvalue
             return true
         }
     }
-    const ProxyObserver:Event[] = new Proxy<Event[]>(observer.events,EventsHandler)
+    const ProxyObserver:EventFile[] = new Proxy<EventFile[]>(observer.events,EventsHandler)
 
     Object.defineProperty(ProxyObserver,'push', 
         {

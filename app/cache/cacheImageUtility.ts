@@ -1,7 +1,5 @@
-
-
 class ImagesCacheHandler{
-    static #imagesList:imageInterface[] = []
+    static #imagesList:Cache.imageInterface[] = []
     static #instance: ImagesCacheHandler;
 
     private constructor(){}
@@ -22,7 +20,7 @@ class ImagesCacheHandler{
 
 
 
-    public addTolist(imageInterface: imageInterface): void {
+    public addTolist(imageInterface: Cache.imageInterface): void {
         if(!ImagesCacheHandler.#imagesList.includes(imageInterface))
         {
             ImagesCacheHandler.#imagesList.push(imageInterface)
@@ -30,12 +28,8 @@ class ImagesCacheHandler{
     }
 }
 
-interface imageInterface {
-    get url(): string;
-}
 
-
-class ImageCache implements imageInterface {
+class ImageCache implements Cache.imageInterface {
     private _url:string
     private _instanceList:ImagesCacheHandler = ImagesCacheHandler.instance
 

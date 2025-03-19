@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "node app/test/tsFile/test.js",
+    "test": "node @types/test/tsFile/test.js",
     "start": "node --watch app/server/server.js"
   },
   "repository": {
@@ -40,7 +40,6 @@
     "ora": "^8.0.1",
     "path": "^0.12.7",
     "redis": "^4.7.0",
-    "rollup-plugin-esbuild-minify": "^1.1.1",
     "rollup-plugin-watch": "^1.0.4",
     "rxjs": "^7.8.1",
     "serve-index": "^1.9.1",
@@ -49,6 +48,9 @@
   "devDependencies": {
     "@rollup/plugin-commonjs": "^26.0.1",
     "@rollup/plugin-node-resolve": "^15.2.3",
+    "@types/compression": "^1.7.5",
+    "@types/connect-livereload": "^0.6.3",
+    "@types/livereload": "^0.9.5",
     "@types/node": "^22.7.6",
     "connect-livereload": "^0.6.1",
     "livereload": "^0.9.3",

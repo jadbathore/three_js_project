@@ -1,6 +1,6 @@
 import fs from 'fs'
 import path from 'path';
-import ThreeTreeConfig from '../../../threeTree.config.js'
+import ThreeTreeConfig from '../../../@types/declartion/threeTree.config.js'
 
 
 export default class PathUtility {
@@ -14,6 +14,8 @@ export default class PathUtility {
         this.dirPathAssetName = ThreeTreeConfig.path.dirPathAssetName;
         this.dirPathPublic = ThreeTreeConfig.path.dirPathPublic;
         this.viewerPathName = path.join(process.cwd(),'app','viewer');
+        this.keySLL = path.join(process.cwd(),'SSLcredential','key.pem');
+        this.certSLL = path.join(process.cwd(),'SSLcredential','cert.pem');
     }
 
     getPathSplit(pathFile)
