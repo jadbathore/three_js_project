@@ -10,7 +10,8 @@
 /app/generated
 /test_copy.txt
 /SSLcredential
-/@types
+/_types
+
 # ignore ALL files in ANY directory named public/versonning||dist ""
 app/public/versionning/*
 app/public/dist/*

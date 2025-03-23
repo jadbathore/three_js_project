@@ -2,7 +2,6 @@ type EventFile = {
     eventType:string;
     filename:string;
 }
-
 type EventPromise = Promise<EventFile>
 
 declare namespace LibFile {
@@ -40,10 +39,10 @@ declare namespace Cache {
 }
 
 declare namespace Server {
+    
     interface Collection<T>{
         get collection():T[];
     }
-
     interface Iterator<T>{
         current():T;
         next():T;
@@ -57,6 +56,10 @@ declare namespace Server {
         getCount():number;
         getItems():T[];
         getExtremity(reverse:boolean):number;
+    }
+
+    interface Strategy {
+        doAlgorithm(...arguments:any[]): void;
     }
 }
 

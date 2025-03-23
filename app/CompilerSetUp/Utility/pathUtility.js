@@ -1,6 +1,6 @@
 import fs from 'fs'
 import path from 'path';
-import ThreeTreeConfig from '../../../@types/declartion/threeTree.config.js'
+import ThreeTreeConfig from '../../../threeTree.config.js'
 
 
 export default class PathUtility {

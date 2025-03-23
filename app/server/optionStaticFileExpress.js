@@ -1,5 +1,5 @@
 import express from 'express'
-import threeTreeConfig from '../../@types/declartion/threeTree.config.js'
+import threeTreeConfig from '../../_types/threeTree.config.js'
 
 const optionServer =
 {

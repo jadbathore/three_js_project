@@ -2,31 +2,27 @@
   "compilerOptions": 
   {
     "allowJs": true,
-    "module": "ES2015",
-    "target": "ES2015",
+    "module": "ES2020",
+    "target": "ES2020",
     "declaration": true,
     "emitDeclarationOnly": false,
     "moduleResolution": "node",
     "noImplicitAny": true,
     "removeComments": true,
     "preserveConstEnums": true,
-    "sourceMap": true,
     "moduleDetection": "force",
     "allowSyntheticDefaultImports":true,
     "skipLibCheck": false,
-    "declarationMap": true,
-    "rootDirs": ["./app","./threeTree.config.js"],
-    "outDir": "@types/",
-    "declarationDir":"@types/",
+    "rootDirs": ["./app"],
+    "outDir": "_types/",
   },
-
-  "include": [
-    "app/**/*.ts",
-    "@types/**/*.d.ts",
+  "files": [
     "./threeTree.config.js"
   ],
+  "include": [
+    "app/**/*.ts",
+  ],
   "exclude": [
-    "@types/declartion",
     "node_modules/",
     "app/**/*.js",
   ]

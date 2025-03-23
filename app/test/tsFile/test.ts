@@ -1,4 +1,7 @@
-// import express from 'express';
+import  { router } from "../../route/routeur.js"
+import {Context,ServerStrategy} from '../../strategy/strategyServer.js'
+
+// import type {argumentServer} 
 // import chalk from 'chalk';
 // import boxen from 'boxen';
 // import compression from 'compression';
@@ -11,10 +14,38 @@
 // import { ObserverWatch,CompilerWatchSubject,ProxyObserver } from '../../oberserver/oberserver';
 // import { compiler } from '../../CompilerSetUp/Compiler'
 
+
+const context = new Context(new ServerStrategy(router));
+context.runServer();
+
 // const app = express();
 // const key = (fs.existsSync(PathUtility.keySLL))?fs.readFileSync(PathUtility.keySLL):null;
 // const cert = (fs.existsSync(PathUtility.certSLL))?fs.readFileSync(PathUtility.certSLL):null;
 // const server = (key && cert)? https.createServer({key: key, cert: cert }, app):app;
+
+// class a {
+//     public b(test:string){
+//         console.log(test)
+//     }
+// }
+
+
+// const iRouterMatcherExpress:ProxyHandler<a> = {
+//     get:function(target:a, p:string, receiver:any)
+//     {
+//         if(p){
+//             return receiver(p)
+//         }
+//     }
+// }
+// const A = new a();
+
+// const ProxyObserver:a = new Proxy<a>(Reflect.get(a,'b'),iRouterMatcherExpress)
+// console.log(Reflect.get(app,'get').call('/',(req,res)=>{
+    // let tst = Reflect.get(app,'get')
+// }));
+// app.get('/',(req,res)=>{})
+// Reflect.get(ProxyObserver, "", )
 // const port = process.env.EXPRESS_PORT || 3000;
 // const liveReloadServer = livereload.createServer();
 // app.use(compression())
@@ -73,74 +104,14 @@
  * store the current traversal position at all times.
  */
 
-class TestIterator implements Server.Iterator<string> {
-    private _collection: Server.Aggregator<string>;
-    private _index: number = 0;
-    private _reverse: boolean = false;
 
-    constructor(collection: Server.Aggregator<string>,reverse: boolean = false) {
-        this._collection = collection;
-        this._reverse = reverse;
-        this._index = this._collection.getExtremity(reverse);
+// const collection:Server.Aggregator<string> = new WordsCollection();
+// collection.addItem('First');
+// collection.addItem('Second');
+// collection.addItem('Third');
+// console.log(collection.getExtremity(false));
 
-    }
-
-    public rewind() {
-        this._index = this._collection.getExtremity(this._reverse);
-    }
-
-    public current(): string {
-        return this._collection.getItems()[this._index];
-    }
-
-    public next(): string {
-        const item = this.current();
-        this._index += this._reverse ? -1 : 1;
-        return item;
-    }
-
-    public valid(): boolean {
-        if (this._reverse) {
-            return this._index >= this._collection.getExtremity(this._reverse);
-        }
-        return this._index <= this._collection.getExtremity(this._reverse);
-    }
-}
-
-class WordsCollection implements Server.Aggregator<string> {
-
-    private _items:string[] = [];
-
-    public getCount(): number {
-        return this._items.length;
-    }
-    public getIterator(): Server.Iterator<string> {
-        return new TestIterator(this);
-    }
-    public getReverseIterator(): Server.Iterator<string> {
-        return new TestIterator(this,true);
-    }
-
-    public addItem(item:string): void {
-        this._items.push(item);
-    }
-
-    public getItems():string[]{
-        return this._items;
-    }
-
-    public getExtremity(reverse: boolean): number {
-        return (reverse)?0:this._items.length -1;
-    }
-}
-
-
-const collection = new WordsCollection();
-collection.addItem('First');
-collection.addItem('Second');
-collection.addItem('Third');
-
-const reverseIterator = collection.getReverseIterator();
-while (reverseIterator.valid()) {
-    console.log(reverseIterator.next());
-}
+// const reverseIterator:Server.Iterator<string> = collection.getIterator();
+// while (reverseIterator.valid()) {
+//     console.log(reverseIterator.next());
+// }

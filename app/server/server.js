@@ -7,7 +7,7 @@ import livereload from 'livereload';
 import connectLiveReload from 'connect-livereload';
 import PathUtility from '../CompilerSetUp/Utility/pathUtility.js';
 import { optionServer } from './optionStaticFileExpress.js';
-import { CompilerWatchSubject,ObserverWatch,ProxyObserver } from '../oberserver/oberserver.js';
+import { CompilerWatchSubject,ObserverWatch,ProxyObserver } from '../../_types/app/oberserver/oberserver.js';
 import https from 'https';
 const app = express();
 
@@ -36,7 +36,8 @@ const oberserver = new ObserverWatch('/')
 
 app.use((req,res,next)=>{
     ProxyObserver(oberserver,(event,path)=>{
-        // res.render('index');
+        res.render('index');
+        res.render
         liveReloadServer.refresh(path);
     })
     next();
