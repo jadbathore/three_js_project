@@ -107,6 +107,7 @@ export default class PathUtility {
     }
     static getPathFromElement(...pathfile)
     {
+        this.rootDirProjectName; 
         return path.join(process.cwd(),...this.self.getPathSplit(this.rootDirProjectName),...pathfile)
     }
 

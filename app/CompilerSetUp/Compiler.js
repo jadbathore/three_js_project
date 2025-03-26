@@ -8,7 +8,7 @@ import {rollup,watch} from 'rollup';
 
 
 const complierFile = PathUtility.getcompilerFile()
-const linkFile = PathUtility.getlinkFile()
+const linkFile = PathUtility.getlinkFile()                                                   
 
 /*
 français :
@@ -16,20 +16,23 @@ français :
 English:
     makes the connection between rollup and compiling.js work with the watch option which will watch the changes made on compiling
 */
-loadConfigFile(PathUtility.getRollupFile(), {
-	format: 'es'
-}).then(async ({ options, warnings }) => {
-	console.log(chalk.keyword('orange')(`Nous avons ${warnings.count} avertissement de la part de rollup`));
-	warnings.flush();
-	for (const optionsObj of options) {
-		const bundle = await rollup(optionsObj);
-		await Promise.all(optionsObj.output.map(bundle.write));
-	}
-    watch(options)
-    console.log(chalk.green('le fichier dist est connecté avec succée !'))
-}).catch((error)=>{
-    console.log(chalk.bgRed(error))
-});
+export function rollupWatchConfig(){
+    loadConfigFile(PathUtility.getRollupFile(), {
+        format: 'es'
+    }).then(async ({ options, warnings }) => {
+        console.log(chalk.keyword('orange')(`Nous avons ${warnings.count} avertissement de la part de rollup`));
+        warnings.flush();
+        for (const optionsObj of options) {
+            const bundle = await rollup(optionsObj);
+            await Promise.all(optionsObj.output.map(bundle.write));
+        }
+        watch(options)
+        console.log(chalk.green('le fichier dist est connecté avec succée !'))
+    }).catch((error)=>{
+        console.log(chalk.bgRed(error))
+    });
+}
+
 
 const UtilityClass = new Utility(PathUtility.getarrayFile(),PathUtility.getMapAsset());
 

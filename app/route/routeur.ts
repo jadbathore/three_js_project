@@ -33,6 +33,7 @@ export const router:route[] = [
     },
     {
         pathServer:"/",
+        scene:"threeElement",
         method: RequestMethod.get,
         serverLogic:(req,res)=>{
             res.send('bonjour')

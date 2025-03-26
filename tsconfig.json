@@ -15,6 +15,7 @@
     "skipLibCheck": false,
     "rootDirs": ["./app"],
     "outDir": "_types/",
+    "declarationDir": "_types/"
   },
   "files": [
     "./threeTree.config.js"
@@ -23,6 +24,7 @@
     "app/**/*.ts",
   ],
   "exclude": [
+    "_types/threeTree.config.d.ts",
     "node_modules/",
     "app/**/*.js",
   ]

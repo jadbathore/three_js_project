@@ -109,7 +109,7 @@ export class ConnectionUtilityMongoDB {
     }
 
     public async MakeSchemaPromise():Promise<string|MangooseTableSchema>{
-        await this.setStatus()
+        if(this._status == StatutsConnection.In_waiting_connection)await this.setStatus()
         const PromisePending:Promise<MangooseTableSchema|string>= new Promise((resolve,rejects)=>{
             if(this._status == StatutsConnection.Connected){
                 const schemas:MangooseTableSchema = this.makeSchema()
@@ -233,7 +233,9 @@ export class ConnectionUtilityMongoDB {
     };
 
     public async testTheConnectionPromise():Promise<string>{
-        await this.setStatus();
+        // await this.setStatus();
+        if(this._status == StatutsConnection.In_waiting_connection)await this.setStatus()
+
         const PromisePending:Promise<string>= new Promise((resolve,rejects)=>{
             if(this._status == StatutsConnection.Connected){
                 resolve(this._status)

@@ -1,17 +1,26 @@
-import type { route} from "../route/routeur.js"
-import  { RequestMethod} from "../route/routeur.js"
-import { ServerRouteAggregate } from "../iterator/iteratorServer.js";
 import type { Express } from "express";
 import express  from "express";
 import fs from 'fs' 
 import https from 'https'
+import compression from 'compression';
+import livereload from 'livereload';
+import connectLiveReload from 'connect-livereload';
 import PathUtility from '../CompilerSetUp/Utility/pathUtility.js';
+import type { route} from "../route/routeur.js"
+import  { RequestMethod} from "../route/routeur.js"
+import { ServerRouteAggregate } from "../iterator/iteratorServer.js";
+import { optionServer } from '../server/optionStaticFileExpress.js';
+import { CompilerWatchSubject,ObserverWatch,ProxyObserver } from '../oberserver/oberserver';
+import { compiler,rollupWatchConfig } from "../CompilerSetUp/Compiler.js";
 
 export class Context {
     private _strategy: Server.Strategy;
+    private _subject:CompilerWatchSubject;
 
     constructor(strategy: Server.Strategy) {
         this._strategy = strategy;
+        this._subject = new CompilerWatchSubject()
+
     }
 
     public setStrategy(strategy: Server.Strategy) {
@@ -20,6 +29,11 @@ export class Context {
 
     public runServer(): void {
         const app:Express = express()
+        app.use(compression());
+        app.use(connectLiveReload())
+        app.set('view engine','ejs')
+        app.set('views',PathUtility.getViewerFile())
+        app.use(express.static('app/public',optionServer))
         const key:Buffer|null = (fs.existsSync(PathUtility.keySLL))?fs.readFileSync(PathUtility.keySLL):null;
         const cert:Buffer|null = (fs.existsSync(PathUtility.certSLL))?fs.readFileSync(PathUtility.certSLL):null;
         const server:Express|https.Server = (key && cert)? https.createServer({key: key, cert: cert }, app):app;
@@ -38,14 +52,14 @@ export class ServerStrategy implements Server.Strategy {
         this._data = data;
     }
 
-    public doAlgorithm(app:Express): void {
+    public doAlgorithm(app:Express,subject:CompilerWatchSubject): void {
         const collection:Server.Aggregator<route> = new ServerRouteAggregate(this._data);
         const iterator:Server.Iterator<route> = collection.getIterator();
         while (iterator.valid()) {
             const routeObj:route = iterator.next();
             if(routeObj.method != RequestMethod.middleWare){
                 if(routeObj.scene){
-                    
+                    const oberserver = new ObserverWatch(routeObj.pathServer)
                 }
                 app[routeObj.method](routeObj.pathServer,routeObj.serverLogic);
             } else {
@@ -54,6 +68,24 @@ export class ServerStrategy implements Server.Strategy {
         }
     }
 }
+
+
+// const port = process.env.EXPRESS_PORT || 3000;
+// const liveReloadServer = livereload.createServer();
+// app.use(compression())
+// app.set('view engine','ejs')
+// app.set('views',PathUtility.getViewerFile())
+// app.use(express.static('app/public',optionServer))
+
+// async function callCompiler(subject,oberserver)
+// {
+//     const {compiler} =  await import('../CompilerSetUp/Compiler.js')
+//     return compiler(subject,oberserver)
+// }
+
+// app.use(connectLiveReload())
+
+
 
 
 /**

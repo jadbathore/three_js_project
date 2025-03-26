@@ -5,7 +5,7 @@ bin(){
    cd SSLcredential;
    FQDN="foo.threeProject.org";
    ORGNAME="Example University";
-   ALTNAMES="DNS:$FQDN"
+   ALTNAMES="DNS:$FQDN";
    echo "[ req ]" >> openssl.cnf
    echo "default_bits = 2048" >> openssl.cnf  
    echo "default_md = sha256" >> openssl.cnf

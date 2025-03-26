@@ -5,13 +5,13 @@ import chalk from "chalk";
 import figlet from "figlet";
 import mongoose from 'mongoose';
 import fs from 'fs';
-import PathUtility from "../app/CompilerSetUp/Utility/pathUtility.js";
 import commanderHelp from 'commander-help'
 import ora from 'ora'
 import BinUtility from "./BinUtility.js"
 import gradient from 'gradient-string';
 import Utility from "../app/CompilerSetUp/Utility/Utility.js";
-import { ConnectionUtilityMongoDB } from "../app/databaseConnection/dbConnection.js";
+import { ConnectionUtilityMongoDB } from "../_types/app/databaseConnection/dbConnection.js";
+import PathUtility from "../app/CompilerSetUp/Utility/pathUtility.js";
 import inquirer from "inquirer";
 import { input } from '@inquirer/prompts';
 
@@ -87,7 +87,8 @@ class Bin {
         .command('testConnection') 
         .action(()=>{
             const spinner = ora('Waiting for The Return Status...').start()
-            Connection.testConnnectionAwaited(spinner)
+            setTimeout(()=>{Connection.testConnnectionAwaited(spinner)},1000)
+            
         })
         .description('test the connection of the database and return the status')
     }
@@ -300,9 +301,6 @@ class Bin {
                     },
                 ])
             }
-            const table = (condition)? optionnalQuestion.choice :option.table
-            const tableToUpdate = await Connection.findObject(table) 
-            const tableChoice = []
             if(tableToUpdate.length <= 1)
                 {
                     console.log(chalk.blue('the table is empty'))
@@ -530,3 +528,4 @@ class Bin {
 }
 
 (new Bin())
+

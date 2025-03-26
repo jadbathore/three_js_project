@@ -5,8 +5,6 @@ import path, { basename, resolve } from 'path';
 import fs from 'fs';
 import PathUtility from "../app/CompilerSetUp/Utility/pathUtility.js";
 import Utility from "../app/CompilerSetUp/Utility/Utility.js";
-import { error } from "console";
-
 
 
 export default class BinUtility {

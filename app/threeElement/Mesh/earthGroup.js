@@ -26,7 +26,6 @@ const earthMesh = new THREE.Mesh(
             specular: 0xFFFFFF,
             opacity:2,
         blending: THREE.AdditiveBlending,
-
         }
     )
 )

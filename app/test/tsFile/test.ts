@@ -1,6 +1,6 @@
 import  { router } from "../../route/routeur.js"
 import {Context,ServerStrategy} from '../../strategy/strategyServer.js'
-
+import { rollupWatchConfig } from "../../CompilerSetUp/Compiler.js";
 // import type {argumentServer} 
 // import chalk from 'chalk';
 // import boxen from 'boxen';
@@ -14,7 +14,7 @@ import {Context,ServerStrategy} from '../../strategy/strategyServer.js'
 // import { ObserverWatch,CompilerWatchSubject,ProxyObserver } from '../../oberserver/oberserver';
 // import { compiler } from '../../CompilerSetUp/Compiler'
 
-
+rollupWatchConfig();
 const context = new Context(new ServerStrategy(router));
 context.runServer();
 
