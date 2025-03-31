@@ -106,10 +106,12 @@ export default class PathUtility {
         })
         return basenameFile
     }
-    static getPathFromElement(...pathfile)
+    static getPathFromElement(rootDirDefine=true,...pathfile)
     {
-        this.rootDirProjectName; 
+        if(rootDirDefine) {
         return path.join(process.cwd(),...this.self.getPathSplit(this.rootDirProjectName),...pathfile)
+        }
+        return path.join(process.cwd(),...pathfile)
     }
 
     static getPathFromPublic(...pathfile)

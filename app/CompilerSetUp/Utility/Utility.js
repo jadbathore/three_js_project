@@ -1,5 +1,5 @@
 import chalk from 'chalk';
-import path from 'path';
+import path, { basename } from 'path';
 import fs from 'fs'
 import RecursiveMatcher from './RecursiveMatcher.js'
 import PathUtility from './pathUtility.js';
@@ -107,13 +107,13 @@ export default class Utility {
     /*
     français:
         permet de organise l'ordre des entré pour que le compilateur effectue sa fonction de manière souhaite 
-        1.  configImport.js 
-        2.  RendererSetting.js 
-        3.  cameraSetting.js
-        4.  loader.js
-        5.  n'importe quel element autre + autre 
-        6.  animate.js
-        7.  resizing.js
+        1.configImport.js 
+        2.RendererSetting.js 
+        3.cameraSetting.js
+        4.loader.js
+        n'importe quel element autre + autre 
+        5.animate.js
+        6.resizing.js
     */
 
     /**
@@ -129,12 +129,12 @@ export default class Utility {
         for (const value of iterator) {
             switch(path?.basename(value))
             {
-                case'configImport.js':
+                case'1.configImport.js':
                     organisedArray[0] = value;
                 break;
-                case'RendererSetting.js':organisedArray[1] = value;break;
-                case'cameraSetting.js':organisedArray[2] = value;break;
-                case'loader.js':organisedArray[3] = value;break;
+                case'2.RendererSetting.js':organisedArray[1] = value;break;
+                case'3.cameraSetting.js':organisedArray[2] = value;break;
+                case'4.loader.js':organisedArray[3] = value;break;
                 case'animate.js': organisedArray[fileArray.length - 2] = value;break;
                 case'resizeSetting.js':organisedArray[fileArray.length - 1] = value;break;
                 case undefined: break;
@@ -439,7 +439,8 @@ export default class Utility {
     formatName(pathfile,prefix,suffix){
         if (fs.lstatSync(pathfile).isFile())
         {
-            return (prefix??'') + path.basename(pathfile).split('.js').join('') + (suffix??'');
+            pathfile = (path.basename(pathfile).replace(".","_"));
+            return (prefix??'') + pathfile.split('.js').join('') + (suffix??'');
         } else {
             throw new Error(`${pathfile} n'est pas un fichier`);
         }
@@ -894,7 +895,7 @@ export default class Utility {
     * @returns array
     */
     getConfigUtilty(){
-        const configFile = PathUtility.getPathFromElement('Setting','configImport.js')  
+        const configFile = PathUtility.getPathFromElement('1.Setting','1.configImport.js')  
         const contentConfig = fs.readFileSync(configFile,'utf-8')
         const elementDict = {}
         const declaration = contentConfig.match(this.#regexDeclaration)

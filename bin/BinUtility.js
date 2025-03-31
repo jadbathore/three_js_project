@@ -125,6 +125,32 @@ English:
         }
     }
 
+    newUtility(dir,usingRoot){
+        const mainPath = (usingRoot)? PathUtility.getPathFromElement():PathUtility.getPathFromElement(false,'app',dir);
+        console.log(mainPath)
+        if(!fs.existsSync(mainPath)){
+            fs.mkdirSync(mainPath);
+            const resourceFilePath = PathUtility.getPathFromPublic('makeFileRessource','clearDefault')
+            for(let file of fs.readdirSync(resourceFilePath))
+            {
+                
+                const pathFileRead = PathUtility.getPathFromPublic('makeFileRessource','clearDefault',file)
+                const spliteFile = file.split('.txt').join('.js').split('_')
+                let [dirUtilityWrite,fileUtilityWrite] = spliteFile;
+                // console.log(path.join(mainPath,dirUtilityWrite));
+                if(!fs.existsSync(dirUtilityWrite = path.join(mainPath,dirUtilityWrite))){
+                    fs.mkdirSync(dirUtilityWrite);
+                }
+                const pathFileWrite = path.join(dirUtilityWrite,fileUtilityWrite)
+                const pathFileReadcontent = fs.readFileSync(pathFileRead,{encoding:'utf-8'})
+                fs.appendFileSync(pathFileWrite,pathFileReadcontent)
+            }
+        } else {
+            throw new Error('path already exist')
+        }
+        
+    }
+
     async *ReaderFilePromiseGenerator()
     {
         const CompilerUtility = new Utility(PathUtility.getarrayFile(),PathUtility.getMapAsset());

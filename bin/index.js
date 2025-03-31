@@ -9,6 +9,7 @@ import commanderHelp from 'commander-help'
 import ora from 'ora'
 import BinUtility from "./BinUtility.js"
 import gradient from 'gradient-string';
+import path from 'path'
 import Utility from "../app/CompilerSetUp/Utility/Utility.js";
 import { ConnectionUtilityMongoDB } from "../_types/app/databaseConnection/dbConnection.js";
 import PathUtility from "../app/CompilerSetUp/Utility/pathUtility.js";
@@ -16,19 +17,28 @@ import inquirer from "inquirer";
 import { input } from '@inquirer/prompts';
 
 const BinUtilityClass = new BinUtility()
-const CompilerUtilityClass = new Utility(PathUtility.getarrayFile(),PathUtility.getMapAsset())
+
+// const CompilerUtilityClass = new Utility(PathUtility.rootDirProjectName)
 const DB_URI = process.env.DB_URI || "mongodb://127.0.0.1:27017/versionningThreeJs"
 const Connection = new ConnectionUtilityMongoDB(DB_URI)
 
-class Bin {
 
-    constructor()
+ 
+class Bin{
+
+    constructor(rootDirProjectName)
     {
+        if(fs.existsSync(rootDirProjectName)){
+            this.CompilerUtilityClass = new Utility(PathUtility.rootDirProjectName);
+            this.bin_compile();
+            console.log(`the file ${PathUtility.rootDirProjectName} did not exist so the 'compile' command is forbiden`)
+        }
         this.bin_clear();
-        this.bin_compile();
+        this.bin_new();
         this.bin_testConnection();
         this.bin_make();
         this.bin_importscript();
+
         Connection.testTheConnectionPromise().then(()=>
         {
             this.bin_fork()
@@ -159,8 +169,8 @@ class Bin {
                         const formatDate = new Date(Date.now()).toString().replace(regex,'').split(' ').join('_');
                         const nameFile = `${option.singlefile}_${formatDate}`;
                         const content = fs.readFileSync(PathUtility.getarrayFile()[a],'utf-8')
-                        CompilerUtilityClass.setAllConstant(content)
-                        const allConstArray = CompilerUtilityClass.allConstant
+                        this.CompilerUtilityClass.setAllConstant(content)
+                        const allConstArray = this.CompilerUtilityClass.allConstant
                         let remplacement = {}
                         for(let i=0;i<allConstArray.length;i++)
                         {
@@ -187,8 +197,8 @@ class Bin {
                                 const formatDate = new Date(Date.now()).toString().replace(regex,'').split(' ').join('_');
                                 const nameFile = result.choice.split('.js').join('') +'_'+formatDate;
                                 const content = fs.readFileSync(PathUtility.getarrayFile()[choicesindex],'utf-8')
-                                CompilerUtilityClass.setAllConstant(content)
-                                const allConstArray = CompilerUtilityClass.allConstant
+                                this.CompilerUtilityClass.setAllConstant(content)
+                                const allConstArray = this.CompilerUtilityClass.allConstant
                                 let remplacement = {}
                                 for(let i=0;i<allConstArray.length;i++)
                                 {
@@ -418,8 +428,6 @@ class Bin {
         return program.command('usable')
         .action(
             async()=>{
-                // const modelObject = await Connection.findObject('usable')
-                // console.log(modelObject)
                 const request = await Connection.findObject('usable')
                 const nameArray = []
                 for(let i = 0; i < request.length; i++)
@@ -436,6 +444,10 @@ class Bin {
                                 fs.rmSync(PathUtility.getarrayFile()[i],{recursive:true})
                             }
                         for (const key in request2[0].content) {
+                            const dirpath = path.dirname(key)
+                            if(!fs.existsSync(dirpath)){
+                                fs.mkdirSync(dirpath);
+                            }
                             if(fs.existsSync(key)){
                                 fs.truncateSync(key)
                                 fs.appendFileSync(key,request2[0].content[key])
@@ -443,8 +455,8 @@ class Bin {
                                 fs.appendFileSync(key,request2[0].content[key])
                             }
                         }
+                        // process.exit()
                         console.log(chalk.green('tous les fichiers utilisable on été rechargé avec succée ✨'));
-                        process.exit()
                     },100)
                 })
             }
@@ -469,6 +481,17 @@ class Bin {
                     console.log(chalk.green('ThreeElement already clean ✨'))
                     process.exit()
                 }
+            }
+        ).description('clear directory "threeElement" leave only the Setting and the animate function truncated')
+    }
+    bin_new(){
+        return program
+        .command('new')
+        .option('-f,--fileName <file>','fileName of the new threeElement(by default filename)')
+        .action(
+            (option)=>{
+                BinUtilityClass.newUtility(option?.fileName ?? PathUtility.rootDirProjectName,option?.fileName == null);
+                process.exit();
             }
         ).description('clear directory "threeElement" leave only the Setting and the animate function truncated')
     }
@@ -505,8 +528,8 @@ class Bin {
     bin_compile()
     {
         program.command('compile').action(()=>{
-            CompilerUtilityClass.repopulateComposer(PathUtility.getcompilerFile())
-            CompilerUtilityClass.repopulatelinkFile(PathUtility.getlinkFile())
+            this.CompilerUtilityClass.repopulateComposer(PathUtility.getcompilerFile())
+            this.CompilerUtilityClass.repopulatelinkFile(PathUtility.getlinkFile())
             process.exit()
         }).description('add import')
     }
@@ -527,5 +550,6 @@ class Bin {
     }
 }
 
-(new Bin())
+
+(new Bin(PathUtility.rootDirProjectName))
 

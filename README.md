@@ -8,6 +8,7 @@ The usefulness of this project lies in the organization of the files, the practi
 - npm install
 - ./bash/bin.sh (if you want to use https to test else it will be in http)
 - start the project with npm start
+- ThreeCli clear (to clear the "ThreeElement" directory)
 
 ### example:
 ![en utilisant le projet](https://github.com/user-attachments/assets/815de4d4-ab72-4f29-96fb-5797fa45b4db)
