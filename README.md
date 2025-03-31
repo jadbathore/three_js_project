@@ -1,38 +1,45 @@
-## Fonctionnement de three_js_project
-Ce projet recoupe tous les fichiers en 1 seul pour par la suite être interprété de manière "classique" par un élément ejs il est utile pour des projets importants utilisant Three.js.<br>
-L'utilité de ce projet réside dans la l'organisation des fichiers l'utilisation pratique du CLI intégrés et le système de serveur express permettant de render des pages de manière
-dynamique par exemple.
+## How three_js_project works
+This project combines all the files into a single file to be interpreted in a "classic" way by an ejs element. It is useful for large projects using Three.js.<br>
+The usefulness of this project lies in the organization of the files, the practical use of the integrated CLI, and the express server system, which allows you to render pages dynamically, for example.
 
-### exemple :
+
+### installation
+
+- npm install
+- ./bash/bin.sh (if you want to use https to test else it will be in http)
+- start the project with npm start
+
+### example:
 ![en utilisant le projet](https://github.com/user-attachments/assets/815de4d4-ab72-4f29-96fb-5797fa45b4db)
 
-invité de commande
+Command Prompt
 ---
 <p>
-  L'utilisation du Cli intégrés permet d'effectuer des actions rapide et d'optimiser l'utilisation de cette boilerplate plusieur action son
-  possible comme démontré ci dessous.
+Using the built-in CLI allows you to perform quick actions and optimize the use of this boilerplate. Several actions are possible, as demonstrated below.
 </p>
+
   <img width="1509" alt="Capture d’écran 2024-11-05 à 16 14 50" src="https://github.com/user-attachments/assets/62435a55-b798-4465-95ac-77d5896c1206">
 
 ### docker:
 
 > [!TIP]
-> Une version de L'invité de commande en docker est disponible si vous ne souhaiter pas installer mongo sur votre machine
+> A Docker version of the command prompt is available if you don't want to install Mongo on your machine.
 
-Pour build le container pour la première fois assuré vous d'être dans le répertoir faite la commande :
+To build the container for the first time, make sure you're in the directory and run the command:
 ```
 Docker-compose up
 ```
-Par la suite pour utiliser le cli faite la commande : 
+Then, to use the CLI, run the command:
 ```
 docker exec -it ThreeCli sh -c "node bin/index.js"
 ```
-Si tout a bien fonctionner vous devriez voir s'afficher le tableau si dessus .
-#### utilisation:
-> [!TIP]
-> pour utiliser le cli vous devrier tapper directement les commande à la suite en faisant abstraction du ThreeCLi
+If everything worked, you should see the table above.
 
-#### Exemple:
+#### Usage:
+
+> [!TIP]
+> To use the CLI, you should type the commands directly, ignoring ThreeCLi.
+#### Example:
 ```
 docker exec -it ThreeCli sh -c "node bin/index.js <command> <option> <param>"
                                                     │           │        │ 
@@ -42,8 +49,8 @@ docker exec -it ThreeCli sh -c "node bin/index.js <command> <option> <param>"
                                                   (...)       (...)     (...)
 ```
 
- arborescence du projet :
- ---
+project tree:
+---
  
 ```
 ├── threeElement
@@ -71,15 +78,15 @@ docker exec -it ThreeCli sh -c "node bin/index.js <command> <option> <param>"
         └── Compiling.js(default)
 ```
 
-1) Le Dossier ThreeElement va etre compiler en 1 class nommé Content dans le dossier Public/versionning/Compiling.js 
-2) Public/versionning/Compiling.js  va lui même etre compiler par rollup dans le dossier Public/dist/Compiling.js
-3) Public/dist/Compiling.js va être utilisé comme element script sur une page nommé index.ejs
-4) cette page et par la suite render grâce à un serveur Express (quelque élement static vont etre stocker dans un cache) 
+1) The ThreeElement folder will be compiled into a single class named Content in the Public/versioning/Compiling.js folder
+2) Public/versioning/Compiling.js will itself be compiled by rollup in the Public/dist/Compiling.js folder
+3) Public/dist/Compiling.js will be used as a script element on a page named index.ejs
+4) This page will then be rendered using an Express server (some static elements will be stored in a cache)
 
-Systeme de ObjectNameSpace:
+Object NameSpace System:
 ---
- Le systeme de Object nameSpace crée de manière automatique un nouvel object Javascript qui aura la fonction de "namespace" permettant de differencier 2 déclaration identiques
-#### Exemple:
+The Object NameSpace system automatically creates a new JavaScript object that will act as a "namespace" to differentiate between two identical declarations.
+#### Example:
 ```javascript
   //document a.js
 
@@ -91,7 +98,7 @@ scene.add(sphere)
 const sphere = "b"
 console.log(sphere)
 
-  //document fessant la compilation (après compilation des deux documents)
+  //linkfile.js(compilation file) (after compilation of the two documents)
 
 //---a.js---
 const sphere = new THREE.Mesh(...)
