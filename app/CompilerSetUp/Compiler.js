@@ -49,6 +49,11 @@ English:
 export const compiler = (subject,observer) =>
 {
     subject.attach(observer)
+    if(!fs.existsSync(PathUtility.versionDIR)) {
+        fs.promises.mkdir(PathUtility.versionDIR, { recursive: true })
+        .then((path) => console.log(chalk.green('Directory created successfully',path)))
+        .catch((err) => console.error('Error creating directory:', err));
+    }
     UtilityClass.repopulateComposer(PathUtility.getcompilerFile())
     UtilityClass.repopulatelinkFile(PathUtility.getlinkFile())
     for(const [key,value] of PathUtility.getMapFile())

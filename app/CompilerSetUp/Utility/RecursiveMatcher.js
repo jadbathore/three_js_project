@@ -3,7 +3,7 @@ import chalk from "chalk"
 
 export default class RecursiveMatcher{
 
-    static{
+    static {
         /**
          * @property this.self invokation of itself for accessing public method in a static context
          */

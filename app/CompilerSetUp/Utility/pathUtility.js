@@ -7,6 +7,7 @@ export default class PathUtility {
 
     static{
         this.self = (new PathUtility)
+        this.versionDIR = path.join(process.cwd(),'app','public','versionning');
         this.compilerFile = path.join(process.cwd(),'app','public','versionning','compling.js');
         this.linkFile = path.join(process.cwd(),'app','public','versionning','linkfile.js');
         this.rollupConfig = path.resolve(process.cwd(),'rollup.config.js');

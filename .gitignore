@@ -6,7 +6,7 @@
 .LSOverride
 /node_modules
 .env
-package-lock.json
+# ./package-lock.jsons
 /testDockerFile
 /app/generated
 /test_copy.txt
