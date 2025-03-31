@@ -45,24 +45,24 @@ export default class PathUtility {
         return this.rollupConfig;
     }
 
-    static getMapFile()
+    static getMapFile(directory = this.rootDirProjectName)
     {
         const mapFile = new Map();
-        fs.readdirSync(this.rootDirProjectName,{withFileTypes:true}).filter(dir => dir.isDirectory()).map((dir)=>{
-            const arry = fs.readdirSync(path.join(process.cwd(),...this.self.getPathSplit(this.rootDirProjectName),dir.name))
+        fs.readdirSync(directory,{withFileTypes:true}).filter(dir => dir.isDirectory()).map((dir)=>{
+            const arry = fs.readdirSync(path.join(process.cwd(),...this.self.getPathSplit(directory),dir.name))
             mapFile.set(dir.name,arry)
         });
         return mapFile
     }
 
-    static getarrayFile()
+    static getarrayFile(directory = this.rootDirProjectName)
     {
         const allFile = []
-        for (const [key, value] of PathUtility.getMapFile())     
+        for (const [key, value] of PathUtility.getMapFile(directory))     
         {
             for (const file of value)
             {
-                const pathFile = path.join(process.cwd(),...this.self.getPathSplit(this.rootDirProjectName),key,file)
+                const pathFile = path.join(process.cwd(),...this.self.getPathSplit(directory),key,file)
                 allFile.push(pathFile);
             }
         }   

@@ -11,7 +11,6 @@ const { THREE,
 
 const moonRotation = new THREE.Object3D();
 scene.add(moonRotation);
-
 const moonMesh = new THREE.Mesh(
     new THREE.IcosahedronGeometry(0.27,12),
     new THREE.MeshPhongMaterial({

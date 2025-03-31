@@ -9,5 +9,7 @@ const { THREE,
 	star, sunLight, getFresnelMat,
 	getStarfield, } = require('../../public/versionning/linkFile.js')
 
-const loader = new THREE.TextureLoader();
+
+
+	const loader = new THREE.TextureLoader();
 

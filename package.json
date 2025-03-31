@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "node _types/app/test/tsFile/test.js",
+    "test": "node ./app/test/jsFile/test.js",
     "start": "node --watch app/server/server.js"
   },
   "repository": {

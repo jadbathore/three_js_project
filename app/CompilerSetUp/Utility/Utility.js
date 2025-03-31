@@ -79,10 +79,11 @@ export default class Utility {
      * @param {array} array - fileDirArray is a array of unsorted file
      * @param {Map} Map - mapAsset is a object Map of all the asset(image/gltf...) you might need sorting this way : (dirName => [ file1.js , file2.js] )
      */
-    constructor(fileDirArray,mapAsset)
+    constructor(compilerDir)
     {
-        this.fileDirArray = this.setMapFile(fileDirArray)
-        this.mapAsset = mapAsset
+        let fileDirArray = PathUtility.getarrayFile(compilerDir);
+        this.fileDirArray = this.setMapFile(fileDirArray);
+        this.mapAsset = PathUtility.getMapAsset();
     }
 
 

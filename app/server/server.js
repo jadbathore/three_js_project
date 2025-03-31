@@ -10,12 +10,22 @@ import { optionServer } from './optionStaticFileExpress.js';
 import { CompilerWatchSubject,ObserverWatch,ProxyObserver } from '../../_types/app/oberserver/oberserver.js';
 import { compiler,rollupWatchConfig } from "../CompilerSetUp/Compiler.js";
 import https from 'https';
+
 rollupWatchConfig();
 const app = express();
+const liveReloadServer = livereload.createServer();
+
 const key = (fs.existsSync(PathUtility.keySLL))?fs.readFileSync(PathUtility.keySLL):null;
 const cert = (fs.existsSync(PathUtility.certSLL))?fs.readFileSync(PathUtility.certSLL):null;
+const subject = new CompilerWatchSubject()
+const oberserver = new ObserverWatch('/')
 const server = (key && cert)? https.createServer({key: key, cert: cert }, app):app;
+// const server = app;
 const port = process.env.EXPRESS_PORT || 3000;
+ProxyObserver(oberserver,(event,path)=>{
+    console.log(event,path)
+    liveReloadServer.refresh(path);
+})
 app.use(compression())
 app.set('view engine','ejs')
 app.set('views',PathUtility.getViewerFile())
@@ -27,21 +37,7 @@ async function callCompiler(subject,oberserver)
     return compiler(subject,oberserver)
 }
 
-const liveReloadServer = livereload.createServer();
 app.use(connectLiveReload())
-
-const subject = new CompilerWatchSubject()
-const oberserver = new ObserverWatch('/')
-
-ProxyObserver(oberserver,(event,path)=>{
-    liveReloadServer.refresh(path);
-})
-
-app.use((req,res,next)=>{
-    res.render('index');
-    next();
-});
-
 
 
 
