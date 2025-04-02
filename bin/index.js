@@ -95,10 +95,9 @@ class Bin{
     {
         return program
         .command('testConnection') 
-        .action(()=>{
+        .action(async ()=>{
             const spinner = ora('Waiting for The Return Status...').start()
-            setTimeout(()=>{Connection.testConnnectionAwaited(spinner)},1000)
-            
+            Connection.testConnnectionAwaited(spinner)
         })
         .description('test the connection of the database and return the status')
     }

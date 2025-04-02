@@ -1,0 +1,46 @@
+export default class Utility {
+    constructor(compilerDir: any);
+    fileDirArray: array;
+    mapAsset: Map<any, any>;
+    setAllConstant(text: any): void;
+    addToAllConstant(...array: any[]): void;
+    getfileDirarraySlice(start: any, end: any): any;
+    get allConstant(): any[];
+    public setMapFile(fileArray: any): array;
+    public replaceContent(text: string, arrayWord: any, objNameSpace: array): string;
+    nameSpaceMaker(file: any): string;
+    public checkdouble(array: any): object;
+    public getTotaldeclaration(text: string): Object;
+    getClassDeclaration(text: any): {
+        paramClass: any;
+        constant: any;
+    };
+    public getContentFile(fileArray: any): string;
+    ObjectNamespaceMakerPromise(array: any, file: any): Promise<any>;
+    doubleDeclarationHandler(array: any, file: any): Promise<undefined>;
+    public getComposerContent(fileArray: any): string;
+    ContentCleaner(contentRaw: string, totalConstant: any, asset: any): Promise<any>;
+    formatName(pathfile: string, prefix: null | string, suffix: any): string;
+    classModifyGenerator(arrayClass: array): Generator<string, void, unknown>;
+    regexChangerConst(word: any): RegExp;
+    cleanerCommunJsDeclaration(text: any): any;
+    DeletorForClassPromise(text: string): Promise<any>;
+    replacorForFunctionPromise(text: string): Promise<any>;
+    public lazyRemplacement(beginingFile: any, endFile: any): typeof fs.promises;
+    lazyComposerRemplacement(beginingFile: string, endFile: string): typeof fs.promises;
+    regexSectionMaker(toSection: string): RegExp;
+    regexSectionMakerForClass(toSection: string): RegExp;
+    public repopulateComposer(file: any, composerContext?: boolean): void;
+    public repopulatelinkFile(file: any, composerContext?: boolean): void;
+    removeAllBlank(text: any): any;
+    public getAllExportName(content: any): array;
+    public addimportScript(file: string): void;
+    public getExportScript(constArray: any): string;
+    public getImportStript(jumpLine?: boolean): void;
+    public getAssetPathConst(): object;
+    public getConfigUtilty(): {};
+    public getImportCommunJsScript(): string;
+    public compilerContentPromise(array: any, typedata: any): promise;
+    #private;
+}
+import fs from 'fs';
