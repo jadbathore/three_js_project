@@ -12,7 +12,7 @@
 /test_copy.txt
 /SSLcredential
 /_types
-
+package-lock.json
 # ignore ALL files in ANY directory named public/versonning||dist ""
 app/public/versionning/*
 app/public/dist/*
