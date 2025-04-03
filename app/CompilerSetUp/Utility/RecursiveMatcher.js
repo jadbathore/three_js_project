@@ -92,7 +92,7 @@ export default class RecursiveMatcher{
 
     /**
      * 
-     * @param {Iterable} generator handling every type of Iterable to transform into a array and then if length = 0 (return null) else 
+     * @param {Iterable<string>} generator handling every type of Iterable to transform into a array and then if length = 0 (return null) else 
      * return the arraygenerated 
      * @returns 
      */
@@ -116,16 +116,22 @@ export default class RecursiveMatcher{
      * ```
      */
     
+        /**
+         * @param {*} text 
+         * @returns 
+         */
     static getAllFunctionContent(text)
     {
         if(typeof text == 'object')
         {
+            //@ts-ignore
             text.then(data=>
                 {
                     console.log(chalk.yellow(data))
                 })
         }
         try{
+            //@ts-ignore
             const generator = this.self.generatorMatchingRecurtion(
                 text,
                 RecursiveMatcher.functionName,
@@ -166,9 +172,15 @@ export default class RecursiveMatcher{
     }
 
 
+    /**
+     * 
+     * @param {*} text 
+     * @returns 
+     */
     static getallRecursiveContentClassAndFunction(text)
     {
         try{
+            //@ts-ignore
             const generator = this.self.generatorMatchingRecurtion(
                 text,
                 RecursiveMatcher.ClassStart,
@@ -182,6 +194,10 @@ export default class RecursiveMatcher{
             throw err
         }
     }
+    /**
+     * @param {*} text 
+     * @returns 
+     */
     static contentCleanerRecursion(text){
         const allclassAndFunctionContent = RecursiveMatcher.getallRecursiveContentClassAndFunction(text);
         allclassAndFunctionContent?.forEach((e)=>{
@@ -190,9 +206,16 @@ export default class RecursiveMatcher{
         return text;
     }
 
+    /**
+     * 
+     * @param {*} text 
+     * @param {*} className 
+     * @returns 
+     */
     static getSpecificClassContent(text,className)
     {
         try{
+            //@ts-ignore
             const generator = this.self.generatorMatchingRecurtion(
                 text,
                 new RegExp(`((\\bclass((\\s)+?)\\b))(${className})((\\s?)+?)(?=\\{)`,'g'),

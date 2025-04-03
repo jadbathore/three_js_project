@@ -23,7 +23,6 @@ const server = (key && cert)? https.createServer({key: key, cert: cert }, app):a
 // const server = app;
 const port = process.env.EXPRESS_PORT || 3000;
 ProxyObserver(oberserver,(event,path)=>{
-    console.log(event,path)
     liveReloadServer.refresh(path);
 })
 app.use(compression())

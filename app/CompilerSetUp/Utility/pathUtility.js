@@ -19,10 +19,16 @@ export default class PathUtility {
         this.certSLL = path.join(process.cwd(),'SSLcredential','cert.pem');
     }
 
+    /**
+     * 
+     * @param {*} pathFile 
+     * @returns 
+     */
     getPathSplit(pathFile)
     {
         const pathregex =/((\.)|(\/))/g
         const replace = pathFile.replace(pathregex,' ')
+        //@ts-ignore
         return replace?.split(' ')?.filter((e)=>e!='') ?? pathFile;
     }
 
@@ -89,6 +95,9 @@ export default class PathUtility {
 
     static getBasename() 
     {
+        /**
+         * @type string[]
+         */
         const basenameFile = []
         PathUtility.getarrayFile().forEach((element)=>{
             const base = path.basename(element)
@@ -99,6 +108,9 @@ export default class PathUtility {
 
     static getBasenameExceptingSetting() 
     {
+        /**
+         * @type string[]
+         */
         const basenameFile = []
         PathUtility.getArrayFileExeceptSetting().forEach((element)=>{
             const base = path.basename(element)
@@ -106,14 +118,28 @@ export default class PathUtility {
         })
         return basenameFile
     }
-    static getPathFromElement(rootDirDefine=true,...pathfile)
+    /**
+     * @param  {...any} pathfile 
+     * @returns 
+     */
+    static getPathFromElement(...pathfile)
     {
-        if(rootDirDefine) {
         return path.join(process.cwd(),...this.self.getPathSplit(this.rootDirProjectName),...pathfile)
-        }
+    }
+
+     /**
+     * @param  {...any} pathfile 
+     * @returns 
+     */
+    static getPathFromBaseFile(...pathfile)
+    {
         return path.join(process.cwd(),...pathfile)
     }
 
+    /**
+     * @param  {...any} pathfile 
+     * @returns 
+     */
     static getPathFromPublic(...pathfile)
     {
         return path.join(process.cwd(),...this.self.getPathSplit(this.dirPathPublic),...pathfile)

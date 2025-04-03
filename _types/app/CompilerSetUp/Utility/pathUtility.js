@@ -66,9 +66,11 @@ class PathUtility {
         });
         return basenameFile;
     }
-    static getPathFromElement(...pathfile) {
-        this.rootDirProjectName;
-        return path.join(process.cwd(), ...this.self.getPathSplit(this.rootDirProjectName), ...pathfile);
+    static getPathFromElement(rootDirDefine = true, ...pathfile) {
+        if (rootDirDefine) {
+            return path.join(process.cwd(), ...this.self.getPathSplit(this.rootDirProjectName), ...pathfile);
+        }
+        return path.join(process.cwd(), ...pathfile);
     }
     static getPathFromPublic(...pathfile) {
         return path.join(process.cwd(), ...this.self.getPathSplit(this.dirPathPublic), ...pathfile);
@@ -85,6 +87,7 @@ class PathUtility {
 _a = PathUtility;
 (() => {
     _a.self = (new _a);
+    _a.versionDIR = path.join(process.cwd(), 'app', 'public', 'versionning');
     _a.compilerFile = path.join(process.cwd(), 'app', 'public', 'versionning', 'compling.js');
     _a.linkFile = path.join(process.cwd(), 'app', 'public', 'versionning', 'linkfile.js');
     _a.rollupConfig = path.resolve(process.cwd(), 'rollup.config.js');

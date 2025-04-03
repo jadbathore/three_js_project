@@ -6,7 +6,7 @@ import compression from 'compression';
 import livereload from 'livereload';
 import connectLiveReload from 'connect-livereload';
 import PathUtility from '../CompilerSetUp/Utility/pathUtility.js';
-import type { route} from "../route/routeur.js"
+import type { route } from "../route/routeur.js"
 import  { RequestMethod} from "../route/routeur.js"
 import { ServerRouteAggregate } from "../iterator/iteratorServer.js";
 import { optionServer } from '../server/optionStaticFileExpress.js';
@@ -15,7 +15,7 @@ import { compiler,rollupWatchConfig } from "../CompilerSetUp/Compiler.js";
 
 export class Context {
     private _strategy: Server.Strategy;
-    private _subject:CompilerWatchSubject;
+    private _subject:CompilerWatchSubject;  
 
     constructor(strategy: Server.Strategy) {
         this._strategy = strategy;

@@ -12,7 +12,6 @@ export enum RequestMethod {
     connect="connect",
     middleWare="use",
 }
-
 export type route = {
     pathServer?:string;
     method:RequestMethod;

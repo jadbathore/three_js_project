@@ -1,8 +1,46 @@
+
+
+
+
 type EventFile = {
     eventType:string;
     filename:string;
 }
 type EventPromise = Promise<EventFile>
+
+
+declare namespace Compiler {
+    type double = {
+        double:string,
+        uniqueArray:string[]
+    }
+    type declarations = {
+        variableDeclaration:string[],
+        constant:string[],
+        functionName:string[],
+        allClassName:string[]
+    }
+    type classDeclaration = {
+        paramClass: string, 
+        constant: string
+    }
+    type errorNamespace = {
+        double:double,
+        data:any,
+        clean:String[],
+        objNameSpace:string,
+    }
+    type remplace = {
+        data:Object,
+        cleanText:string
+    }
+    type rawvalue = {
+        [x:string]:string
+    }
+    type rawvalueContainer = {
+        [x:string]:rawvalue
+    }
+}
 
 declare namespace LibFile {
     interface Subject {
@@ -39,7 +77,15 @@ declare namespace Cache {
 }
 
 declare namespace Server {
-    
+
+    type OptionStatic = {
+        dotfiles: string,
+        etag: boolean,
+        index: boolean,
+        redirect: boolean,
+        maxAge: string,
+        setHeaders?:(res:any,path:string)=>void
+    }
     interface Collection<T>{
         get collection():T[];
     }

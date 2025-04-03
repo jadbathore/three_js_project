@@ -5,8 +5,6 @@ import Utility from './Utility/Utility.js';
 import PathUtility from './Utility/pathUtility.js';
 import { loadConfigFile } from 'rollup/loadConfigFile';
 import { rollup, watch } from 'rollup';
-const complierFile = PathUtility.getcompilerFile();
-const linkFile = PathUtility.getlinkFile();
 export function rollupWatchConfig() {
     loadConfigFile(PathUtility.getRollupFile(), {
         format: 'es'
@@ -26,8 +24,15 @@ export function rollupWatchConfig() {
 const UtilityClass = new Utility(PathUtility.rootDirProjectName);
 export const compiler = (subject, observer) => {
     subject.attach(observer);
-    UtilityClass.repopulateComposer(PathUtility.getcompilerFile());
-    UtilityClass.repopulatelinkFile(PathUtility.getlinkFile());
+    if (!fs.existsSync(PathUtility.versionDIR)) {
+        fs.promises.mkdir(PathUtility.versionDIR, { recursive: true })
+            .then((path) => console.log(chalk.green('Directory created successfully', path)))
+            .catch((err) => console.error('Error creating directory:', err));
+    }
+    const cFile = PathUtility.getcompilerFile();
+    const lFile = PathUtility.getlinkFile();
+    UtilityClass.repopulateComposer(cFile);
+    UtilityClass.repopulatelinkFile(lFile);
     for (const [key, value] of PathUtility.getMapFile()) {
         if (key !== undefined) {
             const ac = new AbortController();
@@ -42,8 +47,8 @@ export const compiler = (subject, observer) => {
                         switch (event.eventType) {
                             case 'change':
                                 console.log(chalk.keyword('violet')(`the file ${event.filename} as been ${event.eventType} 🔮`));
-                                UtilityClass.lazyComposerRemplacement(complierFile, pathFileChanging);
-                                UtilityClass.lazyRemplacement(linkFile, pathFileChanging);
+                                UtilityClass.lazyComposerRemplacement(cFile, pathFileChanging);
+                                UtilityClass.lazyRemplacement(lFile, pathFileChanging);
                                 UtilityClass.addimportScript(pathFileChanging);
                                 break;
                             case 'rename':
@@ -57,8 +62,8 @@ export const compiler = (subject, observer) => {
                                     }
                                     else {
                                         console.log(chalk.keyword('violet')(`the file ${event.filename} as been change 🔮`));
-                                        UtilityClass.lazyRemplacement(linkFile, pathFileChanging);
-                                        UtilityClass.lazyComposerRemplacement(complierFile, pathFileChanging);
+                                        UtilityClass.lazyRemplacement(lFile, pathFileChanging);
+                                        UtilityClass.lazyComposerRemplacement(cFile, pathFileChanging);
                                         UtilityClass.addimportScript(pathFileChanging);
                                     }
                                 }

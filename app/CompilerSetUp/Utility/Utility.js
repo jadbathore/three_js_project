@@ -71,13 +71,13 @@ export default class Utility {
     #regexremoveBlank = /(\n\s)/g;
 
     /**
-     * @property {array} allConstant all constant in file (default = [])
+     * @type {Array<*>}
      */
     #allConstant = []
 
     /**
-     * @param {array} array - fileDirArray is a array of unsorted file
-     * @param {Map} Map - mapAsset is a object Map of all the asset(image/gltf...) you might need sorting this way : (dirName => [ file1.js , file2.js] )
+     * 
+     * @param {string} compilerDir 
      */
     constructor(compilerDir)
     {
@@ -87,19 +87,34 @@ export default class Utility {
     }
 
 
+    /**
+     * 
+     * @param {*} text 
+     */
     setAllConstant(text){
         const objectmatchDelcaration = this.getTotaldeclaration(RecursiveMatcher.contentCleanerRecursion(text))
         this.#allConstant = Object.values(objectmatchDelcaration).flat().filter(e=>e!=null) ?? [];
     }
 
+    /**
+     * 
+     * @param  {...any} array
+     */
     addToAllConstant(...array){
         this.#allConstant = this.#allConstant?.concat(array) ?? array
     }
 
+    /**
+     * 
+     * @param {*} start 
+     * @param {*} end 
+     * @returns 
+     */
     getfileDirarraySlice(start,end)
     {
         return this.fileDirArray.slice(start,end)
     }
+
     get allConstant(){
         return this.#allConstant;
     }
@@ -117,10 +132,9 @@ export default class Utility {
     */
 
     /**
-    * @public sorting all the file array 1. configImport.js 2. RendererSetting.js 3. cameraSetting.js 4. loader.js 5. any other element + other 6. animate.js 7. resizing.js
-    * @param {array} array arrat of file  use privately to sort the array needed
-    * @returns {array} array sorted well
-    */
+     * @param {String[]} fileArray 
+     * @returns 
+     */
     setMapFile(fileArray)
     {
         let ii = 1;
@@ -149,11 +163,10 @@ export default class Utility {
     /**
      * @public replace any given name with a distinct hash to avoid constant or variable naming conflicts during compilation
      * @param {String} text : take a text to remplace 
-     * @param {array} wordConst: nullable a array of word representing constant in the text
-     * @param {array} objNameSpace : nullable a array of raw line representing variable (let) in the text
+     * @param {Array<string>} arrayWord: nullable a array of word representing constant in the text
+     * @param {Array<string>} objNameSpace : nullable a array of raw line representing variable (let) in the text
      * @returns {string} string of the text remplaced content
      */
-
     replaceContent(text,arrayWord,objNameSpace)
     {
         for(const word of arrayWord)
@@ -164,6 +177,10 @@ export default class Utility {
         return text
     }
 
+    /**
+     * @param {string} file 
+     * @returns 
+     */
     nameSpaceMaker(file){
         const formatName = this.formatName(file,'__','__');
         let content = `const ${formatName} = {}\n`
@@ -178,14 +195,15 @@ export default class Utility {
     */
     /**
      * @public check if there is a double in an array then if so return them in another array (if is in a iterable you might want to correct the array length latter )
-     * @param {array} array array parameter to check if there a double in this array
-     * @returns {object} object of 2 array double the found double in array(null if not found), uniqueArray the clean array without double
+     * @param {String} array array parameter to check if there a double in this array
+     * @returns {Compiler.double} object of 2 array double the found double in array(null if not found), uniqueArray the clean array without double
      */
     checkdouble(array)
     {
         const uniqueArray = [...new Set(array)];
         let i = 0;
         const condition = (array.length != uniqueArray.length);
+        //@ts-ignore
         const double = (condition)?array.filter((e)=>{
             if(e != uniqueArray[i])
             {
@@ -203,7 +221,7 @@ export default class Utility {
     /**
      * @public this method is there to get all the déclaration in a text(string) like the constant and variable 
      * @param {string} text a text string to match all you want 
-     * @returns {Object} return a array object reusable like so (const a = thisgetTotaldecaration(text) ; console.log(a[0]))
+     * @returns {Compiler.declarations} return a array object reusable like so (const a = thisgetTotaldecaration(text) ; console.log(a[0]))
      */
     getTotaldeclaration(text){
         const allVariable = text.match(this.#matchregexVariableDeclaration);
@@ -218,6 +236,10 @@ export default class Utility {
         };
     }
 
+    /**
+     * @param {*} text 
+     * @returns {Compiler.classDeclaration}
+     */
     getClassDeclaration(text){
         const allVariablewordConst = text.match(this.#matchregexConstantDelcaration);
         const matchparamDeclaration = text.match(this.#matchparamDeclaration);
@@ -235,13 +257,8 @@ export default class Utility {
     */
     
     /**
-     * @public important function to format the content two options:
-        - "normal" option classic compilation without hash (there was no naming error)
-        - or compilation following the logic of replacing duplicate constants
-     * @param {array} array fileArray use a array of file to compile all the ThreeElement dir
-     * @param {string} string option use in 2 stuation might be 'normal' 
-     * @throws Error - if the param option is not found
-     * @returns {string} compile file of all the array 
+     * @param {string[]} fileArray 
+     * @returns {Promise<string>}
      */
     async getContentFile(fileArray)
     {
@@ -256,6 +273,9 @@ export default class Utility {
             }
             compiledContent+=`\n}\n`
         }
+        /**
+         * @type String[]
+         */
         let totalDeclaration = []
             for(let i = 0;i< fileArray.length;i++)
             {
@@ -266,11 +286,15 @@ export default class Utility {
                     const DeclarationObject = this.getTotaldeclaration(RecursiveMatcher.contentCleanerRecursion(content));
                     const allMatchedDecaration = Object.values(DeclarationObject).flat().filter(e=>e!=null);
                     totalDeclaration = totalDeclaration?.concat(allMatchedDecaration) ?? [];
+                    //@ts-ignore
                     const optionalNamespace = await this.doubleDeclarationHandler(totalDeclaration,fileArray[i]);
                     if(optionalNamespace != null)
                     {
+                        //@ts-ignore
                         let cleanContent = this.replaceContent(content,optionalNamespace.double,optionalNamespace.objNameSpace)
+                        //@ts-ignore
                         content = optionalNamespace.data + cleanContent;
+                        //@ts-ignore
                         totalDeclaration = optionalNamespace.clean;
                     }
                     compiledContent += `//----|${path.basename(fileArray[i])}|----\n${content}\n//&end\n`
@@ -282,6 +306,11 @@ export default class Utility {
     }
 
 
+    /**
+     * @param {*} array 
+     * @param {*} file 
+     * @returns {Promise<?string>}
+     */
     ObjectNamespaceMakerPromise(array,file){
     return new Promise((resolve,reject)=>{
         if(array == null){
@@ -291,10 +320,19 @@ export default class Utility {
     })
     }
 
+    /**
+     * 
+     * @param {*} array 
+     * @param {*} file 
+     * @returns {Promise<*>}
+     */
     async doubleDeclarationHandler(array,file){
-        const doubleObject = this.checkdouble(array)
-        const foundDouble = doubleObject.double;
-        const ObjectMakerPromise = this.ObjectNamespaceMakerPromise(foundDouble,file);
+        const {double,uniqueArray} = this.checkdouble(array)
+        // const foundDouble = doubleObject.double;
+        const ObjectMakerPromise = this.ObjectNamespaceMakerPromise(double,file);
+        /**
+         * @type {Object}
+         */
         let objectNamespaceContent;
         await ObjectMakerPromise.then((data)=>{
                 objectNamespaceContent = data
@@ -302,9 +340,9 @@ export default class Utility {
         .catch((dataErr)=>{
             const namespaceKey = this.formatName(file,'__','__')
             objectNamespaceContent = {
-                double:foundDouble,
+                double:double,
                 data:dataErr,
-                clean:doubleObject.uniqueArray,
+                clean:uniqueArray,
                 objNameSpace:namespaceKey,
             }
             
@@ -315,8 +353,8 @@ export default class Utility {
     }
     /**
      * @public important function to format the compiler contentin class format
-     * @param {array} array fileArray use a array of file to compile all the ThreeElement dir   
-     * @returns {string} compile file of all the array 
+     * @param {String[]} fileArray fileArray use a array of file to compile all the ThreeElement dir   
+     * @returns {Promise<string>} compile file of all the array 
      */
     async getComposerContent(fileArray){
         let compiledContent = fs.readFileSync(fileArray[0],'utf-8');
@@ -342,6 +380,9 @@ export default class Utility {
         }
         compiledContent+='\n}\n';
         //-----methods-----
+        /**
+         * @type String[]
+         */
         let totalConstant = [];
         let totalClass = ''; 
         for(let i = 1;i< fileArray.length;i++)
@@ -356,7 +397,6 @@ export default class Utility {
                 let content = this.cleanerCommunJsDeclaration(contentRaw);
                 if(fileArray[i] !== undefined)
                 {
-                    // console.log(RecursiveMatcher.contentCleanerRecursion(content))
                     const declarationObject = this.getTotaldeclaration(RecursiveMatcher.contentCleanerRecursion(content));
                     const allMatchedDecaration = Object.values(declarationObject).flat().filter(e=>e!=null);
                     totalConstant = totalConstant?.concat((declarationObject.constant ?? [])) ?? [];
@@ -389,7 +429,8 @@ export default class Utility {
     /**
      * 
      * @param {string} contentRaw raw content of the file 
-     * @param {*} totalConstant every constant in the file 
+     * @param {string[]} totalConstant every constant in the file 
+     * @param {string[]} asset 
      * @returns string clean content
      */
     async ContentCleaner(contentRaw,totalConstant,asset){
@@ -401,6 +442,9 @@ export default class Utility {
                 }
         })
         const condition = (contentRaw.match(RecursiveMatcher.functionName) !== null)
+        /**
+         * @type {string|Promise<Compiler.remplace>}
+         */
         let contentTransform = (condition)? this.replacorForFunctionPromise(contentRaw) : contentRaw;
         let cleanContent;
         if(contentTransform instanceof Promise)
@@ -423,6 +467,7 @@ export default class Utility {
             } else {
                 totalConstant.forEach((e)=>{
                 const regex = this.regexChangerConst(e)
+                //@ts-ignore
                 contentTransform = contentTransform.replace(regex,`this.${e}`)
                 })
                 cleanContent = contentTransform;
@@ -433,6 +478,7 @@ export default class Utility {
     /**
      * @param {string} pathfile the path file to transform
      * @param {null|string} prefix the path file to transform
+     * @param {string} [suffix]
      * @throws Error if is not a path file
      * @return string
      */
@@ -447,7 +493,7 @@ export default class Utility {
     }
     /**
      * 
-     * @param {array} arrayClass 
+     * @param {string[]} arrayClass 
      * @yeild {string} generate iterable of modify class string
      */
     *classModifyGenerator(arrayClass)
@@ -459,11 +505,20 @@ export default class Utility {
         }
     }
 
+    /**
+     * @param {string} word 
+     * @returns {RegExp}
+     */
     regexChangerConst(word)
     {
         return new RegExp(`(?<!((\\_\\_)[A-z]\\w+(\\_\\_\\.)))(((const)((\\s?)+))(\\b${word}\\b)|(\\b${word}\\b))`,'g');
     }
 
+    /**
+     * 
+     * @param {string} text 
+     * @returns {string}
+     */
     cleanerCommunJsDeclaration(text){
         if(text.match(this.#regeximportStatementCommunjs) !== null)
         {
@@ -481,6 +536,9 @@ export default class Utility {
             const values = RecursiveMatcher.getAllClass(text)
             const allClassName = text.match(RecursiveMatcher.ClassName)
             let textWithoutClass = text;
+            /**
+             * @type {Compiler.rawvalue}
+             */
             const rawValueObj = {};
             if(values == null){
                 reject(`there are no class to delete in this text (DeletorForClassPromise)`)
@@ -502,7 +560,7 @@ export default class Utility {
     /**
      * @param {string} text the path file to transform 
      * @throws Error if is not a path file
-     * @return promise object of all text to replace the function for 
+     * @return {Promise<Compiler.remplace>} object of all text to replace the function for 
      */
     replacorForFunctionPromise(text){
         return new Promise((resolve,reject)=>{
@@ -523,6 +581,7 @@ export default class Utility {
                 reject('error matching the key and the value doesn\'t have the same length')
             }
             for(let i=0;i<values.length;i++){
+                //@ts-ignore
                 ObjectToChange[keys[i]] = values[i]
             }
             resolve({
@@ -534,10 +593,9 @@ export default class Utility {
     /**
      * @public to just replace in the composer unique change the 'repopulate' method re-right all the script this one just replace what you need (in a macOS enviroment the 'repolulate' 
      * fonction might trigget 2 time when it's watched because of the pre-programming enviroment work that way but not with this method)  
-     * @param {string} directory beginingFile string directory of the file you need to replace 
-     * @param {string} directory endFile string directory  you use to replacing the file
-     * @param {string} option option string directory  you use to replacing the file
-     * @returns {fs.promises} fs.promises is return this one will write in the  fileToReplace directory the replacement.
+     * @param {*} beginingFile 
+     * @param {*} endFile
+     * @returns fs.promises is return this one will write in the  fileToReplace directory the replacement.
      */
     lazyRemplacement(beginingFile,endFile){
         let time = new Date(Date.now()).toString();
@@ -561,6 +619,7 @@ export default class Utility {
                 totaltext = textToreplace.replace(tRegex,tempsContent)
             }
             console.log(chalk.green(`fichier ${beginingBaseName} mise à jour ${time}`))
+            //@ts-ignore
             return fs.promises.writeFile(beginingFile,this.removeAllBlank(totaltext))
         })
     }
@@ -568,7 +627,7 @@ export default class Utility {
     /**
      * @param {string} beginingFile the begining file (file who's replace)
      * @param {string} endFile the End file  (file take to replace the begining file)
-     * @returns {fs.promises} fs.promises is return this one will write in the  fileToReplace directory the replacement.
+     * @returns fs.promises is return this one will write in the  fileToReplace directory the replacement.
      */
     async lazyComposerRemplacement(beginingFile,endFile){
         let time = new Date(Date.now()).toString();
@@ -613,6 +672,7 @@ export default class Utility {
             }
             let totaltext = textToreplace.replace(tRegex,replacingContent)
             console.log(chalk.green(`fichier ${beginingBaseName} mise à jour ${time}`))
+            //@ts-ignore
             return fs.promises.writeFile(beginingFile,this.removeAllBlank(totaltext))
         })
     }
@@ -664,7 +724,10 @@ export default class Utility {
      * @public allows to complete the public/versioning/compiling.js folder automatically
         it waits for the promise compilerContentPromise() to return what is needed according to the given situation (in a macOS enviroment the 'repolulate' 
      * fonction might trigget 2 time when it's watched because of the pre-programming enviroment work that way)  
-     * @returns {void} void
+     * @param {string} file
+     * @param {boolean} composerContext 
+     * @returns {Promise<void>} 
+     * 
      */
     async repopulateComposer(file,composerContext=true)
     {
@@ -698,7 +761,8 @@ export default class Utility {
      * @public allows to complete the public/versioning/linkFile.js folder automatically
         it waits for the promise compileContentPromise()to return what is needed according to the given situation(in a macOS enviroment the 'repolulate'fonction might trigget 2 
         time when it's watched because of the pre-programming enviroment work that way)
-     * @returns {void} void
+     * @param {string} file 
+     * @param {boolean} composerContext 
      */
     async repopulatelinkFile(file,composerContext=true)
     {
@@ -718,13 +782,15 @@ export default class Utility {
                         fs.appendFileSync(file,data)
                     }
                     (composerContext)?console.log(chalk.green(`fichier linkfile mise à jour ${new Date(Date.now()).toString()}`)):'';
-            }).catch((err)=>{
-                console.log(chalk.red(`${err} \n${new Date(Date.now()).toString()}`))
             })
+            // .catch((err)=>{
+
+            //     console.log(chalk.red(`${err} \n${new Date(Date.now()).toString()}`))
+            // })
     }
 
     /**
-     * 
+     * @param {string} text
      */
     removeAllBlank(text){
         return text.replace(this.#regexremoveBlank,'\n')
@@ -739,8 +805,8 @@ export default class Utility {
     
     /**
      * @public find all the constants to export later
-     * @param {string} string get all the content of the export name;
-     * @returns {array} array 
+     * @param {string} content get all the content of the export name;
+     * @returns {string[]} 
      */
     getAllExportName(content)
     {
@@ -766,7 +832,8 @@ export default class Utility {
     addimportScript(file)                                          
     {
         const basenameFile = path.basename(file);
-        if(basenameFile != ('configImport.js' || 'resizeSetting.js'))
+
+        if(!['configImport.js','resizeSetting.js'].includes(basenameFile))
         {
             fs.promises.readFile(file,{encoding:'utf-8'}).then(async(buffer)=>{
                 const content = buffer.toString()
@@ -818,14 +885,14 @@ export default class Utility {
     */
     /**
      * @public format a useful import script allowing the use of constants previously found by the getAllExportName() method
-     * @returns {void} void
+     * @returns {string} void
      */
     getImportStript(jumpLine=true){
         let importScript = 'const { '
         for(let index in this.#allConstant)
         {
             importScript += `${this.#allConstant[index]},`
-            importScript += (index%3 == 0)? '\n\t' :' ' ;
+            importScript += (parseInt(index)%3 == 0)? '\n\t' :' ' ;
         } 
         importScript+= `} = require('../../public/versionning/linkFile.js')`
         importScript+=(jumpLine)?'\n':'';
@@ -859,9 +926,16 @@ export default class Utility {
      */
     getAssetPathConst()
     {
+        /**
+         * @type {Compiler.rawvalueContainer}
+         */
         const content = {}
+        
         for(const [key, value] of this.mapAsset)
             {
+                /**
+                 * @type {Compiler.rawvalue}
+                 */
                 const subContent = {}
                 if(key === 'img')
                 {
@@ -898,11 +972,12 @@ export default class Utility {
         const configFile = PathUtility.getPathFromElement('1.Setting','1.configImport.js')  
         const contentConfig = fs.readFileSync(configFile,'utf-8')
         const elementDict = {}
-        const declaration = contentConfig.match(this.#regexDeclaration)
+        const declarations = contentConfig.match(this.#regexDeclaration)
         const importpath = contentConfig.match(this.#regexpathimport)
-        for(let i = 0;i<declaration.length;i++)
+        for (let i=0;i<declarations.length;i++)
         {
-            elementDict[declaration[i].split(',')] = importpath[i]
+            //@ts-ignore
+            elementDict[declarations[i].split(',')] = importpath[i]
         }
         return elementDict;
     }
@@ -945,10 +1020,11 @@ export default class Utility {
         - is rejected (it took too long)
         - is resolved however there are duplicates and therefore data using a hash on certain element and send
         - is resolved there is no duplicate of data 'normal' its send
-     * @param {array} array array of file already sorted
-     * @returns {promise} promise
+     * @param {string[]} arrayFile array of file already sorted
+     * @param {string} [typedata] array of file already sorted
+     * @returns {Promise<string>} promise
      */
-    compilerContentPromise(array,typedata) 
+    compilerContentPromise(arrayFile,typedata) 
     {
         return new Promise((resolve,reject)=>
             {
@@ -957,10 +1033,10 @@ export default class Utility {
                 },3000)
                 if(typedata == 'linkfile')
                 {
-                    resolve(this.getContentFile(array))
+                    resolve(this.getContentFile(arrayFile))
 
                 } else if(typedata == 'composer'){
-                    resolve(this.getComposerContent(array))
+                    resolve(this.getComposerContent(arrayFile))
                 } else {
                     reject(`typedata: ${typedata} non reconnu `)
                 }

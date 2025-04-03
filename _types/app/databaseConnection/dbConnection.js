@@ -39,7 +39,7 @@ export class ConnectionUtilityMongoDB {
             setTimeout(() => {
                 status = StatutsConnection.discontinued;
                 resolve(status);
-            }, 3000);
+            }, 1000);
             mongoose.connect(this._uri).then(() => {
                 status = StatutsConnection.Connected;
             }).catch(() => {
@@ -164,7 +164,7 @@ export class ConnectionUtilityMongoDB {
     }
     ;
     async testTheConnectionPromise() {
-        if (this._status == StatutsConnection.In_waiting_connection)
+        if (this.status == StatutsConnection.In_waiting_connection)
             await this.setStatus();
         const PromisePending = new Promise((resolve, rejects) => {
             if (this._status == StatutsConnection.Connected) {

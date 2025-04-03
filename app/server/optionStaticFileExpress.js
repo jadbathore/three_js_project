@@ -1,6 +1,10 @@
+
 import express from 'express'
 import threeTreeConfig from '../../threeTree.config.js'
 
+/**
+ * @type {Server.OptionStatic}
+ */
 const optionServer =
 {
     dotfiles: 'ignore',
@@ -10,13 +14,13 @@ const optionServer =
     maxAge:'1d',
 }
 
-// if (!threeTreeConfig.server.caching_Script){
-//     option['setHeaders'] = (res,path) =>{
-//         res.header('Cache-Control', [(express.static.mime.lookup(path) === 'application/javascript')?'public,maxAge=0':'public'])
-//         // res.set({
-//         //     'Cache-Control':(express.static.mime.lookup(path) === 'application/javascript')?'public,maxAge=0':'public'
-//         // })
-//     }
-// }
+if (!threeTreeConfig.server.caching_Script){
+    optionServer['setHeaders'] = (res,path) =>{
+        res.header('Cache-Control', [(express.static.mime.lookup(path) === 'application/javascript')?'public,maxAge=0':'public'])
+        // req.set({
+        //     'Cache-Control':(express.static.mime.lookup(path) === 'application/javascript')?'public,maxAge=0':'public'
+        // })
+    }
+}
 
 export { optionServer }

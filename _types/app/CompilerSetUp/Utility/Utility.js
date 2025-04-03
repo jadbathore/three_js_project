@@ -11,7 +11,7 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
 };
 var _Utility_matchregexVariableDeclaration, _Utility_commentRemover, _Utility_matchregexConstantDelcaration, _Utility_matchparamDeclaration, _Utility_regeximportStatementCommunjs, _Utility_namespaceObjectRegex, _Utility_getfunctionName, _Utility_regexDeclaration, _Utility_regexpathimport, _Utility_regexremoveBlank, _Utility_allConstant;
 import chalk from 'chalk';
-import path from 'path';
+import path, { basename } from 'path';
 import fs from 'fs';
 import RecursiveMatcher from './RecursiveMatcher.js';
 import PathUtility from './pathUtility.js';
@@ -51,16 +51,16 @@ class Utility {
         const iterator = fileArray[Symbol.iterator]();
         for (const value of iterator) {
             switch (path?.basename(value)) {
-                case 'configImport.js':
+                case '1.configImport.js':
                     organisedArray[0] = value;
                     break;
-                case 'RendererSetting.js':
+                case '2.RendererSetting.js':
                     organisedArray[1] = value;
                     break;
-                case 'cameraSetting.js':
+                case '3.cameraSetting.js':
                     organisedArray[2] = value;
                     break;
-                case 'loader.js':
+                case '4.loader.js':
                     organisedArray[3] = value;
                     break;
                 case 'animate.js':
@@ -166,9 +166,8 @@ class Utility {
         });
     }
     async doubleDeclarationHandler(array, file) {
-        const doubleObject = this.checkdouble(array);
-        const foundDouble = doubleObject.double;
-        const ObjectMakerPromise = this.ObjectNamespaceMakerPromise(foundDouble, file);
+        const { double, uniqueArray } = this.checkdouble(array);
+        const ObjectMakerPromise = this.ObjectNamespaceMakerPromise(double, file);
         let objectNamespaceContent;
         await ObjectMakerPromise.then((data) => {
             objectNamespaceContent = data;
@@ -176,9 +175,9 @@ class Utility {
             .catch((dataErr) => {
             const namespaceKey = this.formatName(file, '__', '__');
             objectNamespaceContent = {
-                double: foundDouble,
+                double: double,
                 data: dataErr,
-                clean: doubleObject.uniqueArray,
+                clean: uniqueArray,
                 objNameSpace: namespaceKey,
             };
         }).finally(() => {
@@ -276,7 +275,8 @@ class Utility {
     }
     formatName(pathfile, prefix, suffix) {
         if (fs.lstatSync(pathfile).isFile()) {
-            return (prefix ?? '') + path.basename(pathfile).split('.js').join('') + (suffix ?? '');
+            pathfile = (path.basename(pathfile).replace(".", "_"));
+            return (prefix ?? '') + pathfile.split('.js').join('') + (suffix ?? '');
         }
         else {
             throw new Error(`${pathfile} n'est pas un fichier`);
@@ -466,7 +466,7 @@ class Utility {
     }
     addimportScript(file) {
         const basenameFile = path.basename(file);
-        if (basenameFile != ('configImport.js' || 'resizeSetting.js')) {
+        if (!['configImport.js', 'resizeSetting.js'].includes(basenameFile)) {
             fs.promises.readFile(file, { encoding: 'utf-8' }).then(async (buffer) => {
                 const content = buffer.toString();
                 if (content.match(__classPrivateFieldGet(this, _Utility_regeximportStatementCommunjs, "f")) == null) {
@@ -499,7 +499,7 @@ class Utility {
         let importScript = 'const { ';
         for (let index in __classPrivateFieldGet(this, _Utility_allConstant, "f")) {
             importScript += `${__classPrivateFieldGet(this, _Utility_allConstant, "f")[index]},`;
-            importScript += (index % 3 == 0) ? '\n\t' : ' ';
+            importScript += (parseInt(index) % 3 == 0) ? '\n\t' : ' ';
         }
         importScript += `} = require('../../public/versionning/linkFile.js')`;
         importScript += (jumpLine) ? '\n' : '';
@@ -530,12 +530,12 @@ class Utility {
         return content;
     }
     getConfigUtilty() {
-        const configFile = PathUtility.getPathFromElement('Setting', 'configImport.js');
+        const configFile = PathUtility.getPathFromElement('1.Setting', '1.configImport.js');
         const contentConfig = fs.readFileSync(configFile, 'utf-8');
         const elementDict = {};
-        const declaration = contentConfig.match(__classPrivateFieldGet(this, _Utility_regexDeclaration, "f"));
+        const declarations = contentConfig.match(__classPrivateFieldGet(this, _Utility_regexDeclaration, "f"));
         const importpath = contentConfig.match(__classPrivateFieldGet(this, _Utility_regexpathimport, "f"));
-        for (let i = 0; i < declaration.length; i++) {
+        for (let declaration of declarations) {
             elementDict[declaration[i].split(',')] = importpath[i];
         }
         return elementDict;
@@ -553,16 +553,16 @@ class Utility {
         }
         return content;
     }
-    compilerContentPromise(array, typedata) {
+    compilerContentPromise(arrayFile, typedata) {
         return new Promise((resolve, reject) => {
             setTimeout(() => {
                 reject("la compilation des donnée à pris trop de temps");
             }, 3000);
             if (typedata == 'linkfile') {
-                resolve(this.getContentFile(array));
+                resolve(this.getContentFile(arrayFile));
             }
             else if (typedata == 'composer') {
-                resolve(this.getComposerContent(array));
+                resolve(this.getComposerContent(arrayFile));
             }
             else {
                 reject(`typedata: ${typedata} non reconnu `);

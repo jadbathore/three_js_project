@@ -1,25 +1,24 @@
+import  { router } from "../../route/routeur.js"
+import {Context,ServerStrategy} from '../../strategy/strategyServer.js'
+import { rollupWatchConfig } from "../../CompilerSetUp/Compiler.js";
+
+// rollupWatchConfig();
+// const context = new Context(new ServerStrategy(router));
+// context.runServer();
+
 import chalk from 'chalk';
 import fs from 'fs';
-// @ts-ignore
 import path from 'path';
-import Utility from './Utility/Utility.js';
-import PathUtility from './Utility/pathUtility.js';
-// @ts-ignore
+import Utility from '../../CompilerSetUp/Utility/Utility.js';
+import PathUtility from '../../Utility/pathUtility.js';
 import {loadConfigFile} from 'rollup/loadConfigFile'
 import {rollup,watch} from 'rollup';
 
                                             
 
-/*
-français :
-    fait fonctionner l'a connection entre rollup et le compiling.js avec l'option watch qui vas regarder les changement effectuer sur compling
-English:
-    makes the connection between rollup and compiling.js work with the watch option which will watch the changes made on compiling
-*/
-export function rollupWatchConfig(){
+function rollupWatchConfig(){
     loadConfigFile(PathUtility.getRollupFile(), {
         format: 'es'
-        //@ts-ignore
     }).then(async ({ options, warnings }) => {
         console.log(chalk.keyword('orange')(`Nous avons ${warnings.count} avertissement de la part de rollup`));
         warnings.flush();
@@ -29,7 +28,6 @@ export function rollupWatchConfig(){
         }
         watch(options)
         console.log(chalk.green('le fichier dist est connecté avec succée !'))
-    // @ts-ignore
     }).catch((error)=>{
         console.log(chalk.bgRed(error))
     });
@@ -48,11 +46,13 @@ English:
     composer allows the compilation of the data of the threeElement into a single file
 */
 
-/**
- * 
- * @param {LibFile.Subject} subject 
- * @param {LibFile.Observer} observer 
- */
+class compiler {
+    #subject;
+    compiler(){
+
+    }
+}
+
 export const compiler = (subject,observer) =>
 {
     subject.attach(observer)

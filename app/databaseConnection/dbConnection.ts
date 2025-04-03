@@ -45,6 +45,7 @@ interface ReadonlyMangooseTableModel {
     readonly [key:string]:mongoose.Model<any, unknown, unknown, unknown, any, any>;
 }
 
+
 class ClassObjectMongooseModel {
     private static _instance: ClassObjectMongooseModel;
     private _object?:ReadonlyMangooseTableModel;
@@ -92,7 +93,7 @@ export class ConnectionUtilityMongoDB {
             setTimeout(()=>{
                 status = StatutsConnection.discontinued
                 resolve(status)
-            },3000)
+            },1000)
             mongoose.connect(this._uri).then(()=>{
                     status = StatutsConnection.Connected
                 }).catch(()=>{
@@ -109,7 +110,7 @@ export class ConnectionUtilityMongoDB {
     }
 
     public async MakeSchemaPromise():Promise<string|MangooseTableSchema>{
-        if(this._status == StatutsConnection.In_waiting_connection)await this.setStatus()
+        if(this._status == StatutsConnection.In_waiting_connection) await this.setStatus()
         const PromisePending:Promise<MangooseTableSchema|string>= new Promise((resolve,rejects)=>{
             if(this._status == StatutsConnection.Connected){
                 const schemas:MangooseTableSchema = this.makeSchema()
@@ -232,11 +233,9 @@ export class ConnectionUtilityMongoDB {
         return promise
     };
 
-    public async testTheConnectionPromise():Promise<string>{
-        // await this.setStatus();
-        if(this._status == StatutsConnection.In_waiting_connection)await this.setStatus()
-
-        const PromisePending:Promise<string>= new Promise((resolve,rejects)=>{
+    public async testTheConnectionPromise():Promise<StatutsConnection>{
+        if(this.status == StatutsConnection.In_waiting_connection) await this.setStatus();
+        const PromisePending:Promise<StatutsConnection> = new Promise((resolve,rejects)=>{
             if(this._status == StatutsConnection.Connected){
                 resolve(this._status)
             } else {
@@ -269,7 +268,7 @@ export class ConnectionUtilityMongoDB {
                     'https://github.com/jadbathore/three_js_project/issues'))
             }
         }).finally(()=>{
-            process.exit()
+            process.exit()        
         })
     }
 }

@@ -20,11 +20,10 @@ const BinUtilityClass = new BinUtility()
 
 // const CompilerUtilityClass = new Utility(PathUtility.rootDirProjectName)
 const DB_URI = process.env.DB_URI || "mongodb://127.0.0.1:27017/versionningThreeJs"
-const Connection = new ConnectionUtilityMongoDB(DB_URI)
 
 
- 
 class Bin{
+    #connection = new ConnectionUtilityMongoDB(DB_URI)
 
     constructor(rootDirProjectName)
     {
@@ -38,8 +37,7 @@ class Bin{
         this.bin_testConnection();
         this.bin_make();
         this.bin_importscript();
-
-        Connection.testTheConnectionPromise().then(()=>
+        this.#connection.testTheConnectionPromise().then(()=>
         {
             this.bin_fork()
             this.bin_save()
@@ -95,9 +93,9 @@ class Bin{
     {
         return program
         .command('testConnection') 
-        .action(async ()=>{
-            const spinner = ora('Waiting for The Return Status...').start()
-            Connection.testConnnectionAwaited(spinner)
+        .action(()=>{
+        const spinner = ora('Waiting for The Return Status...').start()
+            this.#connection.testConnnectionAwaited(spinner)
         })
         .description('test the connection of the database and return the status')
     }
@@ -120,7 +118,7 @@ class Bin{
                 //option -u 
                 if(option.usable)
                     {
-                        const modelMongoose = await Connection.saveObject('usable')
+                        const modelMongoose = await this.#connection.saveObject('usable')
                         const version = `UsableSave_${new mongoose.Types.ObjectId().toString()}`
                         const fileDictonary = {}
                         for(let file of PathUtility.getarrayFile())
@@ -142,7 +140,7 @@ class Bin{
                         {
                             answer = await input({ message: 'you must name the version (type your name):' });
                         }
-                        const modelMongoose = await Connection.saveObject('versions')
+                        const modelMongoose = await this.#connection.saveObject('versions')
                         const pathfile = PathUtility.getcompilerFile()
                         const content = fs.readFileSync(pathfile,'utf-8');
                         const versionName = `versions_${new mongoose.Types.ObjectId().toString()}`
@@ -158,7 +156,7 @@ class Bin{
                     }
                     //option -s
                 } else {
-                    const modelMongoose = await Connection.saveObject('single')
+                    const modelMongoose = await this.#connection.saveObject('single')
                     const hash = new mongoose.Types.ObjectId().toString()
                     const versionName = `versions_${hash}`
                     const a = PathUtility.getBasename().indexOf(option.single)
@@ -228,16 +226,16 @@ class Bin{
         .action(async(option)=>{
             // no option
         if(!option.singlefile && !option.fileversion){
-            const request  = await Connection.findLastObject('single')
+            const request  = await this.#connection.findLastObject('single')
             BinUtilityClass.appendFileWithMango(request) 
             console.log(chalk.green('element ajouter ✨'))
             process.exit()
         }
         // -sf
         if(option.singlefile && !option.fileversion){
-            const request  = await Connection.findObject('single',{fileName:option.singlefile});
+            const request  = await this.#connection.findObject('single',{fileName:option.singlefile});
             if(request === null){
-                const request = await Connection.findObject('single')
+                const request = await this.#connection.findObject('single')
                 const tableChoice = []
                 for(let i = 0; i < request.length; i++ )
                 {
@@ -247,7 +245,7 @@ class Bin{
                 BinUtilityClass.choiceCallback(`aucun model avec le nom ${option.singlefile}...`,tableChoice,(result)=> {
                     const spinner = ora(`Doing ${result.choice}...`).start();
                     setTimeout(async() => {
-                        const request2  = await Connection.findObject('single',{fileName:result.choice});
+                        const request2  = await this.#connection.findObject('single',{fileName:result.choice});
                         spinner.succeed(chalk.blue(`element : '${result.choice}' choisi`))
                         BinUtilityClass.appendFileWithMango(request2)
                         console.log(chalk.green('element ajouter ✨'))
@@ -261,9 +259,9 @@ class Bin{
         }
         // -sv
             if(!option.singlefile && option.fileversion){
-                const request = await Connection.findObject('versions',{version:option.fileversion});
+                const request = await this.#connection.findObject('versions',{version:option.fileversion});
                 if(request === null){
-                    const request = await Connection.findObject('versions')
+                    const request = await this.#connection.findObject('versions')
                     const tableChoice = []
                     for(let i = 0; i < request.length; i++ )
                     {
@@ -274,7 +272,7 @@ class Bin{
                         const spinner = ora(`Doing ${result.choice}...`).start();
                         setTimeout(async() => {
                             spinner.succeed(chalk.blue(`element : '${result.choice}' choisi`))
-                            const request  = await Connection.findObject('versions',{versionName:result.choice});
+                            const request  = await this.#connection.findObject('versions',{versionName:result.choice});
                             BinUtilityClass.appendFileIfnotExist(PathUtility.getPathFromPublic('versionning',request[0].name),request[0].content)
                             console.log(chalk.green('element ajouter ✨'))
                             process.exit()
@@ -339,7 +337,7 @@ class Bin{
                 if(contentToUpdate.choice == 'name')
                 {
                     const inputName = await input({message:'type the new name you want to give :'})
-                    await Connection.UpdateObject(table,{name:witchelement.choice},{name:inputName})
+                    await this.#connection.UpdateObject(table,{name:witchelement.choice},{name:inputName})
                     console.log(chalk.blue(`the former element ${witchelement.choice} as been rename ${inputName}`))
                     process.exit()
                 } else {
@@ -347,7 +345,7 @@ class Bin{
                         case"versions":
                             const pathfile = PathUtility.getcompilerFile()
                             const content = fs.readFileSync(pathfile,'utf-8');
-                            await Connection.UpdateObject(table,{name:witchelement.choice},{content:content})
+                            await this.#connection.UpdateObject(table,{name:witchelement.choice},{content:content})
                             break;
                         case"single":
                             const contentReplaceElement = await inquirer.prompt([
@@ -360,7 +358,7 @@ class Bin{
                             ])
                             const choicesindex = PathUtility.getBasename().indexOf(contentReplaceElement.choice)
                             const contentFile = fs.readFileSync(PathUtility.getarrayFile()[choicesindex],'utf-8')
-                            await Connection.UpdateObject(table,{name:witchelement.choice},{content:contentFile})
+                            await this.#connection.UpdateObject(table,{name:witchelement.choice},{content:contentFile})
                         break;
                         case"usable": 
                         const fileDictonary = {}
@@ -369,7 +367,7 @@ class Bin{
                             const content = fs.readFileSync(file,'utf-8')
                             fileDictonary[file] = content
                         }
-                        await Connection.UpdateObject(table,{name:witchelement.choice},{content:fileDictonary})
+                        await this.#connection.UpdateObject(table,{name:witchelement.choice},{content:fileDictonary})
                         break;
                         default:throw new Error('unknowed table') 
                     }
@@ -397,7 +395,7 @@ class Bin{
             ])
         }
         const table = (condition)? optionnalQuestion.choice :option.table
-        const tableToUpdate = await Connection.findObject(table) 
+        const tableToUpdate = await this.#connection.findObject(table) 
         const tableChoice = []
         if(tableToUpdate.length <= 1)
         {
@@ -417,7 +415,7 @@ class Bin{
                     choices: tableChoice,
                 },
             ])
-            await Connection.DeleteObject(table,{name:witchelement.choice})
+            await this.#connection.DeleteObject(table,{name:witchelement.choice})
             console.log(chalk.blue(`the content of the element ${witchelement.choice} has been delete`))
         
         process.exit();
@@ -427,7 +425,7 @@ class Bin{
         return program.command('usable')
         .action(
             async()=>{
-                const request = await Connection.findObject('usable')
+                const request = await this.#connection.findObject('usable')
                 const nameArray = []
                 for(let i = 0; i < request.length; i++)
                 {
@@ -437,7 +435,7 @@ class Bin{
                     const spinner = ora(`Doing ${result.choice}...`).start();
                     setTimeout(async() => {
                         spinner.succeed(chalk.green(`element : '${result.choice}' choisi`))
-                        const request2 = await Connection.findObject('usable',{name:result.choice})
+                        const request2 = await this.#connection.findObject('usable',{name:result.choice})
                         for(let i = 0;i<PathUtility.getarrayFile().length;i++)
                             {
                                 fs.rmSync(PathUtility.getarrayFile()[i],{recursive:true})

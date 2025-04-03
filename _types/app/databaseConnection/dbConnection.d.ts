@@ -67,7 +67,7 @@ export declare class ConnectionUtilityMongoDB {
     UpdateObject(tableName: string, query: Object, update: Object): Promise<void>;
     saveObject(tableName: string): Promise<void | mongoose.Model<any, unknown, unknown, unknown, any, any>>;
     DeleteObject(tableName: string, query: Object): Promise<void>;
-    testTheConnectionPromise(): Promise<string>;
+    testTheConnectionPromise(): Promise<StatutsConnection>;
     testConnnectionAwaited(spinner: Ora): Awaited<void>;
 }
 export {};
