@@ -1,12 +1,12 @@
-import type { route } from "../route/routeur.js"
+import type { AppRouter } from "../route/routeur.js"
 
 
-export class IteratorServer implements Server.Iterator<route> {
-    private _collection: Server.Aggregator<route>;
+export class IteratorServer implements Server.Iterator<AppRouter> {
+    private _collection: Server.Aggregator<AppRouter>;
     private _index: number;
     private _reverse: boolean = false;
 
-    constructor(collection: Server.Aggregator<route>,reverse: boolean = false) {
+    constructor(collection: Server.Aggregator<AppRouter>,reverse: boolean = false) {
         this._collection = collection;
         this._reverse = reverse;
         this._index = this._collection.getExtremity(!reverse);
@@ -17,11 +17,11 @@ export class IteratorServer implements Server.Iterator<route> {
         this._index = this._collection.getExtremity(this._reverse);
     }
 
-    public current(): route {
+    public current(): AppRouter {
         return this._collection.getItems()[this._index];
     }
 
-    public next(): route {
+    public next(): AppRouter {
         const item = this.current();
         this._index += this._reverse ? -1 : 1;
         return item;
@@ -35,29 +35,29 @@ export class IteratorServer implements Server.Iterator<route> {
     }
 }
 
-export class ServerRouteAggregate implements Server.Aggregator<route> {
+export class ServerRouteAggregate implements Server.Aggregator<AppRouter> {
 
-    private _items:route[] = [];
+    private _items:AppRouter[] = [];
 
-    public constructor(routes:route[]){
+    public constructor(routes:AppRouter[]){
         this._items = routes
     }
 
     public getCount(): number {
         return this._items.length;
     }
-    public getIterator(): Server.Iterator<route> {
+    public getIterator(): Server.Iterator<AppRouter> {
         return new IteratorServer(this);
     }
-    public getReverseIterator(): Server.Iterator<route> {
+    public getReverseIterator(): Server.Iterator<AppRouter> {
         return new IteratorServer(this,true);
     }
 
-    public addItem(item:route): void {
+    public addItem(item:AppRouter): void {
         this._items.push(item);
     }
 
-    public getItems():route[]{
+    public getItems():AppRouter[]{
         return this._items;
     }
 

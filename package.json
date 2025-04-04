@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "test": "node ./app/test/jsFile/test.js",
+    "testTS": "node ./_types/app/test/ts/test.js",
     "start": "node --watch app/server/server.js"
   },
   "repository": {

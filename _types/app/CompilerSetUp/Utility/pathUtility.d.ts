@@ -8,7 +8,8 @@ export default class PathUtility {
     static getArrayFileExeceptSetting(): string[];
     static getBasename(): string[];
     static getBasenameExceptingSetting(): string[];
-    static getPathFromElement(rootDirDefine?: boolean | string, ...pathfile: any[]): string;
+    static getPathFromElement(...pathfile: any[]): string;
+    static getPathFromBaseFile(...pathfile: any[]): string;
     static getPathFromPublic(...pathfile: any[]): string;
     static getMapAsset(): Map<any, any>;
     getPathSplit(pathFile: any): any;

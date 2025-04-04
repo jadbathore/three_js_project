@@ -1,4 +1,4 @@
-import type { Express } from "express";
+import type { Express, IRouter } from "express";
 import express  from "express";
 import fs from 'fs' 
 import https from 'https'
@@ -6,11 +6,11 @@ import compression from 'compression';
 import livereload from 'livereload';
 import connectLiveReload from 'connect-livereload';
 import PathUtility from '../CompilerSetUp/Utility/pathUtility.js';
-import type { route } from "../route/routeur.js"
-import  { RequestMethod} from "../route/routeur.js"
+import type { AppRouter } from "../route/routeur.js"
+// import  { RequestMethod, router} from "../route/routeur.js"
 import { ServerRouteAggregate } from "../iterator/iteratorServer.js";
 import { optionServer } from '../server/optionStaticFileExpress.js';
-import { CompilerWatchSubject,ObserverWatch,ProxyObserver } from '../oberserver/oberserver';
+import { CompilerWatchSubject,ObserverWatch,ProxyObserver } from '../oberserver/oberserver.js';
 import { compiler,rollupWatchConfig } from "../CompilerSetUp/Compiler.js";
 
 export class Context {
@@ -46,26 +46,28 @@ export class Context {
 }
 
 export class ServerStrategy implements Server.Strategy {
-    private _data:route[];
+    private _data:AppRouter[];
 
-    constructor(data:route[]){
+    constructor(data:AppRouter[]){
         this._data = data;
     }
 
-    public doAlgorithm(app:Express,subject:CompilerWatchSubject): void {
-        const collection:Server.Aggregator<route> = new ServerRouteAggregate(this._data);
-        const iterator:Server.Iterator<route> = collection.getIterator();
+    public doAlgorithm(app:Express):void {
+        const collection:Server.Aggregator<AppRouter> = new ServerRouteAggregate(this._data);
+        const iterator:Server.Iterator<AppRouter> = collection.getIterator();
         while (iterator.valid()) {
-            const routeObj:route = iterator.next();
+            const routeObj:AppRouter = iterator.next();
+            const ExpressRouter = express.Router()
             if(routeObj.method != RequestMethod.middleWare){
                 if(routeObj.scene){
-                    const oberserver = new ObserverWatch(routeObj.pathServer)
+                    const oberserver:LibFile.Observer = new ObserverWatch(routeObj.pathServer)
                 }
-                app[routeObj.method](routeObj.pathServer,routeObj.serverLogic);
+                ExpressRouter[routeObj.method](routeObj.pathServer,routeObj.serverLogic);
             } else {
-                app[routeObj.method](routeObj.serverLogic);
+                ExpressRouter[routeObj.method](routeObj.serverLogic);
             }
         }
+            app.use([])
     }
 }
 

@@ -39,7 +39,7 @@ export class CompilerWatchSubject implements LibFile.Subject {
 //___________________________
 export class ObserverWatch implements LibFile.Observer {
     private _events:EventFile[]=[];
-    private _path:string;
+    private readonly _path:string;
 
 
     public constructor(path:string)

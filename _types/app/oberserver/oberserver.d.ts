@@ -7,7 +7,7 @@ export declare class CompilerWatchSubject implements LibFile.Subject {
 }
 export declare class ObserverWatch implements LibFile.Observer {
     private _events;
-    private _path;
+    private readonly _path;
     constructor(path: string);
     update(subject: LibFile.Subject, event: EventFile): AsyncGenerator<any, any, EventPromise>;
     addEvent(event: EventFile): void;

@@ -4,10 +4,9 @@ import https from 'https';
 import compression from 'compression';
 import connectLiveReload from 'connect-livereload';
 import PathUtility from '../CompilerSetUp/Utility/pathUtility.js';
-import { RequestMethod } from "../route/routeur.js";
 import { ServerRouteAggregate } from "../iterator/iteratorServer.js";
 import { optionServer } from '../server/optionStaticFileExpress.js';
-import { CompilerWatchSubject, ObserverWatch } from '../oberserver/oberserver';
+import { CompilerWatchSubject, ObserverWatch } from '../oberserver/oberserver.js';
 export class Context {
     constructor(strategy) {
         this._strategy = strategy;
@@ -37,20 +36,22 @@ export class ServerStrategy {
     constructor(data) {
         this._data = data;
     }
-    doAlgorithm(app, subject) {
+    doAlgorithm(app) {
         const collection = new ServerRouteAggregate(this._data);
         const iterator = collection.getIterator();
         while (iterator.valid()) {
             const routeObj = iterator.next();
+            const ExpressRouter = express.Router();
             if (routeObj.method != RequestMethod.middleWare) {
                 if (routeObj.scene) {
                     const oberserver = new ObserverWatch(routeObj.pathServer);
                 }
-                app[routeObj.method](routeObj.pathServer, routeObj.serverLogic);
+                ExpressRouter[routeObj.method](routeObj.pathServer, routeObj.serverLogic);
             }
             else {
-                app[routeObj.method](routeObj.serverLogic);
+                ExpressRouter[routeObj.method](routeObj.serverLogic);
             }
         }
+        app.use([]);
     }
 }

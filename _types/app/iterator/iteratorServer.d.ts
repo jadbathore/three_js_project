@@ -1,21 +1,21 @@
-import type { route } from "../route/routeur.js";
-export declare class IteratorServer implements Server.Iterator<route> {
+import type { AppRouter } from "../route/routeur.js";
+export declare class IteratorServer implements Server.Iterator<AppRouter> {
     private _collection;
     private _index;
     private _reverse;
-    constructor(collection: Server.Aggregator<route>, reverse?: boolean);
+    constructor(collection: Server.Aggregator<AppRouter>, reverse?: boolean);
     rewind(): void;
-    current(): route;
-    next(): route;
+    current(): AppRouter;
+    next(): AppRouter;
     valid(): boolean;
 }
-export declare class ServerRouteAggregate implements Server.Aggregator<route> {
+export declare class ServerRouteAggregate implements Server.Aggregator<AppRouter> {
     private _items;
-    constructor(routes: route[]);
+    constructor(routes: AppRouter[]);
     getCount(): number;
-    getIterator(): Server.Iterator<route>;
-    getReverseIterator(): Server.Iterator<route>;
-    addItem(item: route): void;
-    getItems(): route[];
+    getIterator(): Server.Iterator<AppRouter>;
+    getReverseIterator(): Server.Iterator<AppRouter>;
+    addItem(item: AppRouter): void;
+    getItems(): AppRouter[];
     getExtremity(reverse: boolean): number;
 }

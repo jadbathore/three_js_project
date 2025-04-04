@@ -446,8 +446,6 @@ class Utility {
                 fs.appendFileSync(file, data);
             }
             (composerContext) ? console.log(chalk.green(`fichier linkfile mise à jour ${new Date(Date.now()).toString()}`)) : '';
-        }).catch((err) => {
-            console.log(chalk.red(`${err} \n${new Date(Date.now()).toString()}`));
         });
     }
     removeAllBlank(text) {
@@ -535,8 +533,8 @@ class Utility {
         const elementDict = {};
         const declarations = contentConfig.match(__classPrivateFieldGet(this, _Utility_regexDeclaration, "f"));
         const importpath = contentConfig.match(__classPrivateFieldGet(this, _Utility_regexpathimport, "f"));
-        for (let declaration of declarations) {
-            elementDict[declaration[i].split(',')] = importpath[i];
+        for (let i = 0; i < declarations.length; i++) {
+            elementDict[declarations[i].split(',')] = importpath[i];
         }
         return elementDict;
     }

@@ -66,10 +66,10 @@ class PathUtility {
         });
         return basenameFile;
     }
-    static getPathFromElement(rootDirDefine = true, ...pathfile) {
-        if (rootDirDefine) {
-            return path.join(process.cwd(), ...this.self.getPathSplit(this.rootDirProjectName), ...pathfile);
-        }
+    static getPathFromElement(...pathfile) {
+        return path.join(process.cwd(), ...this.self.getPathSplit(this.rootDirProjectName), ...pathfile);
+    }
+    static getPathFromBaseFile(...pathfile) {
         return path.join(process.cwd(), ...pathfile);
     }
     static getPathFromPublic(...pathfile) {

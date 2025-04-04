@@ -8,7 +8,7 @@ const optionServer = {
     maxAge: '1d',
 };
 if (!threeTreeConfig.server.caching_Script) {
-    option['setHeaders'] = (res, path) => {
+    optionServer['setHeaders'] = (res, path) => {
         res.header('Cache-Control', [(express.static.mime.lookup(path) === 'application/javascript') ? 'public,maxAge=0' : 'public']);
     };
 }

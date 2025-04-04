@@ -1,6 +1,5 @@
 import type { Express } from "express";
-import type { route } from "../route/routeur.js";
-import { CompilerWatchSubject } from '../oberserver/oberserver';
+import type { AppRouter } from "../route/routeur.js";
 export declare class Context {
     private _strategy;
     private _subject;
@@ -10,6 +9,6 @@ export declare class Context {
 }
 export declare class ServerStrategy implements Server.Strategy {
     private _data;
-    constructor(data: route[]);
-    doAlgorithm(app: Express, subject: CompilerWatchSubject): void;
+    constructor(data: AppRouter[]);
+    doAlgorithm(app: Express): void;
 }
