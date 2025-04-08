@@ -17,9 +17,6 @@ const optionServer =
 if (!threeTreeConfig.server.caching_Script){
     optionServer['setHeaders'] = (res,path) =>{
         res.header('Cache-Control', [(express.static.mime.lookup(path) === 'application/javascript')?'public,maxAge=0':'public'])
-        // req.set({
-        //     'Cache-Control':(express.static.mime.lookup(path) === 'application/javascript')?'public,maxAge=0':'public'
-        // })
     }
 }
 

@@ -4,6 +4,11 @@ type EventFile = {
 }
 type EventPromise = Promise<EventFile>
 
+type EventProxy = {
+    proxy:EventFile[],
+    observer:LibFile.Observer
+}
+
 declare enum RequestMethod {
     get = "get",
     post = 'post',
@@ -63,6 +68,8 @@ declare namespace LibFile {
         addEvent(event:EventFile):void;
         get events():EventFile[];
         get path():String;
+        get firstLayerproxyHandler():ProxyHandler<EventFile[]>
+        get secondLayerproxyHandler():ProxyHandler<EventProxy>
     }
 }
 
@@ -85,6 +92,11 @@ declare namespace Cache {
 }
 
 declare namespace Server {
+
+    interface revocable<T extends Object>{
+        proxy:typeof Proxy<T>,
+        revoke:()=>void
+    }
 
     type route<REQ,RES,NEXT> = {
         pathServer?:string;

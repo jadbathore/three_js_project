@@ -10,7 +10,7 @@ export const router = [
         scene: "threeElement",
         method: RequestMethod.get,
         serverLogic: (req, res) => {
-            res.send('bonjour');
+            res.render('bonjour');
         }
     }
 ];

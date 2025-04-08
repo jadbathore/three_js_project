@@ -15,7 +15,7 @@ export const router:AppRouter[] = [
         scene:"threeElement",
         method: RequestMethod.get,
         serverLogic:(req,res)=>{
-            res.send('bonjour')
+            res.render('bonjour')
         }
     }
 ];

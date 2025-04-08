@@ -8,8 +8,6 @@ const { THREE,
 	moonMesh, fresnel, glowmesh,
 	star, sunLight, getFresnelMat,
 	getStarfield, } = require('../../public/versionning/linkFile.js')
-
-
 	
 	const loader = new THREE.TextureLoader();
 

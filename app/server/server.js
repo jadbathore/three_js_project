@@ -7,7 +7,7 @@ import livereload from 'livereload';
 import connectLiveReload from 'connect-livereload';
 import PathUtility from '../CompilerSetUp/Utility/pathUtility.js';
 import { optionServer } from './optionStaticFileExpress.js';
-import { CompilerWatchSubject,ObserverWatch,ProxyObserver } from '../../_types/app/oberserver/oberserver.js';
+import { CompilerWatchSubject,ObserverWatch,ProxyObserver, singletonProxyObserver } from '../../_types/app/oberserver/oberserver.js';
 import { compiler,rollupWatchConfig } from "../CompilerSetUp/Compiler.js";
 import https from 'https';
 
@@ -22,7 +22,17 @@ const oberserver = new ObserverWatch('/')
 const server = (key && cert)? https.createServer({key: key, cert: cert }, app):app;
 // const server = app;
 const port = process.env.EXPRESS_PORT || 3000;
+const i = singletonProxyObserver.instance
+
+i.proxyObserver(oberserver,(event,path)=>{
+    console.log(event,path)
+    if(event.filename == "3.cameraSetting.js") i.proxyObserver(oberserver).revoke()   
+    liveReloadServer.refresh(path);
+})
+
 ProxyObserver(oberserver,(event,path)=>{
+    console.log(event,path)
+    if(event.filename == "3.cameraSetting.js") ProxyObserver(oberserver).revoke()   
     liveReloadServer.refresh(path);
 })
 app.use(compression())

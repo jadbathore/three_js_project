@@ -41,7 +41,6 @@ export const compiler = (subject, observer) => {
                 try {
                     const watcher = fs.promises.watch(PathUtility.getPathFromElement(key), { signal });
                     for await (const event of watcher) {
-                        observer.addEvent(event);
                         subject.notify(event);
                         const pathFileChanging = PathUtility.getPathFromElement(key, event.filename);
                         switch (event.eventType) {
