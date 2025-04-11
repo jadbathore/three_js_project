@@ -11,7 +11,7 @@ import BinUtility from "./BinUtility.js"
 import gradient from 'gradient-string';
 import path from 'path'
 import Utility from "../app/CompilerSetUp/Utility/Utility.js";
-import { ConnectionUtilityMongoDB } from "../_types/app/databaseConnection/dbConnection.js";
+import { ConnectionUtilityMongoDB } from "../_types/app/model/databaseConnection/dbConnection.js";
 import PathUtility from "../app/CompilerSetUp/Utility/pathUtility.js";
 import inquirer from "inquirer";
 import { input } from '@inquirer/prompts';

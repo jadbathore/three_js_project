@@ -14,7 +14,7 @@
     "moduleDetection": "force",
     "allowSyntheticDefaultImports":true,
     "skipLibCheck": false,
-    "rootDirs": ["./app"],
+    "rootDirs": ["./app/model/"],
     "outDir": "_types/",
     "declarationDir": "_types/"
   },

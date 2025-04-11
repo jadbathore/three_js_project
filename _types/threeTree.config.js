@@ -1,6 +1,6 @@
 export default {
     path: {
-        rootDirProjectName: './app/threeElement/',
+        rootDirProjectName: './app/3DScenes/scene1/',
         dirPathAssetName: './app/public/asset/',
         dirPathPublic: './app/public/',
     },
