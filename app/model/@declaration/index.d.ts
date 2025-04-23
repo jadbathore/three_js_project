@@ -62,8 +62,8 @@ declare namespace LibFile {
         addEvent(event:EventFile):void;
         get events():EventFile[];
         get path():String;
-        get firstLayerproxyHandler():ProxyHandler<EventFile[]>
-        get secondLayerproxyHandler():ProxyHandler<EventProxy>
+        get firstLayerproxyHandler():ProxyHandler<EventFile[]>;
+        get secondLayerproxyHandler():ProxyHandler<EventProxy>;
     }
 }
 
@@ -92,7 +92,7 @@ declare namespace Server {
         revoke:()=>void
     }
 
-    type route<REQ,RES,NEXT,METHODS> = {
+    type route<REQ,RES,NEXT,METHODS,COMPILER> = {
         pathServer?:string;
         method:METHODS;
         scene?:string;
@@ -101,6 +101,7 @@ declare namespace Server {
             res: RES, 
             next?: NEXT
         )=> void;
+        CompilerTuple?: [COMPILER,LibFile.Observer];
     }
     type OptionStatic = {
         dotfiles: string,
@@ -115,9 +116,10 @@ declare namespace Server {
     }
     interface Iterator<T>{
         current():T;
-        next():T;
+        next():void;
         rewind():void;
         valid():boolean;
+        addCompilerTuple(subject:LibFile.Subject):void;
     }
     interface Aggregator<T>{
         getReverseIterator():Iterator<T>
@@ -125,6 +127,7 @@ declare namespace Server {
         addItem(item:T):void;
         getCount():number;
         getItems():T[];
+        getItem(itemIdetifier:string):T;
         getExtremity(reverse:boolean):number;
     }
 
@@ -132,5 +135,3 @@ declare namespace Server {
         doAlgorithm(...arguments:any[]): void;
     }
 }
-
-

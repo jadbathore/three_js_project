@@ -1,136 +1,163 @@
-// export class CompilerWatchSubject implements LibFile.Subject {
-//     public observers:LibFile.Observer[] = []
+import express ,{type Express,type IRouter,type Router}  from "express";
+import fs from 'fs';
+import https from 'https'
+import compression from "compression";
+import chalk from "chalk";
+import boxen from "boxen";
+import {RequestMethod,router,type AppRouter } from "../../route/routeur.js"
+import { ServerRouteAggregate } from "../../model/iterator/iteratorServer.js";
+import PathUtility from "../../model/CompilerSetUp/Utility/pathUtility.js";
+import { optionServer } from "../../server/optionStaticFileExpress.js";
+import { CompilerWatchSubject } from "../../model/oberserver/oberserver.js";
+import { Connection } from "mongoose";
+import { Compiler } from "../../model/CompilerSetUp/Compiler.js";
 
-//     public attach(observer: LibFile.Observer): void {
-//         if(!this.observers.includes(observer))
-//         {
-//             this.observers.push(observer)
-//         }
-//     }
+
+type serverTarget = {
+    route:string,
+}
+
+const target:serverTarget = {
+    route: "hello",
+};
+
+enum serverStatus {
+    connect = "connect",
+    disconnect = "disconnect",
+    firstConnection = "first connection"
+}
+
+
+interface SocketHandler {
+    handleConnection(event:any):void;
+    handleDeconnection(event:any):void;
+}
+
+class a implements SocketHandler {
     
+    public handleConnection(appRouter:AppRouter):void
+    {
+        const [compiler,Observer] = appRouter.CompilerTuple
+        compiler.compile()
+    }
 
-//     public detach(observer: LibFile.Observer): void {
-//         const obeserverIndex:number = this.observers.indexOf(observer)
-//         if(obeserverIndex === -1)
-//         {
-//             throw Error(`observer do not exist (on CompilerWatchSubject)`)
-//         }
-//         const ObserverToDetach:LibFile.Observer = this.observers[obeserverIndex];
-//         Object.defineProperty(ObserverToDetach,'push',{
-//             writable: false,
-//             configurable: false
-//         })
-//         this.observers.splice(obeserverIndex,1)
-//     }
+    public handleDeconnection(appRouter:AppRouter):void
+    {
+        const [compiler,Observer] = appRouter.CompilerTuple
+        compiler.DestructCompiler()
+    }
+}
 
-//     public async notify(event:EventFile):Promise<void>
-//     {
-//         for (const observer of this.observers){
-//             const iterator:AsyncGenerator<any, any, unknown> = observer.update(this,event)
-//             for await (const IteratorResult of iterator){
-//                 IteratorResult
-//             }
-//         }
-//     }
-    
-//     public addEventObserver(observer:LibFile.Observer,eventPromise:EventPromise):Awaited<void>
-//     {
-//         eventPromise.then((event:EventFile)=>{
-//             observer.addEvent(event)
-//         })
-//     } 
+class TestServer {
+    private static _socketHandlerInterface:SocketHandler;
+    private static _iteratorAggregate: Server.Aggregator<AppRouter>;
 
-// }
-// //___________________________
-// export class ObserverWatch implements LibFile.Observer {
-//     private _events:EventFile[]=[];
-//     private readonly _path:string;
-//     private readonly _proxyHandler:ProxyHandler<EventFile[]>
+    private _proxy: serverTarget;
+    private readonly _target:serverTarget = {
+        route:"/"
+    };
+    private _subject:LibFile.Subject
 
-//     public constructor(path:string)
-//     {
-//         this._path = path
-//         this._proxyHandler = this.setFristLayerProxyHandler(); 
-//     }
+    public constructor(
+        data:AppRouter[],
+        socketHandlerInterface:SocketHandler,
+        subject:LibFile.Subject
+    )
+    {
+        TestServer._iteratorAggregate = new ServerRouteAggregate(data);
+        TestServer._socketHandlerInterface = socketHandlerInterface;
+        this._proxy = new Proxy(this._target,this.serverProxyHandler());
+        this._subject = subject
+    }
 
-//     public async *update(subject: LibFile.Subject,event:EventFile):AsyncGenerator<any, any, EventPromise>
-//     {
-//         const emitPromise:EventPromise =  new Promise((resolve,rejects)=>{
-//             resolve(event)
-//         })
-//         yield subject.addEventObserver(this,emitPromise)
-//     }
+    private serverProxyHandler():ProxyHandler<serverTarget>
+    {
+        return {
+            get:function(target:any, prop:keyof serverTarget):serverTarget|EventServer<serverStatus>
+                {
+                    if(prop){
+                        switch(target[prop]?.type ?? serverStatus.firstConnection){
+                            case serverStatus.firstConnection:
+                            case serverStatus.connect: 
+                            TestServer._socketHandlerInterface.handleConnection(
+                                TestServer._iteratorAggregate.getItem(target[prop]?.route ?? target[prop])
+                            )
+                            break;
+                            case serverStatus.disconnect: 
+                            TestServer._socketHandlerInterface.handleDeconnection(
+                                TestServer._iteratorAggregate.getItem(target[prop]?.route ?? target[prop])
+                            )
+                            break;
+                            default:throw new Error("unknow type :" + target[prop].type);
+                        }
+                        return target[prop]
+                    }
+                    return target
+            },
+            set:function(target:any,prop:keyof serverTarget,newvalue:any,receiver:any)
+            {
 
-//     private setFristLayerProxyHandler():ProxyHandler<EventFile[]>
-//     {
-//         return {
-//             get:function(target:EventFile[], p:string, receiver:any)
-//             {
-//                 if(p){
-//                     const index:number = parseInt(p)
-//                     return target[index]
-//                 }
-//                 return target
-//             },
-//             set:function(target:EventFile[],p:string,newvalue:any,receiver:any):boolean{
-//                 const index:number = parseInt(p)
-//                 target[index] = newvalue
-//                 return true
-//             }
-//         }
-//     }
-//     private setSecondLayerProxyHandler():ProxyHandler<EventFile[]>
-//     {
-//         return {
-//             get:function(target:EventFile[], p:string|symbol, receiver:any)
-//             {
-//                 return target
-//             },
-//             set:function(target:EventFile[],p:string,newvalue:any,receiver:any):boolean{
-//                 const index:number = parseInt(p)
-//                 target[index] = newvalue
-//                 return true
-//             }
-//         }
-//     }
+                
+                target[prop] = {
+                    route:newvalue,
+                    type:(receiver[prop]?.route  === newvalue)? serverStatus.connect:serverStatus.disconnect,
+                }
+                return true;
+            }
+        }
+    }
 
-//     public addEvent(event:EventFile):void
-//     {
-//         this._events.push(event)
-//     }
+    private createRoute(app:Express){
+        const iterator:Server.Iterator<AppRouter> = TestServer._iteratorAggregate.getIterator();
+        do {
+            const routeObj:AppRouter = iterator.current();
+            if(routeObj.method != RequestMethod.middleWare){
+                if(fs.existsSync(routeObj.scene)){
+                    iterator.addCompilerTuple(this._subject);
+                }
+                app[routeObj.method](routeObj.pathServer,routeObj.serverLogic);
+            } else {
+                app[routeObj.method](routeObj.serverLogic);
+            }
+        } while (iterator.valid()) 
+    }
 
-//     get events():EventFile[]
-//     {
-//         return this._events
-//     }
+    private serverWatcher(app:Express){
+        app.use((req,res,next)=>{
+            this._proxy.route = req.path;
+            // this._proxy.route
+            console.log(`${req.method} on "${req.path}" at ${new Date(Date.now()).toString()}`)
+            next();
+        })
+    }
 
-//     get path():string
-//     {
-//         return this._path;
-//     }
-    
-//     get proxyHandler():ProxyHandler<EventFile[]>
-//     {
-//         return this._proxyHandler;
-//     }
-
-// }
-
-
-// export function ProxyObserver(observer:LibFile.Observer,callBack:(event:EventFile,path:String)=>void):void
-// {
-//     const _array:EventFile[] =[]
-//     const ProxyObserver:EventFile[] = new Proxy<EventFile[]>(observer.events,observer.proxyHandler)
+    public runServer(app:Express) { 
+        app.use(compression());
+        app.set('view engine','ejs')
+        app.set('views',PathUtility.getViewerFile())
+        app.use(express.static('app/public',optionServer))
+        const key:Buffer|null = (fs.existsSync(PathUtility.keySLL))?fs.readFileSync(PathUtility.keySLL):null;
+        const cert:Buffer|null = (fs.existsSync(PathUtility.certSLL))?fs.readFileSync(PathUtility.certSLL):null;
+        const server = (key && cert)? https.createServer({key: key, cert: cert }, app):app;
+        const port = process.env.EXPRESS_PORT || 3004;
+        this.serverWatcher(app);
+        this.createRoute(app);
+        server.listen(port,()=>{
+            console.log(chalk.greenBright(
+                boxen(`Server is running on port : ${port}`,
+                {
+                    padding: 1,
+                })
+            ))
+        })
+    }
 
 
-//     Object.defineProperty(ProxyObserver,'push', 
-//         {
-//             value: function():void
-//             {
-//                 _array.push(...arguments)
-//                 callBack(arguments[0],observer.path)
-//             },
-//             writable: true,
-//             configurable: true
-//     })
-// }
+}
+const z = new a();
+
+const s = new CompilerWatchSubject()
+const Tser = new TestServer(router,z,s)
+
+const app = express()
+Tser.runServer(app)

@@ -135,7 +135,7 @@ export function proxyObserver(observer:LibFile.Observer,callBack?:(event:EventFi
             writable: true,
             configurable: true
     })
-    return ProxyObserver;
+    return ProxyObserver;   
 }
 
 export function proxyRevokeCall(proxy:EventFile[],observer:LibFile.Observer){

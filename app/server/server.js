@@ -1,3 +1,21 @@
+import { ServerStrategy,Context } from '../../_types/app/model/strategy/strategyServer.js';
+import { router } from '../../_types/app/route/routeur.js';
+
+
+
+const serverStrategy = new Context(new ServerStrategy(router))
+serverStrategy.runServer()
+
+// proxyObserver(oberserver,(event,path,proxy) => {
+//             console.log(event,path,proxy)
+//             if(event.filename == "3.cameraSetting.js")
+//                 {
+//                     subject.detach(oberserver)
+//                     proxyRevokeCall(proxy,oberserver).revoke();
+//                 }    
+//             liveReloadServer.refresh(path);
+//         })
+
 // import express from 'express';
 // import chalk from 'chalk';
 // import boxen from 'boxen';
@@ -7,14 +25,10 @@
 // import connectLiveReload from 'connect-livereload';
 // import PathUtility from '../CompilerSetUp/Utility/pathUtility.js';
 // import { optionServer } from './optionStaticFileExpress.js';
-// import { CompilerWatchSubject,ObserverWatch,proxyObserver,proxyRevokeCall } from '../../_types/app/oberserver/oberserver.js';
+// import { CompilerWatchSubject,ObserverWatch,proxyObserver,proxyRevokeCall } from '../../_types/app/model/oberserver/oberserver.js';
 // import { Compiler,rollupWatchConfig } from "../CompilerSetUp/Compiler.js";
 // import https from 'https';
-import { ServerStrategy,Context } from '../../_types/app/model/strategy/strategyServer.js';
-import { router } from '../../_types/app/route/routeur.js';
 
-const serverStrategy = new Context(new ServerStrategy(router))
-serverStrategy.runServer()
 
 // rollupWatchConfig();
 // const app = express();
@@ -64,8 +78,8 @@ serverStrategy.runServer()
 // })
 
 
-// // callCompiler(subject,oberserver)
-// //     .then(()=>{
+// callCompiler(subject,oberserver)
+//     .then(()=>{
 // server.listen(port,()=>{
 // console.log('\n'+chalk.green(
 //             boxen(`Server is running on port : ${port}`,
@@ -76,6 +90,6 @@ serverStrategy.runServer()
 //         ))
 //         + '\n')
 //     })
-//     // })
+//     })
 
 

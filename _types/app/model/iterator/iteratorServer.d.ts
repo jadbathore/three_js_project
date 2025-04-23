@@ -6,7 +6,8 @@ export declare class IteratorServer implements Server.Iterator<AppRouter> {
     constructor(collection: Server.Aggregator<AppRouter>, reverse?: boolean);
     rewind(): void;
     current(): AppRouter;
-    next(): AppRouter;
+    addCompilerTuple(subject: LibFile.Subject): void;
+    next(): void;
     valid(): boolean;
 }
 export declare class ServerRouteAggregate implements Server.Aggregator<AppRouter> {
@@ -17,5 +18,6 @@ export declare class ServerRouteAggregate implements Server.Aggregator<AppRouter
     getReverseIterator(): Server.Iterator<AppRouter>;
     addItem(item: AppRouter): void;
     getItems(): AppRouter[];
+    getItem(itemIdetifier: string): AppRouter;
     getExtremity(reverse: boolean): number;
 }

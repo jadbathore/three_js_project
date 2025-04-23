@@ -1,5 +1,6 @@
 import type { AppRouter } from "../../route/routeur.js"
-
+import { Compiler } from "../CompilerSetUp/Compiler.js";
+import { ObserverWatch } from "../oberserver/oberserver.js";
 
 export class IteratorServer implements Server.Iterator<AppRouter> {
     private _collection: Server.Aggregator<AppRouter>;
@@ -10,28 +11,38 @@ export class IteratorServer implements Server.Iterator<AppRouter> {
         this._collection = collection;
         this._reverse = reverse;
         this._index = this._collection.getExtremity(!reverse);
-
     }
 
     public rewind() {
-        this._index = this._collection.getExtremity(this._reverse);
+        this._index = this._collection.getExtremity(!this._reverse);
     }
 
     public current(): AppRouter {
         return this._collection.getItems()[this._index];
     }
 
-    public next(): AppRouter {
-        const item = this.current();
+    public addCompilerTuple(subject:LibFile.Subject): void {
+        const item:AppRouter = this.current();
+        const oberserver:LibFile.Observer = new ObserverWatch (
+            item.pathServer
+        )
+        const compiler:Compiler = new Compiler(oberserver,subject,item.scene)
+        this._collection.getItems()[this._index].CompilerTuple = [compiler,oberserver]
+    }
+    
+    public next(): void {
         this._index += this._reverse ? -1 : 1;
-        return item;
     }
 
     public valid(): boolean {
+        let afterProcessIsValid :boolean;
+        this.next();
+
         if (this._reverse) {
-            return this._index >= this._collection.getExtremity(this._reverse);
-        }
-        return this._index <= this._collection.getExtremity(this._reverse);
+            afterProcessIsValid = this._index >= this._collection.getExtremity(this._reverse);
+        } 
+        afterProcessIsValid = this._index <= this._collection.getExtremity(this._reverse);
+        return afterProcessIsValid;
     }
 }
 
@@ -61,19 +72,11 @@ export class ServerRouteAggregate implements Server.Aggregator<AppRouter> {
         return this._items;
     }
 
+    public getItem(itemIdetifier:string):AppRouter{
+        return this._items.find(({ pathServer }) => pathServer == itemIdetifier);
+    }
+
     public getExtremity(reverse: boolean): number {
         return (reverse)?0:this._items.length -1;
     }
 }
-
-
-// const collection:Server.Aggregator<string> = new WordsCollection();
-// collection.addItem('First');
-// collection.addItem('Second');
-// collection.addItem('Third');
-// console.log(collection.getExtremity(false));
-
-// const reverseIterator:Server.Iterator<string> = collection.getIterator();
-// while (reverseIterator.valid()) {
-//     console.log(reverseIterator.next());
-// }

@@ -29,5 +29,15 @@ export const router = [
         serverLogic: (req, res) => {
             res.send("hello Word");
         }
-    }
+    },
+    {
+        pathServer: "/world",
+        scene: PathUtility.rootDirProjectName,
+        method: RequestMethod.get,
+        serverLogic: (req, res) => {
+            res.render('index', {
+                title: 'test_app'
+            });
+        }
+    },
 ];

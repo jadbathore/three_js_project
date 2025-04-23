@@ -7,7 +7,7 @@ const { THREE,
 	cloudMesh, __moon__, moonRotation,
 	moonMesh, fresnel, glowmesh,
 	star, sunLight, getFresnelMat,
-	getStarfield, } = require('../../public/versionning/linkFile.js')
+	getStarfield, } = require('../../../public/versionning/linkfile.js')
 
 const earthGroup = new THREE.Group();
 earthGroup.rotation.z = -23.4 * Math.PI / 180
@@ -57,3 +57,12 @@ const cloudMesh = new THREE.Mesh(
 )
 cloudMesh.scale.setScalar(1.01)
 earthGroup.add(cloudMesh);
+
+class test {
+    constructor(hell){
+        this.hell = hell
+    }
+    hello(){
+        console.log(this.hell)
+    }
+}
