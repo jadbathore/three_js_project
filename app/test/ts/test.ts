@@ -1,4 +1,4 @@
-import express ,{type Express,type IRouter,type Router}  from "express";
+import express ,{Handler, type Express,type IRouter,type Router}  from "express";
 import fs from 'fs';
 import https from 'https'
 import compression from "compression";
@@ -8,18 +8,14 @@ import {RequestMethod,router,type AppRouter } from "../../route/routeur.js"
 import { ServerRouteAggregate } from "../../model/iterator/iteratorServer.js";
 import PathUtility from "../../model/CompilerSetUp/Utility/pathUtility.js";
 import { optionServer } from "../../server/optionStaticFileExpress.js";
-import { CompilerWatchSubject } from "../../model/oberserver/oberserver.js";
-import { Connection } from "mongoose";
+import { CompilerWatchSubject, proxyObserver } from "../../model/oberserver/oberserver.js";
+import { connection, Connection } from "mongoose";
 import { Compiler } from "../../model/CompilerSetUp/Compiler.js";
 
 
 type serverTarget = {
     route:string,
 }
-
-const target:serverTarget = {
-    route: "hello",
-};
 
 enum serverStatus {
     connect = "connect",
@@ -29,21 +25,22 @@ enum serverStatus {
 
 
 interface SocketHandler {
-    handleConnection(event:any):void;
-    handleDeconnection(event:any):void;
+    handleConnection({CompilerTuple:[compiler,oberserver]}:AppRouter):void;
+    handleDeconnection({CompilerTuple:[compiler,oberserver]}:AppRouter):void;
 }
 
-class a implements SocketHandler {
-    
-    public handleConnection(appRouter:AppRouter):void
+class Socket implements SocketHandler {
+
+    public handleConnection({CompilerTuple:[compiler,oberserver]}:AppRouter):void
     {
-        const [compiler,Observer] = appRouter.CompilerTuple
         compiler.compile()
+        proxyObserver(oberserver,(event,path,proxy)=>{
+            console.log(event,path,proxy)
+        })
     }
 
-    public handleDeconnection(appRouter:AppRouter):void
+    public handleDeconnection({CompilerTuple:[compiler,oberserver]}:AppRouter):void
     {
-        const [compiler,Observer] = appRouter.CompilerTuple
         compiler.DestructCompiler()
     }
 }
@@ -54,7 +51,7 @@ class TestServer {
 
     private _proxy: serverTarget;
     private readonly _target:serverTarget = {
-        route:"/"
+        route:""
     };
     private _subject:LibFile.Subject
 
@@ -76,36 +73,89 @@ class TestServer {
             get:function(target:any, prop:keyof serverTarget):serverTarget|EventServer<serverStatus>
                 {
                     if(prop){
-                        switch(target[prop]?.type ?? serverStatus.firstConnection){
-                            case serverStatus.firstConnection:
-                            case serverStatus.connect: 
-                            TestServer._socketHandlerInterface.handleConnection(
-                                TestServer._iteratorAggregate.getItem(target[prop]?.route ?? target[prop])
-                            )
-                            break;
-                            case serverStatus.disconnect: 
-                            TestServer._socketHandlerInterface.handleDeconnection(
-                                TestServer._iteratorAggregate.getItem(target[prop]?.route ?? target[prop])
-                            )
-                            break;
-                            default:throw new Error("unknow type :" + target[prop].type);
-                        }
                         return target[prop]
                     }
                     return target
             },
             set:function(target:any,prop:keyof serverTarget,newvalue:any,receiver:any)
             {
-
-                
+                const routeKey = receiver[prop]?.route ?? receiver[prop];
+                const routeType = (receiver[prop].route)? serverStatus.connect:serverStatus.firstConnection
+                console.log(routeKey,newvalue,routeType)
+                if(routeKey  != newvalue){
+                    TestServer.accessAppRouter(
+                        receiver[prop]?.route ?? receiver[prop],
+                        TestServer._socketHandlerInterface,
+                        serverStatus.disconnect,
+                        newvalue
+                    )
+                } else {
+                    if((target[prop]?.type) != serverStatus.firstConnection){
+                        TestServer.accessAppRouter(
+                            receiver[prop]?.route ?? receiver[prop],
+                            TestServer._socketHandlerInterface,
+                            routeType,
+                        )
+                    }
+                }
                 target[prop] = {
                     route:newvalue,
-                    type:(receiver[prop]?.route  === newvalue)? serverStatus.connect:serverStatus.disconnect,
+                    type:routeType
                 }
                 return true;
             }
         }
     }
+
+    private static accessAppRouter(
+        targetOld:string,
+        socket:SocketHandler,
+        serverEvent:serverStatus,
+    ):void
+    private static accessAppRouter(
+        targetOld:string,
+        socket:SocketHandler,
+        serverEvent:serverStatus,
+        targetNew:string
+    ):void
+    private static accessAppRouter(
+        targetOld:string,
+        socket:SocketHandler,
+        serverEvent:serverStatus,
+        targetNew?:string
+    ):void
+    {
+        switch(serverEvent){
+            case serverStatus.connect:
+                TestServer.handleSocketType(
+                    socket.handleConnection,
+                    TestServer._iteratorAggregate.getItem(targetOld)
+                )
+            break;
+            case serverStatus.disconnect:
+                TestServer.handleSocketType(
+                    socket.handleDeconnection,
+                    TestServer._iteratorAggregate.getItem(targetOld)
+                )
+                TestServer.handleSocketType(
+                    socket.handleConnection,
+                    TestServer._iteratorAggregate.getItem(targetNew)
+                )
+            break;
+            case serverStatus.firstConnection:break;
+            default:throw new Error(`unknow type:"${serverEvent}"`)
+        }
+    }
+
+    private static handleSocketType(callback:(appRouter:AppRouter)=>void):void 
+    private static handleSocketType(callback:(appRouter:AppRouter)=>void,item:AppRouter):void 
+    private static handleSocketType(callback:(appRouter:AppRouter)=>void,item?:AppRouter):void 
+    {
+        if(item?.CompilerTuple ?? false){
+            callback(item)
+        }
+    }
+
 
     private createRoute(app:Express){
         const iterator:Server.Iterator<AppRouter> = TestServer._iteratorAggregate.getIterator();
@@ -125,10 +175,13 @@ class TestServer {
     private serverWatcher(app:Express){
         app.use((req,res,next)=>{
             this._proxy.route = req.path;
-            // this._proxy.route
-            console.log(`${req.method} on "${req.path}" at ${new Date(Date.now()).toString()}`)
+            console.log(chalk.blue(`${req.method} on "${req.path}" at ${new Date(Date.now()).toString()}`))
             next();
         })
+    }
+
+    private async *test(res:express.Response<any, Record<string, any>>){
+
     }
 
     public runServer(app:Express) { 
@@ -154,10 +207,8 @@ class TestServer {
 
 
 }
-const z = new a();
-
+const z = new Socket();
 const s = new CompilerWatchSubject()
 const Tser = new TestServer(router,z,s)
-
 const app = express()
 Tser.runServer(app)

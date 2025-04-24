@@ -36,7 +36,7 @@ export function rollupWatchConfig() {
 export class Compiler {
     constructor(observer, subject, sceneName) {
         _Compiler_observer.set(this, void 0);
-        _Compiler_abortControllerList.set(this, []);
+        _Compiler_abortControllerList.set(this, void 0);
         _Compiler_subject.set(this, void 0);
         _Compiler_compilerUtility.set(this, void 0);
         _Compiler_sceneName.set(this, void 0);
@@ -51,7 +51,7 @@ export class Compiler {
         return __classPrivateFieldGet(this, _Compiler_sceneName, "f");
     }
     compile() {
-        if (__classPrivateFieldGet(this, _Compiler_abortControllerList, "f").length != 0) {
+        if (!__classPrivateFieldGet(this, _Compiler_abortControllerList, "f")) {
             if (!fs.existsSync(PathUtility.versionDIR)) {
                 fs.promises.mkdir(PathUtility.versionDIR, { recursive: true })
                     .then((path) => console.log(chalk.green('Directory created successfully', path)))
@@ -61,7 +61,7 @@ export class Compiler {
             const lFile = PathUtility.getlinkFile();
             __classPrivateFieldGet(this, _Compiler_compilerUtility, "f").repopulateComposer(cFile);
             __classPrivateFieldGet(this, _Compiler_compilerUtility, "f").repopulatelinkFile(lFile);
-            console.log(__classPrivateFieldGet(this, _Compiler_abortControllerList, "f"));
+            __classPrivateFieldSet(this, _Compiler_abortControllerList, [], "f");
             for (const [key, value] of PathUtility.getMapFile()) {
                 if (key !== undefined) {
                     const ac = new AbortController();
@@ -124,6 +124,7 @@ export class Compiler {
         });
         __classPrivateFieldGet(this, _Compiler_subject, "f").detach(__classPrivateFieldGet(this, _Compiler_observer, "f"));
         console.log(chalk.bgBlue(`compiler on path "${__classPrivateFieldGet(this, _Compiler_observer, "f").path}" is dead`));
+        __classPrivateFieldSet(this, _Compiler_abortControllerList, null, "f");
         console.log(__classPrivateFieldGet(this, _Compiler_abortControllerList, "f"));
     }
 }

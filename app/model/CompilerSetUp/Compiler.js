@@ -43,7 +43,7 @@ export class Compiler {
     /**
      * @type {AbortController[]}
      */
-    #abortControllerList = []
+    #abortControllerList;
 
     /**
      * @type {LibFile.Subject}
@@ -81,7 +81,7 @@ export class Compiler {
 
     compile()
     {
-        if(this.#abortControllerList.length != 0) 
+        if(!this.#abortControllerList) 
         {
             if(!fs.existsSync(PathUtility.versionDIR)) {
                 fs.promises.mkdir(PathUtility.versionDIR, { recursive: true })
@@ -89,10 +89,10 @@ export class Compiler {
                 .catch((err) => console.error('Error creating directory:', err));
             }
             const cFile = PathUtility.getcompilerFile()
-            const lFile = PathUtility.getlinkFile()       
+            const lFile = PathUtility.getlinkFile() 
             this.#compilerUtility.repopulateComposer(cFile)
             this.#compilerUtility.repopulatelinkFile(lFile)
-            console.log(this.#abortControllerList);
+            this.#abortControllerList = []
             for(const [key,value] of PathUtility.getMapFile())
                 {
                     if(key !== undefined)
@@ -165,6 +165,7 @@ export class Compiler {
             })
             this.#subject.detach(this.#observer)
             console.log(chalk.bgBlue(`compiler on path "${this.#observer.path}" is dead`));
+            this.#abortControllerList = null;
             console.log(this.#abortControllerList);
         }
 }
