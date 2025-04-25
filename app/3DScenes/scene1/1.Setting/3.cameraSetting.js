@@ -1,7 +1,7 @@
 const { THREE,
 	OrbitControls, glb, gltf,
 	hdr, img, renderer,
-	scene, camera, orbit,
+	scene, camera, orbit, 
 	loader, earthGroup, geo,
 	earthMesh, lightMesh, couldsMat,
 	cloudMesh, moonRotation, moonMesh,

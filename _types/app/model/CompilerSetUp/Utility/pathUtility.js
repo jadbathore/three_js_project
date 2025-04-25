@@ -69,6 +69,9 @@ class PathUtility {
     static getPathFromElement(...pathfile) {
         return path.join(process.cwd(), ...this.self.getPathSplit(this.rootDirProjectName), ...pathfile);
     }
+    static getPathFromProcess(...pathfile) {
+        return path.join(process.cwd(), ...pathfile);
+    }
     static getPathFromBaseFile(...pathfile) {
         return path.join(process.cwd(), ...pathfile);
     }

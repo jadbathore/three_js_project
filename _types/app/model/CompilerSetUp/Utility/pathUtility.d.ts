@@ -9,6 +9,7 @@ export default class PathUtility {
     static getBasename(): string[];
     static getBasenameExceptingSetting(): string[];
     static getPathFromElement(...pathfile: any[]): string;
+    static getPathFromProcess(...pathfile: any[]): string;
     static getPathFromBaseFile(...pathfile: any[]): string;
     static getPathFromPublic(...pathfile: any[]): string;
     static getMapAsset(): Map<any, any>;

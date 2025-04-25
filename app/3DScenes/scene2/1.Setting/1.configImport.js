@@ -10,6 +10,6 @@ const { THREE,
 	} = require('../../public/versionning/linkFile.js')
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
-import { ImageCache,ImagesCacheHandler } from '../../model/cache/cacheImageUtility.js'
+import { ImageCache,ImagesCacheHandler } from '../../../_types/app/model/cache/cacheImageUtility.js' 
 
 

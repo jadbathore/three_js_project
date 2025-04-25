@@ -70,7 +70,7 @@ export class Compiler {
         this.#observer = observer;
         this.#subject = subject;
         this.#subject.attach(this.#observer);
-        console.log(chalk.bgBlue(`compiler created On path`))
+        console.log(chalk.bgBlue(`compiler created for request :"${this.#observer.path}"`))
         this.#compilerUtility = new Utility(sceneName);
         this.#sceneName = sceneName
     }
@@ -93,7 +93,7 @@ export class Compiler {
             this.#compilerUtility.repopulateComposer(cFile)
             this.#compilerUtility.repopulatelinkFile(lFile)
             this.#abortControllerList = []
-            for(const [key,value] of PathUtility.getMapFile())
+            for(const [key,value] of PathUtility.getMapFile(this.#sceneName))
                 {
                     if(key !== undefined)
                         {
@@ -155,17 +155,21 @@ export class Compiler {
                             )();
                         }
                     }
-        }
+            }
         
         }
         
-        DestructCompiler(){
+        stopCompiler(){
             this.#abortControllerList.forEach((abortController)=>{
                 abortController.abort()
             })
-            this.#subject.detach(this.#observer)
-            console.log(chalk.bgBlue(`compiler on path "${this.#observer.path}" is dead`));
+            // this.#subject.detach(this.#observer)
+            console.log(chalk.bgBlue(`compiler on path "${this.#observer.path}" is stop`));
             this.#abortControllerList = null;
             console.log(this.#abortControllerList);
+        }
+
+        destructCompiler(){
+            this.#subject.detach(this.#observer)
         }
 }

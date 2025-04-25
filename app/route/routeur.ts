@@ -21,11 +21,12 @@ export const router:AppRouter[] = [
     {
         pathServer:"/",
         scene:PathUtility.rootDirProjectName,
+        // "./app/3DScenes/scene1",
         method: RequestMethod.get,
         serverLogic:(req,res)=>{
             res.render('index',
             {
-                title:'test_app'
+                title:'scene 1'
             })
         }
     },
@@ -38,12 +39,12 @@ export const router:AppRouter[] = [
     },
     {
         pathServer:"/world",
-        scene:PathUtility.rootDirProjectName,
+        scene:"./app/3DScenes/scene2",
         method: RequestMethod.get,
         serverLogic:(req,res)=>{
             res.render('index',
             {
-                title:'test_app'
+                title:'scene 2'
             })
         }
     },

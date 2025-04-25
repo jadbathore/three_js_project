@@ -127,6 +127,15 @@ export default class PathUtility {
         return path.join(process.cwd(),...this.self.getPathSplit(this.rootDirProjectName),...pathfile)
     }
 
+    /**
+     * @param  {...any} pathfile 
+     * @returns 
+     */
+    static getPathFromProcess(...pathfile)
+    {
+        return path.join(process.cwd(),...pathfile)
+    }
+
      /**
      * @param  {...any} pathfile 
      * @returns 

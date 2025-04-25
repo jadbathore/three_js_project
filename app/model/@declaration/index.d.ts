@@ -16,6 +16,10 @@ type EventServer<T> = {
 }
 
 
+type serverTarget = {
+    route:string,
+}
+
 declare namespace Compiler {
     type double = {
         double:string,
@@ -102,6 +106,10 @@ declare namespace Server {
             next?: NEXT
         )=> void;
         CompilerTuple?: [COMPILER,LibFile.Observer];
+    }
+    interface SocketHandler<T extends route<any,any,any,any,any>> {
+        handleConnection({CompilerTuple:[compiler,oberserver]}:T):void;
+        handleDeconnection({CompilerTuple:[compiler,oberserver]}:T):void;
     }
     type OptionStatic = {
         dotfiles: string,

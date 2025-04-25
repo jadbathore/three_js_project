@@ -43,7 +43,7 @@ export class Compiler {
         __classPrivateFieldSet(this, _Compiler_observer, observer, "f");
         __classPrivateFieldSet(this, _Compiler_subject, subject, "f");
         __classPrivateFieldGet(this, _Compiler_subject, "f").attach(__classPrivateFieldGet(this, _Compiler_observer, "f"));
-        console.log(chalk.bgBlue(`compiler created On path`));
+        console.log(chalk.bgBlue(`compiler created for request :"${__classPrivateFieldGet(this, _Compiler_observer, "f").path}"`));
         __classPrivateFieldSet(this, _Compiler_compilerUtility, new Utility(sceneName), "f");
         __classPrivateFieldSet(this, _Compiler_sceneName, sceneName, "f");
     }
@@ -62,7 +62,7 @@ export class Compiler {
             __classPrivateFieldGet(this, _Compiler_compilerUtility, "f").repopulateComposer(cFile);
             __classPrivateFieldGet(this, _Compiler_compilerUtility, "f").repopulatelinkFile(lFile);
             __classPrivateFieldSet(this, _Compiler_abortControllerList, [], "f");
-            for (const [key, value] of PathUtility.getMapFile()) {
+            for (const [key, value] of PathUtility.getMapFile(__classPrivateFieldGet(this, _Compiler_sceneName, "f"))) {
                 if (key !== undefined) {
                     const ac = new AbortController();
                     const { signal } = ac;
@@ -118,14 +118,16 @@ export class Compiler {
             }
         }
     }
-    DestructCompiler() {
+    stopCompiler() {
         __classPrivateFieldGet(this, _Compiler_abortControllerList, "f").forEach((abortController) => {
             abortController.abort();
         });
-        __classPrivateFieldGet(this, _Compiler_subject, "f").detach(__classPrivateFieldGet(this, _Compiler_observer, "f"));
-        console.log(chalk.bgBlue(`compiler on path "${__classPrivateFieldGet(this, _Compiler_observer, "f").path}" is dead`));
+        console.log(chalk.bgBlue(`compiler on path "${__classPrivateFieldGet(this, _Compiler_observer, "f").path}" is stop`));
         __classPrivateFieldSet(this, _Compiler_abortControllerList, null, "f");
         console.log(__classPrivateFieldGet(this, _Compiler_abortControllerList, "f"));
+    }
+    destructCompiler() {
+        __classPrivateFieldGet(this, _Compiler_subject, "f").detach(__classPrivateFieldGet(this, _Compiler_observer, "f"));
     }
 }
 _Compiler_observer = new WeakMap(), _Compiler_abortControllerList = new WeakMap(), _Compiler_subject = new WeakMap(), _Compiler_compilerUtility = new WeakMap(), _Compiler_sceneName = new WeakMap();
