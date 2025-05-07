@@ -51,6 +51,7 @@ const couldsMat = new THREE.MeshBasicMaterial({
     opacity:0.1,
     blending: THREE.AdditiveBlending,
 })
+
 const cloudMesh = new THREE.Mesh(
     geo,
     couldsMat

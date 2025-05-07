@@ -85,7 +85,6 @@ export class ObserverWatch implements LibFile.Observer {
                 return Reflect.get(...args)
             },
             deleteProperty(...args:[EventProxy,string|symbol]){
-                console.log("test")
                 return Reflect.deleteProperty(...args)
             }
             
@@ -119,6 +118,8 @@ export class ObserverWatch implements LibFile.Observer {
     }
 
 }
+
+
 
 
 export function proxyObserver(observer:LibFile.Observer,callBack?:(event:EventFile,path:String,selfProxy:EventFile[])=>void)

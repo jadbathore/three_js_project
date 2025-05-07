@@ -63,7 +63,6 @@ export class ObserverWatch {
                 return Reflect.get(...args);
             },
             deleteProperty(...args) {
-                console.log("test");
                 return Reflect.deleteProperty(...args);
             }
         };

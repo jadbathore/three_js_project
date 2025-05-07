@@ -1,4 +1,3 @@
-import PathUtility from '../model/CompilerSetUp/Utility/pathUtility.js';
 export var RequestMethod;
 (function (RequestMethod) {
     RequestMethod["get"] = "get";
@@ -15,7 +14,7 @@ export var RequestMethod;
 export const router = [
     {
         pathServer: "/",
-        scene: PathUtility.rootDirProjectName,
+        scene: "scene1",
         method: RequestMethod.get,
         serverLogic: (req, res) => {
             res.render('index', {
@@ -31,8 +30,8 @@ export const router = [
         }
     },
     {
-        pathServer: "/world",
-        scene: "./app/3DScenes/scene2",
+        pathServer: "/mars",
+        scene: "scene2",
         method: RequestMethod.get,
         serverLogic: (req, res) => {
             res.render('index', {

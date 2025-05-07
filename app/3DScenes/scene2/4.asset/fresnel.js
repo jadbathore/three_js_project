@@ -61,7 +61,7 @@ blending: THREE.AdditiveBlending,
 return fresnelMat;
 }
 
-const fresnel = getFresnelMat();
-const glowmesh = new THREE.Mesh(geo,fresnel);
-scene.add(glowmesh);
-glowmesh.scale.setScalar(1.02)
+// const fresnel = getFresnelMat();
+// const glowmesh = new THREE.Mesh(geo,fresnel);
+// scene.add(glowmesh);
+// glowmesh.scale.setScalar(1.02)

@@ -20,7 +20,7 @@ export type AppRouter = Server.route<e.Request<{}, any, any, any, Record<string,
 export const router:AppRouter[] = [
     {
         pathServer:"/",
-        scene:PathUtility.rootDirProjectName,
+        scene:"scene1",
         // "./app/3DScenes/scene1",
         method: RequestMethod.get,
         serverLogic:(req,res)=>{
@@ -38,8 +38,8 @@ export const router:AppRouter[] = [
         }
     },
     {
-        pathServer:"/world",
-        scene:"./app/3DScenes/scene2",
+        pathServer:"/mars",
+        scene:"scene2",
         method: RequestMethod.get,
         serverLogic:(req,res)=>{
             res.render('index',

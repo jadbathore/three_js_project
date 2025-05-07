@@ -1,14 +1,17 @@
 import {RequestMethod,type AppRouter } from "../../route/routeur.js";
 import { ServerRouteAggregate } from "../iterator/iteratorServer.js";
-import express ,{type Express}  from "express";
+import express ,{ type Express }  from "express";
 import PathUtility from "../CompilerSetUp/Utility/pathUtility.js";
 import { optionServer } from "../../server/optionStaticFileExpress.js";
 import fs from 'fs'
+import { createClient, RedisClientType } from 'redis'
 import https from 'https'
 import chalk from "chalk";
 import boxen from 'boxen'
 import compression from "compression";
 import { rollupWatchConfig } from "../CompilerSetUp/Compiler.js";
+import path from "path";
+
 
 enum serverStatus {
     connect = "connect",
@@ -20,7 +23,8 @@ export class ServerHandler  {
     private static _socketHandlerInterface:Server.SocketHandler<AppRouter>;
     private static _iteratorAggregate: Server.Aggregator<AppRouter>;
 
-    private _proxy: serverTarget;
+    private _proxy: serverTarget|any;
+    private _redisClient:RedisClientType<any,any,any>
     private readonly _target:serverTarget = {
         route:""
     };
@@ -34,8 +38,22 @@ export class ServerHandler  {
     {
         ServerHandler._iteratorAggregate = new ServerRouteAggregate(data);
         ServerHandler._socketHandlerInterface = socketHandlerInterface;
+        this.setRedisclient();
         this._proxy = new Proxy(this._target,this.serverProxyHandler());
         this._subject = subject
+    }
+
+    private  setRedisclient(){
+        (async ()=>{
+            this._redisClient = await createClient()
+            .on('error', (err) => {
+                console.log(chalk.red('redis client not connected err',err))
+            })
+            .on('connect',()=>{
+                console.log(chalk.keyword('lightgreen')('redis client connected'))
+            })
+            .connect();
+        })()
     }
 
     private serverProxyHandler():ProxyHandler<serverTarget>
@@ -132,7 +150,7 @@ export class ServerHandler  {
         do {
             const routeObj:AppRouter = iterator.current();
             if(routeObj.method != RequestMethod.middleWare){
-                if(fs.existsSync(routeObj.scene)){
+                if(fs.existsSync(PathUtility.pathofElementWithPoint(routeObj.scene))){
                     iterator.addCompilerTuple(this._subject);
                 }
                 app[routeObj.method](routeObj.pathServer,routeObj.serverLogic);
@@ -144,23 +162,40 @@ export class ServerHandler  {
 
     private serverWatcher(app:Express){
         app.use((req,res,next)=>{
-            this._proxy.route = req.path;
-            console.log(chalk.blue(`${req.method} on "${req.path}" at ${new Date(Date.now()).toString()}`))
+            if(req.path != '/.handler'){
+                this._proxy.route = req.path;
+                console.log(chalk.blue(`${req.method} on "${req.path}" at ${new Date(Date.now()).toString()}`))
+            } 
+            next();
+        })
+        app.use('/.handler',async(req,res,next)=>{
+
+            const file = await this.getFile(this._proxy.route.route);
+            res.send(file).status(200)
             next();
         })
     }
 
+    private async setFile(key:string){
+        const file = fs.readFileSync(PathUtility.dist);
+        await this._redisClient.set(key,file)
+    }
+
+    private async getFile(key:string):Promise<string>{
+        return await this._redisClient.get(key) ?? fs.readFileSync(PathUtility.dist,'utf-8')
+    }
 
     public runServer(app:Express) { 
         rollupWatchConfig()
         app.use(compression());
+        app.enable('etag');
         app.set('view engine','ejs')
         app.set('views',PathUtility.getViewerFile())
         app.use(express.static('app/public',optionServer))
         const key:Buffer|null = (fs.existsSync(PathUtility.keySLL))?fs.readFileSync(PathUtility.keySLL):null;
         const cert:Buffer|null = (fs.existsSync(PathUtility.certSLL))?fs.readFileSync(PathUtility.certSLL):null;
         const server = (key && cert)? https.createServer({key: key, cert: cert }, app):app;
-        const port = process.env.EXPRESS_PORT || 3004;
+        const port = process.env.EXPRESS_PORT || 3001;
         this.serverWatcher(app);
         this.createRoute(app);
         server.listen(port,()=>{

@@ -1,39 +1,221 @@
-// import express ,{Handler, type Express,type IRouter,type Router}  from "express";
-// import fs from 'fs';
-// import https from 'https'
-// import compression from "compression";
-// import chalk from "chalk";
-// import boxen from "boxen";
-// import {RequestMethod,router,type AppRouter } from "../../route/routeur.js"
-// import { ServerRouteAggregate } from "../../model/iterator/iteratorServer.js";
-// import PathUtility from "../../model/CompilerSetUp/Utility/pathUtility.js";
-// import { optionServer } from "../../server/optionStaticFileExpress.js";
-// import { CompilerWatchSubject, proxyObserver } from "../../model/oberserver/oberserver.js";
-// import { connection, Connection } from "mongoose";
-// import { Compiler } from "../../model/CompilerSetUp/Compiler.js";
+import {RequestMethod,type AppRouter } from "../../route/routeur.js";
+import { ServerRouteAggregate } from "../../model/iterator/iteratorServer.js";
+import PathUtility from "../../model/CompilerSetUp/Utility/pathUtility.js";
+import { optionServer } from "../../server/optionStaticFileExpress.js";
+import { rollupWatchConfig } from "../../model/CompilerSetUp/Compiler.js";
+import {Socket} from '../../server/serverHandler/socketImplement.js'
+import { CompilerWatchSubject } from "../../model/oberserver/oberserver.js";
+import { router } from "../../route/routeur.js";
+import path from "path";
+import fs from 'fs'
+import redis, { createClient, RedisClientType } from 'redis'
+import https from 'https'
+import chalk from "chalk";
+import boxen from 'boxen'
+import compression from "compression";
+import express ,{ type Express }  from "express";
 
 
+enum serverStatus {
+    connect = "connect",
+    disconnect = "disconnect",
+    firstConnection = "first connection"
+}
+
+export class ServerHandler  {
+    private static _socketHandlerInterface:Server.SocketHandler<AppRouter>;
+    private static _iteratorAggregate: Server.Aggregator<AppRouter>;
+
+    private _proxy: serverTarget|any;
+    private _redisClient:RedisClientType<any,any,any>
+    private readonly _target:serverTarget = {
+        route:""
+    };
+    private _subject:LibFile.Subject
+
+    public constructor(
+        data:AppRouter[],
+        socketHandlerInterface:Server.SocketHandler<AppRouter>,
+        subject:LibFile.Subject
+    )
+    {
+        ServerHandler._iteratorAggregate = new ServerRouteAggregate(data);
+        ServerHandler._socketHandlerInterface = socketHandlerInterface;
+        this.setRedisclient();
+        this._proxy = new Proxy(this._target,this.serverProxyHandler());
+        this._subject = subject
+    }
+
+    private  setRedisclient(){
+        (async ()=>{
+            this._redisClient = await createClient()
+            .on('error', (err) => {
+                console.log(chalk.red('redis client not connected err',err))
+            })
+            .on('connect',()=>{
+                console.log(chalk.keyword('lightgreen')('redis client connected'))
+            })
+            .connect();
+        })()
+    }
+
+    private serverProxyHandler():ProxyHandler<serverTarget>
+    {
+        return {
+            get:function(target:any, prop:keyof serverTarget):serverTarget|EventServer<serverStatus>
+                {
+                    if(prop){
+                        return target[prop]
+                    }
+                    return target
+            },
+            set:function(target:any,prop:keyof serverTarget,newvalue:any,receiver:any)
+            {
+                const routeKey = receiver[prop]?.route ?? receiver[prop];
+                const routeType = (receiver[prop].route)? serverStatus.connect:serverStatus.firstConnection
+                if(routeKey  != newvalue){
+                    ServerHandler.accessAppRouter(
+                        receiver[prop]?.route ?? receiver[prop],
+                        ServerHandler._socketHandlerInterface,
+                        serverStatus.disconnect,
+                        newvalue
+                    )
+                } else {
+                    if((target[prop]?.type) != serverStatus.firstConnection){
+                        ServerHandler.accessAppRouter(
+                            receiver[prop]?.route ?? receiver[prop],
+                            ServerHandler._socketHandlerInterface,
+                            routeType,
+                        )
+                    }
+                }
+                target[prop] = {
+                    route:newvalue,
+                    type:routeType
+                }
+                return true;
+            }
+        }
+    }
+
+    private static accessAppRouter(
+        targetOld:string,
+        socket:Server.SocketHandler<AppRouter>,
+        serverEvent:serverStatus,
+    ):void
+    private static accessAppRouter(
+        targetOld:string,
+        socket:Server.SocketHandler<AppRouter>,
+        serverEvent:serverStatus,
+        targetNew:string
+    ):void
+    private static accessAppRouter(
+        targetOld:string,
+        socket:Server.SocketHandler<AppRouter>,
+        serverEvent:serverStatus,
+        targetNew?:string
+    ):void
+    {
+        switch(serverEvent){
+            case serverStatus.connect:
+                ServerHandler.handleSocketType(
+                    socket.handleConnection,
+                    ServerHandler._iteratorAggregate.getItem(targetOld)
+                )
+            break;
+            case serverStatus.disconnect:
+                ServerHandler.handleSocketType(
+                    socket.handleDeconnection,
+                    ServerHandler._iteratorAggregate.getItem(targetOld)
+                )
+                ServerHandler.handleSocketType(
+                    socket.handleConnection,
+                    ServerHandler._iteratorAggregate.getItem(targetNew)
+                )
+            break;
+            case serverStatus.firstConnection:break;
+            default:throw new Error(`unknow type:"${serverEvent}"`)
+        }
+    }
+
+    private static handleSocketType(callback:(appRouter:AppRouter)=>void):void 
+    private static handleSocketType(callback:(appRouter:AppRouter)=>void,item:AppRouter):void 
+    private static handleSocketType(callback:(appRouter:AppRouter)=>void,item?:AppRouter):void 
+    {
+        if(item?.CompilerTuple ?? false){
+            callback(item)
+        }
+    }
 
 
+    private createRoute(app:Express){
+        const iterator:Server.Iterator<AppRouter> = ServerHandler._iteratorAggregate.getIterator();
+        do {
+            const routeObj:AppRouter = iterator.current();
+            if(routeObj.method != RequestMethod.middleWare){
+                if(fs.existsSync(PathUtility.pathofElementWithPoint(routeObj.scene))){
+                    iterator.addCompilerTuple(this._subject);
+                }
+                app[routeObj.method](routeObj.pathServer,routeObj.serverLogic);
+            } else {
+                app[routeObj.method](routeObj.serverLogic);
+            }
+        } while (iterator.valid()) 
+    }
 
-// class Socket implements SocketHandler {
+    private serverWatcher(app:Express){
+        app.use((req,res,next)=>{
+            if(req.path != '/.handler'){
+                this._proxy.route = req.path;
+                console.log(chalk.blue(`${req.method} on "${req.path}" at ${new Date(Date.now()).toString()}`))
+            } 
+            next();
+        })
+        app.use('/.handler',async(req,res,next)=>{
 
-//     public handleConnection({CompilerTuple:[compiler,oberserver]}:AppRouter):void
-//     {
-//         compiler.compile()
-//         proxyObserver(oberserver,(event,path,proxy)=>{
-//             console.log(event,path,proxy)
-//         })
-//     }
+            const file = await this.getFile(this._proxy.route.route);
+            res.send(file).status(200)
+            next();
+        })
+    }
 
-//     public handleDeconnection({CompilerTuple:[compiler,oberserver]}:AppRouter):void
-//     {
-//         compiler.DestructCompiler()
-//     }
-// }
+    private async setFile(key:string){
+        const file = fs.readFileSync(PathUtility.dist);
+        await this._redisClient.set(key,file)
+    }
 
-// const z = new Socket();
-// const s = new CompilerWatchSubject()
-// const Tser = new ServerHandler(router,z,s)
-// const app = express()
-// Tser.runServer(app)
+    private async getFile(key:string):Promise<string>{
+        return await this._redisClient.get(key) ?? fs.readFileSync(PathUtility.dist,'utf-8')
+    }
+
+    public runServer(app:Express) { 
+        rollupWatchConfig()
+        app.use(compression());
+        app.enable('etag');
+        app.set('view engine','ejs')
+        app.set('views',PathUtility.getViewerFile())
+        app.use(express.static('app/public',optionServer))
+        const key:Buffer|null = (fs.existsSync(PathUtility.keySLL))?fs.readFileSync(PathUtility.keySLL):null;
+        const cert:Buffer|null = (fs.existsSync(PathUtility.certSLL))?fs.readFileSync(PathUtility.certSLL):null;
+        const server = (key && cert)? https.createServer({key: key, cert: cert }, app):app;
+        const port = process.env.EXPRESS_PORT || 3001;
+        this.serverWatcher(app);
+        this.createRoute(app);
+        server.listen(port,()=>{
+            console.log(chalk.greenBright(
+                boxen(`Server is running on port : ${port}`,
+                {
+                    padding: 1,
+                })
+            ))
+        })
+    }
+}
+
+const socket = new Socket();
+const subject = new CompilerWatchSubject()
+const server = new ServerHandler(router,socket,subject)
+const app = express()
+server.runServer(app)
+
+

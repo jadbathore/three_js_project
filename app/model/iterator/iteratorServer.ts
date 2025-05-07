@@ -1,8 +1,10 @@
 import type { AppRouter } from "../../route/routeur.js"
 import { Compiler } from "../CompilerSetUp/Compiler.js";
 import { ObserverWatch } from "../oberserver/oberserver.js";
+import { proxyObserver } from "../oberserver/proxyObserver.js";
 
 export class IteratorServer implements Server.Iterator<AppRouter> {
+    
     private _collection: Server.Aggregator<AppRouter>;
     private _index: number;
     private _reverse: boolean = false;
@@ -27,7 +29,8 @@ export class IteratorServer implements Server.Iterator<AppRouter> {
             item.pathServer
         )
         const compiler:Compiler = new Compiler(oberserver,subject,item.scene)
-        this._collection.getItems()[this._index].CompilerTuple = [compiler,oberserver]
+        const proxy:LibFile.ProxyDirObserver = new proxyObserver(oberserver)
+        this._collection.getItems()[this._index].CompilerTuple = [compiler,oberserver,proxy]
     }
     
     public next(): void {

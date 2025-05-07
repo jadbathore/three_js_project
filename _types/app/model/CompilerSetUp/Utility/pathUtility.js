@@ -1,4 +1,15 @@
-var _a;
+var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
+    if (kind === "m") throw new TypeError("Private method is not writable");
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
+    return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
+};
+var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (receiver, state, kind, f) {
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
+    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
+};
+var _a, _PathUtility_element;
 import fs from 'fs';
 import path from 'path';
 import ThreeTreeConfig from '../../../../threeTree.config.js';
@@ -20,7 +31,11 @@ class PathUtility {
     static getRollupFile() {
         return this.rollupConfig;
     }
-    static getMapFile(directory = this.rootDirProjectName) {
+    static initElement(element) {
+        __classPrivateFieldSet(this, _a, element, "f", _PathUtility_element);
+    }
+    static getMapFile(directory) {
+        directory = (directory) ? this.rootDirProjectName + directory + "/" : this.rootDirProjectName;
         const mapFile = new Map();
         fs.readdirSync(directory, { withFileTypes: true }).filter(dir => dir.isDirectory()).map((dir) => {
             const arry = fs.readdirSync(path.join(process.cwd(), ...this.self.getPathSplit(directory), dir.name));
@@ -28,11 +43,11 @@ class PathUtility {
         });
         return mapFile;
     }
-    static getarrayFile(directory = this.rootDirProjectName) {
+    static getarrayFile(directory) {
         const allFile = [];
         for (const [key, value] of _a.getMapFile(directory)) {
             for (const file of value) {
-                const pathFile = path.join(process.cwd(), ...this.self.getPathSplit(directory), key, file);
+                const pathFile = path.join(process.cwd(), ...this.self.getPathSplit(this.rootDirProjectName), directory, key, file);
                 allFile.push(pathFile);
             }
         }
@@ -69,6 +84,12 @@ class PathUtility {
     static getPathFromElement(...pathfile) {
         return path.join(process.cwd(), ...this.self.getPathSplit(this.rootDirProjectName), ...pathfile);
     }
+    static getPathFromElementCompile(...pathfile) {
+        return path.join(process.cwd(), ...this.self.getPathSplit(this.rootDirProjectName), __classPrivateFieldGet(this, _a, "f", _PathUtility_element) ?? '', ...pathfile);
+    }
+    static pathofElementWithPoint(pathfile) {
+        return (pathfile) ? this.rootDirProjectName + pathfile : '';
+    }
     static getPathFromProcess(...pathfile) {
         return path.join(process.cwd(), ...pathfile);
     }
@@ -94,6 +115,7 @@ _a = PathUtility;
     _a.compilerFile = path.join(process.cwd(), 'app', 'public', 'versionning', 'compling.js');
     _a.linkFile = path.join(process.cwd(), 'app', 'public', 'versionning', 'linkfile.js');
     _a.rollupConfig = path.resolve(process.cwd(), 'rollup.config.js');
+    _a.dist = path.resolve(process.cwd(), 'app', 'public', 'dist', 'compling.js');
     _a.rootDirProjectName = ThreeTreeConfig.path.rootDirProjectName;
     _a.dirPathAssetName = ThreeTreeConfig.path.dirPathAssetName;
     _a.dirPathPublic = ThreeTreeConfig.path.dirPathPublic;
@@ -101,4 +123,5 @@ _a = PathUtility;
     _a.keySLL = path.join(process.cwd(), 'SSLcredential', 'key.pem');
     _a.certSLL = path.join(process.cwd(), 'SSLcredential', 'cert.pem');
 })();
+_PathUtility_element = { value: void 0 };
 export default PathUtility;

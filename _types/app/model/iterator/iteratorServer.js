@@ -1,5 +1,6 @@
 import { Compiler } from "../CompilerSetUp/Compiler.js";
 import { ObserverWatch } from "../oberserver/oberserver.js";
+import { proxyObserver } from "../oberserver/proxyObserver.js";
 export class IteratorServer {
     constructor(collection, reverse = false) {
         this._reverse = false;
@@ -17,7 +18,8 @@ export class IteratorServer {
         const item = this.current();
         const oberserver = new ObserverWatch(item.pathServer);
         const compiler = new Compiler(oberserver, subject, item.scene);
-        this._collection.getItems()[this._index].CompilerTuple = [compiler, oberserver];
+        const proxy = new proxyObserver(oberserver);
+        this._collection.getItems()[this._index].CompilerTuple = [compiler, oberserver, proxy];
     }
     next() {
         this._index += this._reverse ? -1 : 1;

@@ -11,6 +11,7 @@ export default class PathUtility {
         this.compilerFile = path.join(process.cwd(),'app','public','versionning','compling.js');
         this.linkFile = path.join(process.cwd(),'app','public','versionning','linkfile.js');
         this.rollupConfig = path.resolve(process.cwd(),'rollup.config.js');
+        this.dist = path.resolve(process.cwd(),'app','public','dist','compling.js');
         this.rootDirProjectName = ThreeTreeConfig.path.rootDirProjectName;
         this.dirPathAssetName = ThreeTreeConfig.path.dirPathAssetName;
         this.dirPathPublic = ThreeTreeConfig.path.dirPathPublic;
@@ -18,6 +19,11 @@ export default class PathUtility {
         this.keySLL = path.join(process.cwd(),'SSLcredential','key.pem');
         this.certSLL = path.join(process.cwd(),'SSLcredential','cert.pem');
     }
+
+    /**
+     * @type {string|null}
+     */
+    static #element;
 
     /**
      * 
@@ -52,9 +58,24 @@ export default class PathUtility {
         return this.rollupConfig;
     }
 
-    static getMapFile(directory = this.rootDirProjectName)
+    /**
+     * 
+     * @param {string} [element] 
+     */
+    static initElement(element){
+        this.#element = element
+    }
+    
+
+    /**
+     * 
+     * @param {string} [directory] 
+     * @returns 
+     */
+    static getMapFile(directory)
     {
-        const mapFile = new Map();
+        directory = (directory)? this.rootDirProjectName+directory+"/" :this.rootDirProjectName ;
+        const mapFile = new Map(); 
         fs.readdirSync(directory,{withFileTypes:true}).filter(dir => dir.isDirectory()).map((dir)=>{
             const arry = fs.readdirSync(path.join(process.cwd(),...this.self.getPathSplit(directory),dir.name))
             mapFile.set(dir.name,arry)
@@ -62,14 +83,20 @@ export default class PathUtility {
         return mapFile
     }
 
-    static getarrayFile(directory = this.rootDirProjectName)
+    /**
+     * 
+     * @param {string} [directory] 
+     * @returns 
+     */
+    static getarrayFile(directory)
     {
+
         const allFile = []
         for (const [key, value] of PathUtility.getMapFile(directory))     
         {
             for (const file of value)
             {
-                const pathFile = path.join(process.cwd(),...this.self.getPathSplit(directory),key,file)
+                const pathFile = path.join(process.cwd(),...this.self.getPathSplit(this.rootDirProjectName),directory,key,file)
                 allFile.push(pathFile);
             }
         }   
@@ -119,12 +146,30 @@ export default class PathUtility {
         return basenameFile
     }
     /**
-     * @param  {...any} pathfile 
+     * @param  {...any} [pathfile] 
      * @returns 
      */
     static getPathFromElement(...pathfile)
     {
-        return path.join(process.cwd(),...this.self.getPathSplit(this.rootDirProjectName),...pathfile)
+        return path.join(process.cwd(),...this.self.getPathSplit(this.rootDirProjectName),...pathfile);
+    }
+
+    /**
+     * @param  {...any} [pathfile] 
+     * @returns 
+     */
+    static getPathFromElementCompile(...pathfile)
+    {
+        return path.join(process.cwd(),...this.self.getPathSplit(this.rootDirProjectName),this.#element ?? '',...pathfile);
+    }
+
+     /**
+     * @param  {string} [pathfile] 
+     * @returns 
+     */
+    static pathofElementWithPoint(pathfile)
+    {
+    return (pathfile)?this.rootDirProjectName + pathfile :'';
     }
 
     /**

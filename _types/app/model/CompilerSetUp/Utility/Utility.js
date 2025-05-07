@@ -9,7 +9,7 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
     return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
 };
-var _Utility_matchregexVariableDeclaration, _Utility_commentRemover, _Utility_matchregexConstantDelcaration, _Utility_matchparamDeclaration, _Utility_regeximportStatementCommunjs, _Utility_namespaceObjectRegex, _Utility_getfunctionName, _Utility_regexDeclaration, _Utility_regexpathimport, _Utility_regexremoveBlank, _Utility_allConstant;
+var _Utility_matchregexVariableDeclaration, _Utility_commentRemover, _Utility_matchregexConstantDelcaration, _Utility_matchparamDeclaration, _Utility_regeximportStatementCommunjs, _Utility_namespaceObjectRegex, _Utility_getfunctionName, _Utility_regexDeclaration, _Utility_regexpathimport, _Utility_regexremoveBlank, _Utility_allConstant, _Utility_compilerDir;
 import chalk from 'chalk';
 import path, { basename } from 'path';
 import fs from 'fs';
@@ -28,9 +28,11 @@ class Utility {
         _Utility_regexpathimport.set(this, /(?<=from.(\'|\"))[A-z/.-]*/g);
         _Utility_regexremoveBlank.set(this, /(\n\s)/g);
         _Utility_allConstant.set(this, []);
+        _Utility_compilerDir.set(this, void 0);
         let fileDirArray = PathUtility.getarrayFile(compilerDir);
         this.fileDirArray = this.setMapFile(fileDirArray);
         this.mapAsset = PathUtility.getMapAsset();
+        __classPrivateFieldSet(this, _Utility_compilerDir, compilerDir, "f");
     }
     setAllConstant(text) {
         const objectmatchDelcaration = this.getTotaldeclaration(RecursiveMatcher.contentCleanerRecursion(text));
@@ -186,7 +188,8 @@ class Utility {
         return objectNamespaceContent;
     }
     async getComposerContent(fileArray) {
-        let compiledContent = fs.readFileSync(fileArray[0], 'utf-8');
+        let compiledContent = "import { ImageCache,ImagesCacheHandler } from '../../../_types/app/model/cache/cacheImageUtility.js'";
+        compiledContent += fs.readFileSync(fileArray[0], 'utf-8');
         compiledContent += '//----|Class_Content|----\n//No Class\n//&end';
         compiledContent += '\nclass Content {\n';
         const getAsset = this.getAssetPathConst();
@@ -528,7 +531,7 @@ class Utility {
         return content;
     }
     getConfigUtilty() {
-        const configFile = PathUtility.getPathFromElement('1.Setting', '1.configImport.js');
+        const configFile = PathUtility.getPathFromElement(__classPrivateFieldGet(this, _Utility_compilerDir, "f"), '1.Setting', '1.configImport.js');
         const contentConfig = fs.readFileSync(configFile, 'utf-8');
         const elementDict = {};
         const declarations = contentConfig.match(__classPrivateFieldGet(this, _Utility_regexDeclaration, "f"));
@@ -568,5 +571,5 @@ class Utility {
         });
     }
 }
-_Utility_matchregexVariableDeclaration = new WeakMap(), _Utility_commentRemover = new WeakMap(), _Utility_matchregexConstantDelcaration = new WeakMap(), _Utility_matchparamDeclaration = new WeakMap(), _Utility_regeximportStatementCommunjs = new WeakMap(), _Utility_namespaceObjectRegex = new WeakMap(), _Utility_getfunctionName = new WeakMap(), _Utility_regexDeclaration = new WeakMap(), _Utility_regexpathimport = new WeakMap(), _Utility_regexremoveBlank = new WeakMap(), _Utility_allConstant = new WeakMap();
+_Utility_matchregexVariableDeclaration = new WeakMap(), _Utility_commentRemover = new WeakMap(), _Utility_matchregexConstantDelcaration = new WeakMap(), _Utility_matchparamDeclaration = new WeakMap(), _Utility_regeximportStatementCommunjs = new WeakMap(), _Utility_namespaceObjectRegex = new WeakMap(), _Utility_getfunctionName = new WeakMap(), _Utility_regexDeclaration = new WeakMap(), _Utility_regexpathimport = new WeakMap(), _Utility_regexremoveBlank = new WeakMap(), _Utility_allConstant = new WeakMap(), _Utility_compilerDir = new WeakMap();
 export default Utility;

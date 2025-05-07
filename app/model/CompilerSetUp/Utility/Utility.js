@@ -76,14 +76,22 @@ export default class Utility {
     #allConstant = []
 
     /**
+     * @type {string}
+     */
+    #compilerDir
+
+    /**
      * 
      * @param {string} compilerDir 
      */
     constructor(compilerDir)
     {
+
         let fileDirArray = PathUtility.getarrayFile(compilerDir);
         this.fileDirArray = this.setMapFile(fileDirArray);
         this.mapAsset = PathUtility.getMapAsset();
+        this.#compilerDir = compilerDir
+
     }
 
 
@@ -357,7 +365,8 @@ export default class Utility {
      * @returns {Promise<string>} compile file of all the array 
      */
     async getComposerContent(fileArray){
-        let compiledContent = fs.readFileSync(fileArray[0],'utf-8');
+        let compiledContent = "import { ImageCache,ImagesCacheHandler } from '../../../_types/app/model/cache/cacheImageUtility.js'"
+        compiledContent += fs.readFileSync(fileArray[0],'utf-8');
         compiledContent += '//----|Class_Content|----\n//No Class\n//&end'
         compiledContent += '\nclass Content {\n';
         const getAsset = this.getAssetPathConst();
@@ -969,7 +978,7 @@ export default class Utility {
     * @returns array
     */
     getConfigUtilty(){
-        const configFile = PathUtility.getPathFromElement('1.Setting','1.configImport.js')  
+        const configFile = PathUtility.getPathFromElement(this.#compilerDir,'1.Setting','1.configImport.js')  
         const contentConfig = fs.readFileSync(configFile,'utf-8')
         const elementDict = {}
         const declarations = contentConfig.match(this.#regexDeclaration)

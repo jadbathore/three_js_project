@@ -4,6 +4,7 @@ import express from "express";
 import PathUtility from "../CompilerSetUp/Utility/pathUtility.js";
 import { optionServer } from "../../server/optionStaticFileExpress.js";
 import fs from 'fs';
+import { createClient } from 'redis';
 import https from 'https';
 import chalk from "chalk";
 import boxen from 'boxen';
@@ -22,8 +23,21 @@ export class ServerHandler {
         };
         ServerHandler._iteratorAggregate = new ServerRouteAggregate(data);
         ServerHandler._socketHandlerInterface = socketHandlerInterface;
+        this.setRedisclient();
         this._proxy = new Proxy(this._target, this.serverProxyHandler());
         this._subject = subject;
+    }
+    setRedisclient() {
+        (async () => {
+            this._redisClient = await createClient()
+                .on('error', (err) => {
+                console.log(chalk.red('redis client not connected err', err));
+            })
+                .on('connect', () => {
+                console.log(chalk.keyword('lightgreen')('redis client connected'));
+            })
+                .connect();
+        })();
     }
     serverProxyHandler() {
         return {
@@ -75,7 +89,7 @@ export class ServerHandler {
         do {
             const routeObj = iterator.current();
             if (routeObj.method != RequestMethod.middleWare) {
-                if (fs.existsSync(routeObj.scene)) {
+                if (fs.existsSync(PathUtility.pathofElementWithPoint(routeObj.scene))) {
                     iterator.addCompilerTuple(this._subject);
                 }
                 app[routeObj.method](routeObj.pathServer, routeObj.serverLogic);
@@ -87,21 +101,36 @@ export class ServerHandler {
     }
     serverWatcher(app) {
         app.use((req, res, next) => {
-            this._proxy.route = req.path;
-            console.log(chalk.blue(`${req.method} on "${req.path}" at ${new Date(Date.now()).toString()}`));
+            if (req.path != '/.handler') {
+                this._proxy.route = req.path;
+                console.log(chalk.blue(`${req.method} on "${req.path}" at ${new Date(Date.now()).toString()}`));
+            }
             next();
         });
+        app.use('/.handler', async (req, res, next) => {
+            const file = await this.getFile(this._proxy.route.route);
+            res.send(file).status(200);
+            next();
+        });
+    }
+    async setFile(key) {
+        const file = fs.readFileSync(PathUtility.dist);
+        await this._redisClient.set(key, file);
+    }
+    async getFile(key) {
+        return await this._redisClient.get(key) ?? fs.readFileSync(PathUtility.dist, 'utf-8');
     }
     runServer(app) {
         rollupWatchConfig();
         app.use(compression());
+        app.enable('etag');
         app.set('view engine', 'ejs');
         app.set('views', PathUtility.getViewerFile());
         app.use(express.static('app/public', optionServer));
         const key = (fs.existsSync(PathUtility.keySLL)) ? fs.readFileSync(PathUtility.keySLL) : null;
         const cert = (fs.existsSync(PathUtility.certSLL)) ? fs.readFileSync(PathUtility.certSLL) : null;
         const server = (key && cert) ? https.createServer({ key: key, cert: cert }, app) : app;
-        const port = process.env.EXPRESS_PORT || 3004;
+        const port = process.env.EXPRESS_PORT || 3001;
         this.serverWatcher(app);
         this.createRoute(app);
         server.listen(port, () => {

@@ -15,10 +15,11 @@ type EventServer<T> = {
     type:T,
 }
 
-
 type serverTarget = {
     route:string,
 }
+
+
 
 declare namespace Compiler {
     type double = {
@@ -69,6 +70,11 @@ declare namespace LibFile {
         get firstLayerproxyHandler():ProxyHandler<EventFile[]>;
         get secondLayerproxyHandler():ProxyHandler<EventProxy>;
     }
+
+    interface ProxyDirObserver {
+        ProxyBehavior(callBack?:(event:EventFile,path:String)=>void):void;
+        proxyRevoke():void;
+    }
 }
 
 declare namespace Cache {
@@ -105,7 +111,7 @@ declare namespace Server {
             res: RES, 
             next?: NEXT
         )=> void;
-        CompilerTuple?: [COMPILER,LibFile.Observer];
+        CompilerTuple?: [COMPILER,LibFile.Observer,LibFile.ProxyDirObserver];
     }
     interface SocketHandler<T extends route<any,any,any,any,any>> {
         handleConnection({CompilerTuple:[compiler,oberserver]}:T):void;
@@ -117,7 +123,8 @@ declare namespace Server {
         index: boolean,
         redirect: boolean,
         maxAge: string,
-        setHeaders?:(res:any,path:string)=>void
+        extensions:string[];
+        setHeaders?:(res:any,path:string,stat:any)=>void
     }
     interface Collection<T>{
         get collection():T[];

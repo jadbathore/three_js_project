@@ -69,7 +69,6 @@ export class Compiler {
     constructor(observer,subject,sceneName){
         this.#observer = observer;
         this.#subject = subject;
-        this.#subject.attach(this.#observer);
         console.log(chalk.bgBlue(`compiler created for request :"${this.#observer.path}"`))
         this.#compilerUtility = new Utility(sceneName);
         this.#sceneName = sceneName
@@ -83,6 +82,7 @@ export class Compiler {
     {
         if(!this.#abortControllerList) 
         {
+            this.#subject.attach(this.#observer);
             if(!fs.existsSync(PathUtility.versionDIR)) {
                 fs.promises.mkdir(PathUtility.versionDIR, { recursive: true })
                 .then((path) => console.log(chalk.green('Directory created successfully',path)))
@@ -103,12 +103,12 @@ export class Compiler {
                             (
                                 async () => {
                                     try {
-                                        const watcher = fs.promises.watch(PathUtility.getPathFromElement(key),{signal})
+                                        const watcher = fs.promises.watch(PathUtility.getPathFromElement(this.#sceneName,key),{signal})
                                         for await(const event of watcher)
                                         {
-                                            this.#observer.addEvent(event);
                                             this.#subject.notify(event)
-                                            const pathFileChanging = PathUtility.getPathFromElement(key,event.filename)
+                                            
+                                            const pathFileChanging = PathUtility.getPathFromElement(this.#sceneName,key,event.filename)
                                             switch(event.eventType)
                                             {
                                                 case 'change':
@@ -121,7 +121,7 @@ export class Compiler {
                                                 //if the file is remove
                                                 if(value.includes(event.filename))
                                                 {
-                                                    const testor = fs.readdirSync(PathUtility.getPathFromElement(key))
+                                                    const testor = fs.readdirSync(PathUtility.getPathFromElement(this.#sceneName,key))
                                                     if(!testor.includes(event.filename))
                                                     {
                                                         ac.abort();
@@ -155,21 +155,20 @@ export class Compiler {
                             )();
                         }
                     }
+            PathUtility.initElement();
             }
-        
         }
         
         stopCompiler(){
             this.#abortControllerList.forEach((abortController)=>{
                 abortController.abort()
             })
-            // this.#subject.detach(this.#observer)
             console.log(chalk.bgBlue(`compiler on path "${this.#observer.path}" is stop`));
             this.#abortControllerList = null;
-            console.log(this.#abortControllerList);
         }
 
         destructCompiler(){
             this.#subject.detach(this.#observer)
+            console.log(chalk.bgRedBright(`compiler die for path "${this.#observer.path}" `));
         }
 }

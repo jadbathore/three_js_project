@@ -1,11 +1,13 @@
-import { proxyObserver } from "../../model/oberserver/oberserver.js";
 export class Socket {
-    handleConnection({ CompilerTuple: [compiler, oberserver] }) {
+    handleConnection({ CompilerTuple: [compiler, oberserver, proxy] }) {
         compiler.compile();
-        proxyObserver(oberserver, (event, path, proxy) => {
+        proxy.ProxyBehavior((event, path) => {
+            console.log(event, path);
         });
     }
-    handleDeconnection({ CompilerTuple: [compiler, oberserver] }) {
+    handleDeconnection({ CompilerTuple: [compiler, oberserver, proxy] }) {
         compiler.stopCompiler();
+        compiler.destructCompiler();
+        proxy.proxyRevoke();
     }
 }

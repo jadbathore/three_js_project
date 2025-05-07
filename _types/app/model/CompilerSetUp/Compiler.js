@@ -42,7 +42,6 @@ export class Compiler {
         _Compiler_sceneName.set(this, void 0);
         __classPrivateFieldSet(this, _Compiler_observer, observer, "f");
         __classPrivateFieldSet(this, _Compiler_subject, subject, "f");
-        __classPrivateFieldGet(this, _Compiler_subject, "f").attach(__classPrivateFieldGet(this, _Compiler_observer, "f"));
         console.log(chalk.bgBlue(`compiler created for request :"${__classPrivateFieldGet(this, _Compiler_observer, "f").path}"`));
         __classPrivateFieldSet(this, _Compiler_compilerUtility, new Utility(sceneName), "f");
         __classPrivateFieldSet(this, _Compiler_sceneName, sceneName, "f");
@@ -52,6 +51,7 @@ export class Compiler {
     }
     compile() {
         if (!__classPrivateFieldGet(this, _Compiler_abortControllerList, "f")) {
+            __classPrivateFieldGet(this, _Compiler_subject, "f").attach(__classPrivateFieldGet(this, _Compiler_observer, "f"));
             if (!fs.existsSync(PathUtility.versionDIR)) {
                 fs.promises.mkdir(PathUtility.versionDIR, { recursive: true })
                     .then((path) => console.log(chalk.green('Directory created successfully', path)))
@@ -69,11 +69,10 @@ export class Compiler {
                     __classPrivateFieldGet(this, _Compiler_abortControllerList, "f").push(ac);
                     (async () => {
                         try {
-                            const watcher = fs.promises.watch(PathUtility.getPathFromElement(key), { signal });
+                            const watcher = fs.promises.watch(PathUtility.getPathFromElement(__classPrivateFieldGet(this, _Compiler_sceneName, "f"), key), { signal });
                             for await (const event of watcher) {
-                                __classPrivateFieldGet(this, _Compiler_observer, "f").addEvent(event);
                                 __classPrivateFieldGet(this, _Compiler_subject, "f").notify(event);
-                                const pathFileChanging = PathUtility.getPathFromElement(key, event.filename);
+                                const pathFileChanging = PathUtility.getPathFromElement(__classPrivateFieldGet(this, _Compiler_sceneName, "f"), key, event.filename);
                                 switch (event.eventType) {
                                     case 'change':
                                         console.log(chalk.keyword('violet')(`the file ${event.filename} as been ${event.eventType} 🔮`));
@@ -83,7 +82,7 @@ export class Compiler {
                                         break;
                                     case 'rename':
                                         if (value.includes(event.filename)) {
-                                            const testor = fs.readdirSync(PathUtility.getPathFromElement(key));
+                                            const testor = fs.readdirSync(PathUtility.getPathFromElement(__classPrivateFieldGet(this, _Compiler_sceneName, "f"), key));
                                             if (!testor.includes(event.filename)) {
                                                 ac.abort();
                                                 __classPrivateFieldGet(this, _Compiler_compilerUtility, "f").fileDirArray.splice(__classPrivateFieldGet(this, _Compiler_compilerUtility, "f").fileDirArray.indexOf(pathFileChanging), 1);
@@ -116,6 +115,7 @@ export class Compiler {
                     })();
                 }
             }
+            PathUtility.initElement();
         }
     }
     stopCompiler() {
@@ -124,10 +124,10 @@ export class Compiler {
         });
         console.log(chalk.bgBlue(`compiler on path "${__classPrivateFieldGet(this, _Compiler_observer, "f").path}" is stop`));
         __classPrivateFieldSet(this, _Compiler_abortControllerList, null, "f");
-        console.log(__classPrivateFieldGet(this, _Compiler_abortControllerList, "f"));
     }
     destructCompiler() {
         __classPrivateFieldGet(this, _Compiler_subject, "f").detach(__classPrivateFieldGet(this, _Compiler_observer, "f"));
+        console.log(chalk.bgRedBright(`compiler die for path "${__classPrivateFieldGet(this, _Compiler_observer, "f").path}" `));
     }
 }
 _Compiler_observer = new WeakMap(), _Compiler_abortControllerList = new WeakMap(), _Compiler_subject = new WeakMap(), _Compiler_compilerUtility = new WeakMap(), _Compiler_sceneName = new WeakMap();

@@ -3,16 +3,18 @@ import { AppRouter } from "../../route/routeur.js";
 
 export class Socket implements Server.SocketHandler<AppRouter> {
 
-    public handleConnection({CompilerTuple:[compiler,oberserver]}:AppRouter):void
+    public handleConnection({CompilerTuple:[compiler,oberserver,proxy]}:AppRouter):void
     {
         compiler.compile()
-        proxyObserver(oberserver,(event,path,proxy)=>{
-            // console.log(event,path,proxy)
+        proxy.ProxyBehavior((event,path)=>{
+            console.log(event,path)
         })
     }
 
-    public handleDeconnection({CompilerTuple:[compiler,oberserver]}:AppRouter):void
+    public handleDeconnection({CompilerTuple:[compiler,oberserver,proxy]}:AppRouter):void
     {
         compiler.stopCompiler()
+        compiler.destructCompiler()
+        proxy.proxyRevoke()
     }
 }
