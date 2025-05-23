@@ -33,7 +33,7 @@ Docker-compose up
 ```
 Then, to use the CLI, run the command:
 ```
-docker exec -it ThreeCli sh -c "node bin/index.js"
+docker exec -it ThreeCli t 
 ```
 If everything worked, you should see the table above.
 
@@ -43,12 +43,12 @@ If everything worked, you should see the table above.
 > To use the CLI, you should type the commands directly, ignoring ThreeCLi.
 #### Example:
 ```
-docker exec -it ThreeCli sh -c "node bin/index.js <command> <option> <param>"
-                                                    │           │        │ 
-                                                    V           V        V
-                                                   save        -u       cube
-                                                   fork        -sf      moon.js
-                                                  (...)       (...)     (...)
+docker exec -it ThreeCli t <command> <option> <param>
+                              │           │        │ 
+                              V           V        V
+                            save        -u       cube
+                            fork        -sf      moon.js
+                            (...)       (...)     (...)
 ```
 
 project tree:

@@ -1,5 +1,5 @@
 export default class Utility {
-    constructor(compilerDir: string);
+    constructor(compilerDir?: string);
     fileDirArray: string[];
     mapAsset: Map<any, any>;
     setAllConstant(text: any): void;

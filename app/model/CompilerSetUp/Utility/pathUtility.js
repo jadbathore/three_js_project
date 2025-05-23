@@ -74,7 +74,7 @@ export default class PathUtility {
      */
     static getMapFile(directory)
     {
-        directory = (directory)? this.rootDirProjectName+directory+"/" :this.rootDirProjectName ;
+        directory = (directory)? this.rootDirProjectName+directory + "/" : this.rootDirProjectName ;
         const mapFile = new Map(); 
         fs.readdirSync(directory,{withFileTypes:true}).filter(dir => dir.isDirectory()).map((dir)=>{
             const arry = fs.readdirSync(path.join(process.cwd(),...this.self.getPathSplit(directory),dir.name))
@@ -86,7 +86,7 @@ export default class PathUtility {
     /**
      * 
      * @param {string} [directory] 
-     * @returns 
+     * @returns {string[]}
      */
     static getarrayFile(directory)
     {
@@ -96,7 +96,7 @@ export default class PathUtility {
         {
             for (const file of value)
             {
-                const pathFile = path.join(process.cwd(),...this.self.getPathSplit(this.rootDirProjectName),directory,key,file)
+                const pathFile = path.join(process.cwd(),...this.self.getPathSplit(this.rootDirProjectName),directory ?? '',key,file)
                 allFile.push(pathFile);
             }
         }   

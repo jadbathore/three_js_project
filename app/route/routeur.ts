@@ -21,7 +21,6 @@ export const router:AppRouter[] = [
     {
         pathServer:"/",
         scene:"scene1",
-        // "./app/3DScenes/scene1",
         method: RequestMethod.get,
         serverLogic:(req,res)=>{
             res.render('index',

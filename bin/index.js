@@ -10,30 +10,36 @@ import ora from 'ora'
 import BinUtility from "./BinUtility.js"
 import gradient from 'gradient-string';
 import path from 'path'
-import Utility from "../app/CompilerSetUp/Utility/Utility.js";
+import Utility from "../app/model/CompilerSetUp/Utility/Utility.js";
 import { ConnectionUtilityMongoDB } from "../_types/app/model/databaseConnection/dbConnection.js";
-import PathUtility from "../app/CompilerSetUp/Utility/pathUtility.js";
+import PathUtility from "../app/model/CompilerSetUp/Utility/pathUtility.js";
 import inquirer from "inquirer";
 import { input } from '@inquirer/prompts';
+import { Socket } from "../_types/app/server/serverHandler/socketImplement.js";
+import { CompilerWatchSubject } from "../_types/app/model/oberserver/oberserver.js";
+import { ServerHandler } from "../_types/app/model/server/serverHandler.js";
+import express from 'express'
+import { router } from "../_types/app/route/routeur.js";
+
 
 const BinUtilityClass = new BinUtility()
-
-// const CompilerUtilityClass = new Utility(PathUtility.rootDirProjectName)
 const DB_URI = process.env.DB_URI || "mongodb://127.0.0.1:27017/versionningThreeJs"
 
 
-class Bin{
-    #connection = new ConnectionUtilityMongoDB(DB_URI)
+class Bin {
+    #connection;
 
-    constructor(rootDirProjectName)
+    constructor(rootDirProjectName,DB_URI)
     {
+        this.#connection = new ConnectionUtilityMongoDB(DB_URI)
         if(fs.existsSync(rootDirProjectName)){
-            this.CompilerUtilityClass = new Utility(PathUtility.rootDirProjectName);
+            this.CompilerUtilityClass = new Utility();
             this.bin_compile();
             console.log(`the file ${PathUtility.rootDirProjectName} did not exist so the 'compile' command is forbiden`)
         }
         this.bin_clear();
         this.bin_new();
+        this.bin_startServer();
         this.bin_testConnection();
         this.bin_make();
         this.bin_importscript();
@@ -98,6 +104,17 @@ class Bin{
             this.#connection.testConnnectionAwaited(spinner)
         })
         .description('test the connection of the database and return the status')
+    }
+
+    bin_startServer(){
+        return program.command('startServer')
+        .action(()=>{
+            const socket = new Socket();
+            const subject = new CompilerWatchSubject()
+            const server = new ServerHandler(router,socket,subject)
+            const app = express()
+            server.runServer(app)
+        })
     }
 
     bin_save()
@@ -548,5 +565,5 @@ class Bin{
 }
 
 
-(new Bin(PathUtility.rootDirProjectName))
+(new Bin(PathUtility.rootDirProjectName,DB_URI))
 

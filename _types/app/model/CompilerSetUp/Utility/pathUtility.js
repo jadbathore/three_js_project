@@ -47,7 +47,7 @@ class PathUtility {
         const allFile = [];
         for (const [key, value] of _a.getMapFile(directory)) {
             for (const file of value) {
-                const pathFile = path.join(process.cwd(), ...this.self.getPathSplit(this.rootDirProjectName), directory, key, file);
+                const pathFile = path.join(process.cwd(), ...this.self.getPathSplit(this.rootDirProjectName), directory ?? '', key, file);
                 allFile.push(pathFile);
             }
         }

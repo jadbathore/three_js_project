@@ -3,8 +3,8 @@ import boxen from 'boxen';
 import chalk from "chalk";
 import path, { basename, resolve } from 'path';
 import fs from 'fs';
-import PathUtility from "../app/CompilerSetUp/Utility/pathUtility.js";
-import Utility from "../app/CompilerSetUp/Utility/Utility.js";
+import PathUtility from "../app/model/CompilerSetUp/Utility/pathUtility.js";
+import Utility from "../app/model/CompilerSetUp/Utility/Utility.js";
 
 
 export default class BinUtility {

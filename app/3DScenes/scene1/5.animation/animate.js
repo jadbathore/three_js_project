@@ -8,7 +8,8 @@ const { THREE,
 	moonMesh, fresnel, glowmesh,
 	star, sunLight, getFresnelMat,
 	getStarfield, } = require('../../../public/versionning/linkFile.js')
-requestAnimationFrame(()=>{
+
+	requestAnimationFrame(()=>{
     earthMesh.rotateY(0.002)
     lightMesh.rotateY(0.002)
     cloudMesh.rotateY(0.0025)

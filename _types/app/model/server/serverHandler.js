@@ -29,14 +29,20 @@ export class ServerHandler {
     }
     setRedisclient() {
         (async () => {
-            this._redisClient = await createClient()
-                .on('error', (err) => {
-                console.log(chalk.red('redis client not connected err', err));
-            })
-                .on('connect', () => {
-                console.log(chalk.keyword('lightgreen')('redis client connected'));
-            })
-                .connect();
+            try {
+                this._redisClient = await createClient()
+                    .on('error', (error) => {
+                    throw error;
+                })
+                    .on('connect', () => {
+                    console.log(chalk.keyword('lightgreen')('redis client connected'));
+                })
+                    .connect();
+            }
+            catch (e) {
+                console.log(chalk.red('redis client not connected err :', e));
+                this._redisClient = null;
+            }
         })();
     }
     serverProxyHandler() {
@@ -105,6 +111,8 @@ export class ServerHandler {
                 this._proxy.route = req.path;
                 console.log(chalk.blue(`${req.method} on "${req.path}" at ${new Date(Date.now()).toString()}`));
             }
+            else {
+            }
             next();
         });
         app.use('/.handler', async (req, res, next) => {
@@ -118,7 +126,7 @@ export class ServerHandler {
         await this._redisClient.set(key, file);
     }
     async getFile(key) {
-        return await this._redisClient.get(key) ?? fs.readFileSync(PathUtility.dist, 'utf-8');
+        return await this._redisClient?.get(key) ?? fs.readFileSync(PathUtility.dist, 'utf-8');
     }
     runServer(app) {
         rollupWatchConfig();

@@ -1,5 +1,5 @@
 export default class PathUtility {
-    static "__#111314@#element": string | null;
+    static "__#2@#element": string | null;
     static getcompilerFile(): string;
     static getViewerFile(): string;
     static getlinkFile(): string;

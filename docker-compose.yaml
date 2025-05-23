@@ -5,8 +5,9 @@ services:
     env_file: .env
     build: .
     depends_on:
-      - mongo
-  mongo:
+      - mongo-docker-service
+      - redis-docker-service
+  mongo-docker-service:
     env_file: .env
     image: mongo:latest
     environment:
@@ -17,6 +18,16 @@ services:
       - ${MONGO_PORT}:${MONGO_PORT}
     volumes:
       - mongo:/data/db
+  redis-docker-service:
+    env_file: .env
+    image: redis:latest
+    ports:
+    - ${REDIS_PORT}:${REDIS_PORT}
+    volumes:
+    - redis:/data
+    command: ["redis-server"]
+
 volumes:
   mongo:
     driver: local
+  redis:

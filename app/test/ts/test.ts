@@ -27,7 +27,7 @@ export class ServerHandler  {
     private static _iteratorAggregate: Server.Aggregator<AppRouter>;
 
     private _proxy: serverTarget|any;
-    private _redisClient:RedisClientType<any,any,any>
+    private _redisClient?:RedisClientType<any,any,any>
     private readonly _target:serverTarget = {
         route:""
     };
@@ -48,14 +48,19 @@ export class ServerHandler  {
 
     private  setRedisclient(){
         (async ()=>{
+            try {
             this._redisClient = await createClient()
-            .on('error', (err) => {
-                console.log(chalk.red('redis client not connected err',err))
+            .on('error',(error:any)=>{
+                throw error;
             })
             .on('connect',()=>{
                 console.log(chalk.keyword('lightgreen')('redis client connected'))
             })
             .connect();
+            }catch (e){
+                console.log(chalk.red('redis client not connected err :',e));
+                this._redisClient = null;
+            }
         })()
     }
 
@@ -168,11 +173,13 @@ export class ServerHandler  {
             if(req.path != '/.handler'){
                 this._proxy.route = req.path;
                 console.log(chalk.blue(`${req.method} on "${req.path}" at ${new Date(Date.now()).toString()}`))
+            }else {
+                
             } 
             next();
         })
-        app.use('/.handler',async(req,res,next)=>{
 
+        app.use('/.handler',async(req,res,next)=>{
             const file = await this.getFile(this._proxy.route.route);
             res.send(file).status(200)
             next();
@@ -185,7 +192,7 @@ export class ServerHandler  {
     }
 
     private async getFile(key:string):Promise<string>{
-        return await this._redisClient.get(key) ?? fs.readFileSync(PathUtility.dist,'utf-8')
+        return await this._redisClient?.get(key) ?? fs.readFileSync(PathUtility.dist,'utf-8')
     }
 
     public runServer(app:Express) { 

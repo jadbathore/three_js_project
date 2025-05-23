@@ -82,11 +82,11 @@ export default class Utility {
 
     /**
      * 
-     * @param {string} compilerDir 
+     * @param {string} [compilerDir] 
      */
     constructor(compilerDir)
     {
-
+        
         let fileDirArray = PathUtility.getarrayFile(compilerDir);
         this.fileDirArray = this.setMapFile(fileDirArray);
         this.mapAsset = PathUtility.getMapAsset();
