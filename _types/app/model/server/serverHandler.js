@@ -30,7 +30,7 @@ export class ServerHandler {
     setRedisclient() {
         (async () => {
             try {
-                this._redisClient = await createClient()
+                this._redisClient = await createClient({ url: process.env.REDIS_URL })
                     .on('error', (error) => {
                     throw error;
                 })
@@ -142,7 +142,9 @@ export class ServerHandler {
         this.serverWatcher(app);
         this.createRoute(app);
         server.listen(port, () => {
-            console.log(chalk.greenBright(boxen(`Server is running on port : ${port}`, {
+            const serverType = (server instanceof https.Server) ? "https" : "http";
+            const url = `${serverType}://localhost:${port}/`;
+            console.log(chalk.greenBright(boxen(`Server running on:\u001B]8;;${url}\u0007${port}\u001B]8;;\u0007`, {
                 padding: 1,
             })));
         });

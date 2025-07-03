@@ -18,7 +18,7 @@ class ImagesCacheHandler {
         }
         return __classPrivateFieldGet(_a, _a, "f", _ImagesCacheHandler_instance);
     }
-    static saveNameToLocalStorage() {
+    static async saveNameToLocalStorage() {
         for (const image of __classPrivateFieldGet(_a, _a, "f", _ImagesCacheHandler_imagesList)) {
             localStorage.getItem(image.url) ?? localStorage.setItem(image.url, image.url);
         }

@@ -72,14 +72,50 @@ export class ConnectionUtilityMongoDB {
             versions: new mongoose.Schema({
                 versionName: String,
                 name: String,
+                typefile: {
+                    validate: {
+                        validator: (value) => {
+                            return /(javascript)/g.test(value);
+                        },
+                        message: (props) => `file type not valid`,
+                    }
+                },
                 date: { type: Date, default: Date.now },
-                content: String
+                content: {
+                    type: String,
+                    required: true,
+                    validate: {
+                        validator: (value) => {
+                            return !/((import)|(require))/g.test(value);
+                        },
+                        message: (props) => `forbiden keyword`,
+                    }
+                }
             }),
             single: new mongoose.Schema({
                 versionName: String,
                 name: String,
                 date: { type: Date, default: Date.now },
-                content: String
+                typefiles: {
+                    type: String,
+                    required: true,
+                    validate: {
+                        validator: (value) => {
+                            return /(javascript)/g.test(value);
+                        },
+                        message: (props) => `type must be javascript`,
+                    }
+                },
+                content: {
+                    type: String,
+                    required: true,
+                    validate: {
+                        validator: (value) => {
+                            return !/((import)|(require))/g.test(value);
+                        },
+                        message: (props) => `forbiden keyword`,
+                    }
+                }
             }),
             usable: new mongoose.Schema({
                 UsableName: String,
@@ -121,7 +157,6 @@ export class ConnectionUtilityMongoDB {
         });
         return promise;
     }
-    ;
     findLastObject(tableName) {
         const promise = this.createModelPromise().then(async (Object) => {
             const TableModel = Object[tableName];

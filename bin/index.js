@@ -20,22 +20,22 @@ import { CompilerWatchSubject } from "../_types/app/model/oberserver/oberserver.
 import { ServerHandler } from "../_types/app/model/server/serverHandler.js";
 import express from 'express'
 import { router } from "../_types/app/route/routeur.js";
-
+import { exec } from "child_process";
 
 const BinUtilityClass = new BinUtility()
-const DB_URI = process.env.DB_URI || "mongodb://127.0.0.1:27017/versionningThreeJs"
+// process.env.DB_URI = docker 
+// string = local
+const DB_URI = process.env.DB_URI || "mongodb://127.0.0.1:27017/versionningThreeJs?authSource=admin"
 
 
 class Bin {
     #connection;
-
     constructor(rootDirProjectName,DB_URI)
     {
         this.#connection = new ConnectionUtilityMongoDB(DB_URI)
         if(fs.existsSync(rootDirProjectName)){
             this.CompilerUtilityClass = new Utility();
             this.bin_compile();
-            console.log(`the file ${PathUtility.rootDirProjectName} did not exist so the 'compile' command is forbiden`)
         }
         this.bin_clear();
         this.bin_new();
@@ -43,6 +43,7 @@ class Bin {
         this.bin_testConnection();
         this.bin_make();
         this.bin_importscript();
+        this.bin_sslCredential()
         this.#connection.testTheConnectionPromise().then(()=>
         {
             this.bin_fork()
@@ -56,6 +57,51 @@ class Bin {
         }).finally(()=>{
             this.bin_help()
         })
+    }
+
+    bin_sslCredential()
+    { 
+        return program
+        .command('sslCredential')
+        .option('-F, --FQDN <url>','place FQDN parameter in ssl cert')
+        .option('-O, --ORGNAME <or>','place organisation name in parameter')
+        .action(
+                (option)=>{
+                    const sslCredentialBash = exec(`
+                    mkdir -p SSLcredential;
+                    cd SSLcredential;
+                    FQDN="${option?.FQDN ??"foo.threeProject.org"}";
+                    ORGNAME="${option?.ORGNAME ?? "Example University"}";
+                    ALTNAMES="DNS:$FQDN";
+                    echo "[ req ]" >> openssl.cnf
+                    echo "default_bits = 2048" >> openssl.cnf  
+                    echo "default_md = sha256" >> openssl.cnf
+                    echo "prompt = no" >> openssl.cnf
+                    echo "encrypt_key = no" >> openssl.cnf
+                    echo "distinguished_name = dn" >> openssl.cnf
+                    echo "req_extensions = req_ext" >> openssl.cnf
+                    echo "[ dn ]" >> openssl.cnf
+                    echo "C = CH" >> openssl.cnf
+                    echo "O = $ORGNAME" >> openssl.cnf
+                    echo "CN = $FQDN" >> openssl.cnf
+                    echo "[ req_ext ]" >> openssl.cnf
+                    echo "subjectAltName = $ALTNAMES" >> openssl.cnf
+                    openssl req -x509 -config openssl.cnf -newkey rsa:2048 -keyout keytmp.pem -out cert.pem -days 365;
+                    openssl rsa -in keytmp.pem -out key.pem;
+                    rm -f keytmp.pem
+                    rm -f openssl.cnf`,
+                    (err,stdout)=>{
+                    if (err) {
+                        console.log(err);
+                    }
+                    console.log(stdout);
+                    })
+                    sslCredentialBash.on('exit',(code)=>{
+                        process.exit();
+                    })
+                    // process.exit();
+                }
+        ).description('testCommandCli')
     }
 
     bin_readfile()
@@ -553,7 +599,6 @@ class Bin {
         program.helpInformation = ()=> {
             return '';
         };
-        
         program.on('--help', () => {
             console.log('\n',gradient(['green','blue', 'red']).multiline(figlet.textSync('ThreeCli', { horizontalLayout: 'full',font:'Colossal'})))
             commanderHelp(program)

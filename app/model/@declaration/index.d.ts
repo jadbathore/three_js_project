@@ -7,7 +7,6 @@ type EventPromise = Promise<EventFile>
 type EventProxy = {
     proxy:EventFile[],
     observer:LibFile.Observer,
-    set?:boolean
 }
 
 type EventServer<T> = {
@@ -19,7 +18,10 @@ type serverTarget = {
     route:string,
 }
 
-
+type Revokable<T>={
+    proxy:T,
+    revoke:()=>void
+}
 
 declare namespace Compiler {
     type double = {
@@ -55,18 +57,28 @@ declare namespace Compiler {
 }
 
 declare namespace LibFile {
+    //Subject correspond à la classe qui gère les observers.
     interface Subject {
+        // Ajout d’un observer
         attach(observer:Observer):void;
+        //Détachement d’un observer
         detach(observer:Observer):void;
+        //Notification correspondant à l’appel de l’action sur tous les observers. 
         notify(event:EventFile):void;
+        //Élément de logique métier 
         addEventObserver(observer:Observer,eventPromise:EventPromise):void
     }
     
     interface Observer {
-        update(subject:Subject,event:EventFile):AsyncGenerator<any, any, unknown>;
+        // Élément de logique métier permettant d’ajouter des événements : 
         addEvent(event:EventFile):void;
+        // Mettre à jour l’observer
+        update(subject:Subject,event:EventFile):AsyncGenerator<any, any, unknown>;
+        // Obtenir les actions lier a l'observer
         get events():EventFile[];
+        // Obtenir le chemin correspondant à cet observer 
         get path():String;
+        // d'avoir le proxy handler de cette observer (en readonly )
         get firstLayerproxyHandler():ProxyHandler<EventFile[]>;
         get secondLayerproxyHandler():ProxyHandler<EventProxy>;
     }
@@ -75,6 +87,8 @@ declare namespace LibFile {
         ProxyBehavior(callBack?:(event:EventFile,path:String)=>void):void;
         proxyRevoke():void;
     }
+
+
 }
 
 declare namespace Cache {

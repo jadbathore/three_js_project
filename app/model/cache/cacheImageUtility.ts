@@ -11,7 +11,7 @@ class ImagesCacheHandler{
         return ImagesCacheHandler.#instance;
     }
 
-    public static saveNameToLocalStorage():void
+    public static async saveNameToLocalStorage():Promise<void>
     {
         for (const image of ImagesCacheHandler.#imagesList) {
             localStorage.getItem(image.url) ?? localStorage.setItem(image.url,image.url)

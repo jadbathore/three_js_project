@@ -1,6 +1,7 @@
 {
   "compilerOptions": 
   {
+    "experimentalDecorators": true,
     "checkJs": true,
     "allowJs": true,
     "module": "ES2020",

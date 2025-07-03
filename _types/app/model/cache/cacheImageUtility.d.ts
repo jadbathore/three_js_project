@@ -2,7 +2,7 @@ declare class ImagesCacheHandler {
     #private;
     private constructor();
     static get instance(): ImagesCacheHandler;
-    static saveNameToLocalStorage(): void;
+    static saveNameToLocalStorage(): Promise<void>;
     addTolist(imageInterface: Cache.imageInterface): void;
 }
 declare class ImageCache implements Cache.imageInterface {

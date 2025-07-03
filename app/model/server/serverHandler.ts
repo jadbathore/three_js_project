@@ -199,15 +199,20 @@ export class ServerHandler  {
         app.set('view engine','ejs')
         app.set('views',PathUtility.getViewerFile())
         app.use(express.static('app/public',optionServer))
+        //clé ssl sout forme de buffer si la clé existe sinon elle est null
         const key:Buffer|null = (fs.existsSync(PathUtility.keySLL))?fs.readFileSync(PathUtility.keySLL):null;
+        //certifcat ssl sous forme de buffer  si le certicat existe existe sinon elle est null
         const cert:Buffer|null = (fs.existsSync(PathUtility.certSLL))?fs.readFileSync(PathUtility.certSLL):null;
+        // les deux doivent etre vrai (null = false) sinon c'est juste express=http
         const server = (key && cert)? https.createServer({key: key, cert: cert }, app):app;
         const port = process.env.EXPRESS_PORT || 3001;
         this.serverWatcher(app);
         this.createRoute(app);
         server.listen(port,()=>{
+            const serverType = (server instanceof https.Server)?"https":"http";
+            const url = `${serverType}://localhost:${port}/`;
             console.log(chalk.greenBright(
-                boxen(`Server is running on port : ${port}`,
+                boxen(`Server running on:\u001B]8;;${url}\u0007${port}\u001B]8;;\u0007`,
                 {
                     padding: 1,
                 })

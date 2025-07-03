@@ -385,7 +385,7 @@ export default class Utility {
         for(let i = 1;i< fileArray.length;i++)
         {
             const namefile = this.formatName(fileArray[i],'file_');
-            compiledContent += `\ndocument.addEventListener('load',this.${namefile}())`
+            compiledContent += `\nthis.${namefile}()`
         }
         compiledContent+='\n}\n';
         //-----methods-----
@@ -429,7 +429,7 @@ export default class Utility {
             }  
         compiledContent = this.cleanerCommunJsDeclaration(compiledContent)
         compiledContent += '\n}\n'
-        compiledContent += `\nwindow.onload = async() => {\n\tnew Content()\n\tawait ImagesCacheHandler.saveNameToLocalStorage()\n}\n `;
+        compiledContent += `\ndocument.addEventListener('DOMContentLoaded', async() => {\n\tnew Content()\n\tawait ImagesCacheHandler.saveNameToLocalStorage()\n});\n `;
         const tregex = this.regexSectionMaker('Class_Content');
         compiledContent = compiledContent.replace(tregex,totalClass)
         return compiledContent.trim();

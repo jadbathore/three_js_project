@@ -13,7 +13,20 @@ interface versionInterface {
         type: DateConstructor;
         default: () => number;
     };
-    content: string;
+    typefile: {
+        type: any;
+        validate: {
+            validator: (value: String) => boolean;
+            message: (props: string) => string;
+        };
+    };
+    content: {
+        type: any;
+        validate: {
+            validator: (value: String) => boolean;
+            message: (props: string) => string;
+        };
+    };
 }
 interface singleInterface {
     versionName: string;
@@ -22,7 +35,20 @@ interface singleInterface {
         type: DateConstructor;
         default: () => number;
     };
-    content: string;
+    typefiles: {
+        type: any;
+        validate: {
+            validator: (value: String) => boolean;
+            message: (props: string) => string;
+        };
+    };
+    content: {
+        type: any;
+        validate: {
+            validator: (value: String) => boolean;
+            message: (props: string) => string;
+        };
+    };
 }
 interface usableInterface {
     UsableName: String;
@@ -31,7 +57,20 @@ interface usableInterface {
         type: DateConstructor;
         default: () => number;
     };
-    content: Object;
+    typefile: {
+        type: any;
+        validate: {
+            validator: (value: String) => boolean;
+            message: (props: string) => string;
+        };
+    };
+    content: {
+        type: any;
+        validate: {
+            validator: (value: String) => boolean;
+            message: (props: string) => string;
+        };
+    };
 }
 interface MangooseTableSchema {
     versions?: mongoose.Schema<versionInterface>;

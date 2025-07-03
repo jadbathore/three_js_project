@@ -14,21 +14,60 @@ interface versionInterface{
     versionName:string,
     name:string,
     date:{ type: DateConstructor; default: () => number; },
-    content:string
+    typefile: {
+        type:any,
+        validate: {
+            validator:(value:String)=>boolean,
+            message:(props:string)=>string
+        }
+    },
+    content:{
+        type:any,
+        validate: {
+            validator:(value:String)=>boolean,
+            message:(props:string)=>string
+        }
+    }
 }
 
 interface singleInterface{
     versionName:string,
     name:string,
     date:{ type: DateConstructor; default: () => number; },
-    content:string
+    typefiles: {
+        type:any,
+        validate: {
+            validator:(value:String)=>boolean,
+            message:(props:string)=>string
+        }
+    },
+    content:{
+        type:any,
+        validate: {
+            validator:(value:String)=>boolean,
+            message:(props:string)=>string
+        }
+    }
 }
 
 interface usableInterface{
     UsableName:String,
     name:String,
     date:{ type: DateConstructor; default: () => number; },
-    content: Object
+    typefile: {
+        type:any,
+        validate: {
+            validator:(value:String)=>boolean,
+            message:(props:string)=>string
+        }
+    },
+    content: {
+        type:any,
+        validate: {
+            validator:(value:String)=>boolean,
+            message:(props:string)=>string
+        }
+    }
 }
 
 interface MangooseTableSchema {
@@ -91,14 +130,21 @@ export class ConnectionUtilityMongoDB {
         let status:StatutsConnection;
         const promisePendingStatus:Promise<StatutsConnection> = new Promise((resolve)=>{
             setTimeout(()=>{
+                // Lancement du timeOut si cela prend trop de temps. 
+                // Retourne ‘discontinued’ si cela a pris trop de temps. 
                 status = StatutsConnection.discontinued
                 resolve(status)
             },1000)
+            // Vérification de la connexion
+            //Avec la méthode connect de Mongoose, je teste si la connexion est établie.
             mongoose.connect(this._uri).then(()=>{
+                // Statut favorable  
                     status = StatutsConnection.Connected
                 }).catch(()=>{
+                    //Statut non favorable
                     status = StatutsConnection.Error_connection;
                 }).finally(()=>{
+                    //Retourne le statut quoi qu’il arrive.
                     resolve(status)
                 })
         })
@@ -128,15 +174,55 @@ export class ConnectionUtilityMongoDB {
                 {
                     versionName:String,
                     name:String,
+                    typefile:{
+                        validate:{
+                            validator:(value:string)=>{
+                                return /(javascript)/g.test(value)
+                            },
+                            message: (props:any) =>`file type not valid`,
+                        }
+                    },
                     date:{type:Date,default:Date.now},
-                    content:String
+                    content:{
+                        type:String,
+                        required:true,
+                        validate:{
+                            validator:(value:string)=>{
+                                return !/((import)|(require))/g.test(value)
+                            },
+                            message: (props:any) =>`forbiden keyword`,
+                        }
+                    }
                 }),
             single: new mongoose.Schema(
                 {
-                    versionName:String,
+                    // le nom du fichier 
                     name:String,
+                    // la date 
                     date:{type:Date,default:Date.now},
-                    content:String
+                    //filtre le type de contenu autorisé 
+                    typefiles:{
+                        type:String,
+                        required:true,
+                        validate:{
+                            validator:(value:string)=>{
+                                return /(javascript)/g.test(value)
+                            },
+                            message: (props:any) =>`type must be javascript`,
+                        }
+                    },
+                    //filtrage du contenu (pas d'import ou de require dans ce texte
+                    //ne sont autorisé)
+                    content:{
+                        type:String,
+                        required:true,
+                        validate:{
+                            validator:(value:string)=>{
+                                return !/((import)|(require))/g.test(value)
+                            },
+                            message: (props:any) =>`forbiden keyword`,
+                        }
+                    }
                 }),
             usable: new mongoose.Schema(
                 {
@@ -179,15 +265,21 @@ export class ConnectionUtilityMongoDB {
 
     public findObject(tableName:string,query?:Object):Promise<void | any[]>
     {
+        //Utilisation des models 
         const promise = this.createModelPromise().then(async(Object:ReadonlyMangooseTableModel)=>{
+            //érification si le nom de la table existe dans les modèles. 
             const TableModel = Object[tableName]
             let result = (typeof query !== 'undefined')? await TableModel.find().where(query) : await TableModel.find();
+            // Retourne resultHandler, une méthode simple permettant de retourner null si le tableau est vide.
             return this.resulthandler(result);
         }).catch((err:string)=>{
+            // Capture les erreurs, par exemple si la table n’existe pas. 
             console.log(err)
         })
         return promise
-    };
+    }
+
+
     public findLastObject(tableName:string):Promise<void | any[]>
     {
         const promise = this.createModelPromise().then(async(Object:ReadonlyMangooseTableModel)=>{

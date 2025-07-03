@@ -1,13 +1,13 @@
-version: '4.2'
+version: latest
 services:
   bin:
     container_name: ThreeCli
     env_file: .env
     build: .
     depends_on:
-      - mongo-docker-service
-      - redis-docker-service
-  mongo-docker-service:
+      - mongo
+      - redis
+  mongo:
     env_file: .env
     image: mongo:latest
     environment:
@@ -18,7 +18,7 @@ services:
       - ${MONGO_PORT}:${MONGO_PORT}
     volumes:
       - mongo:/data/db
-  redis-docker-service:
+  redis:
     env_file: .env
     image: redis:latest
     ports:

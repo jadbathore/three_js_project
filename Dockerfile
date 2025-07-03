@@ -3,6 +3,7 @@ WORKDIR /usr/src/bin
 COPY ./package*.json ./
 RUN npm install 
 COPY ./bin ./bin
+COPY ./bash ./bash
 COPY ./app ./app
 COPY ./_types ./_types
 COPY threeTree.config.js ./

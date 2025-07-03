@@ -5,7 +5,9 @@ export class Socket implements Server.SocketHandler<AppRouter> {
 
     public handleConnection({CompilerTuple:[compiler,oberserver,proxy]}:AppRouter):void
     {
+        // appel du compilateur 
         compiler.compile()
+        // appel de la proxy 
         proxy.ProxyBehavior((event,path)=>{
             console.log(event,path)
         })
@@ -13,7 +15,9 @@ export class Socket implements Server.SocketHandler<AppRouter> {
 
     public handleDeconnection({CompilerTuple:[compiler,oberserver,proxy]}:AppRouter):void
     {
+        // arrêt du compilateur
         compiler.stopCompiler()
+        // destruction du compilateur
         compiler.destructCompiler()
         proxy.proxyRevoke()
     }

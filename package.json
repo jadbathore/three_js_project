@@ -33,6 +33,7 @@
     "commander": "^12.1.0",
     "commander-help": "^1.0.1",
     "compression": "^1.7.4",
+    "dotenv": "^16.5.0",
     "ejs": "^3.1.10",
     "express": "^4.19.2",
     "figlet": "^1.5.2",

@@ -5,6 +5,7 @@
 .AppleDouble
 .LSOverride
 /node_modules
+.envDocker
 .env
 # ./package-lock.jsons
 /testDockerFile
