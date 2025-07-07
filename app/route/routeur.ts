@@ -47,4 +47,15 @@ export const router:AppRouter[] = [
             })
         }
     },
+    {
+        pathServer:"/w",
+        method: RequestMethod.get,
+        serverLogic:(req,res)=>{
+            res.render('test',
+            {
+                title:'scene 2'
+            })
+        }
+    },
+    
 ];

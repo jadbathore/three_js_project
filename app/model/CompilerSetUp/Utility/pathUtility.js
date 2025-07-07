@@ -5,7 +5,7 @@ import ThreeTreeConfig from '../../../../threeTree.config.js'
 
 export default class PathUtility {
 
-    static{
+    static {
         this.self = (new PathUtility)
         this.versionDIR = path.join(process.cwd(),'app','public','versionning');
         this.compilerFile = path.join(process.cwd(),'app','public','versionning','compling.js');
@@ -15,9 +15,10 @@ export default class PathUtility {
         this.rootDirProjectName = ThreeTreeConfig.path.rootDirProjectName;
         this.dirPathAssetName = ThreeTreeConfig.path.dirPathAssetName;
         this.dirPathPublic = ThreeTreeConfig.path.dirPathPublic;
-        this.viewerPathName = path.join(process.cwd(),'app','viewer');
+        this.viewerPathName = path.join(process.cwd(),'app','public','wasm_mod','viewer');
         this.keySLL = path.join(process.cwd(),'SSLcredential','key.pem');
         this.certSLL = path.join(process.cwd(),'SSLcredential','cert.pem');
+        this.wasmFile = path.join(process.cwd(),'app','public','wasm_mod','pkg','wasm_mod.js')
     }
 
     /**

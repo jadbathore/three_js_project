@@ -9,43 +9,44 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
     return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
 };
-var _Utility_matchregexVariableDeclaration, _Utility_commentRemover, _Utility_matchregexConstantDelcaration, _Utility_matchparamDeclaration, _Utility_regeximportStatementCommunjs, _Utility_namespaceObjectRegex, _Utility_getfunctionName, _Utility_regexDeclaration, _Utility_regexpathimport, _Utility_regexremoveBlank, _Utility_allConstant, _Utility_compilerDir;
+var _Compile_instances, _Compile_matchregexVariableDeclaration, _Compile_commentRemover, _Compile_matchregexConstantDelcaration, _Compile_matchparamDeclaration, _Compile_regeximportStatementCommunjs, _Compile_namespaceObjectRegex, _Compile_getfunctionName, _Compile_regexDeclaration, _Compile_regexpathimport, _Compile_regexremoveBlank, _Compile_allConstant, _Compile_compilerDir, _Compile_jsonParser;
 import chalk from 'chalk';
 import path, { basename } from 'path';
 import fs from 'fs';
 import RecursiveMatcher from './RecursiveMatcher.js';
 import PathUtility from './pathUtility.js';
-class Utility {
+class Compile {
     constructor(compilerDir) {
-        _Utility_matchregexVariableDeclaration.set(this, /(?<=(\blet\b)(\s+))(([A-z]|[A-z]\w+)*)/g);
-        _Utility_commentRemover.set(this, /((\/\/).+|(\/[*](.*\n)+[*]\/))/g);
-        _Utility_matchregexConstantDelcaration.set(this, /(?<=\b(const(\s)+?)\b)(([A-z]|[A-z0-9]+)*)/g);
-        _Utility_matchparamDeclaration.set(this, /(?<=(\bthis[.]\b))((([A-z])|[A-z]\w+)*)(?=((\s?)+?)[=])/g);
-        _Utility_regeximportStatementCommunjs.set(this, /(\bconst\b)(([\s]+)?)(\{([\s\S]?)+\})([\s]+)[=]([\s]+)(\brequire\b)\(([\'].*[\'])\)/g);
-        _Utility_namespaceObjectRegex.set(this, /(\bconst\b)(\s?)+(((\_\_)([A-z]|[A-z]\w+)(\_\_)))(\s?)+(\=)(\s?)+(\{(\s?)+\})/g);
-        _Utility_getfunctionName.set(this, /(?<=(\b(\t?)function\b((\s)+?)))(([A-z])|([A-z]\w+))(?=(((\s)?)+?)(\((\n*?)([^]*)(\n*?)\))((\n*)?)\{)/g);
-        _Utility_regexDeclaration.set(this, /(?:(?=(?<=import.{.))[A-z,]*|(?!import.{.)((?<=import.*.as.)[A-z]\w+))/g);
-        _Utility_regexpathimport.set(this, /(?<=from.(\'|\"))[A-z/.-]*/g);
-        _Utility_regexremoveBlank.set(this, /(\n\s)/g);
-        _Utility_allConstant.set(this, []);
-        _Utility_compilerDir.set(this, void 0);
+        _Compile_instances.add(this);
+        _Compile_matchregexVariableDeclaration.set(this, /(?<=(\blet\b)(\s+))(([A-z]|[A-z]\w+)*)/g);
+        _Compile_commentRemover.set(this, /((\/\/).+|(\/[*](.*\n)+[*]\/))/g);
+        _Compile_matchregexConstantDelcaration.set(this, /(?<=\b(const(\s)+?)\b)(([A-z]|[A-z0-9]+)*)/g);
+        _Compile_matchparamDeclaration.set(this, /(?<=(\bthis[.]\b))((([A-z])|[A-z]\w+)*)(?=((\s?)+?)[=])/g);
+        _Compile_regeximportStatementCommunjs.set(this, /(\bconst\b)(([\s]+)?)(\{([\s\S]?)+\})([\s]+)[=]([\s]+)(\brequire\b)\(([\'].*[\'])\)/g);
+        _Compile_namespaceObjectRegex.set(this, /(\bconst\b)(\s?)+(((\_\_)([A-z]|[A-z]\w+)(\_\_)))(\s?)+(\=)(\s?)+(\{(\s?)+\})/g);
+        _Compile_getfunctionName.set(this, /(?<=(\b(\t?)function\b((\s)+?)))(([A-z])|([A-z]\w+))(?=(((\s)?)+?)(\((\n*?)([^]*)(\n*?)\))((\n*)?)\{)/g);
+        _Compile_regexDeclaration.set(this, /(?:(?=(?<=import.{.))[A-z,]*|(?!import.{.)((?<=import.*.as.)[A-z]\w+))/g);
+        _Compile_regexpathimport.set(this, /(?<=from.(\'|\"))[A-z/.-]*/g);
+        _Compile_regexremoveBlank.set(this, /(\n\s)/g);
+        _Compile_allConstant.set(this, []);
+        _Compile_compilerDir.set(this, void 0);
         let fileDirArray = PathUtility.getarrayFile(compilerDir);
         this.fileDirArray = this.setMapFile(fileDirArray);
         this.mapAsset = PathUtility.getMapAsset();
-        __classPrivateFieldSet(this, _Utility_compilerDir, compilerDir, "f");
+        __classPrivateFieldSet(this, _Compile_compilerDir, compilerDir, "f");
     }
     setAllConstant(text) {
         const objectmatchDelcaration = this.getTotaldeclaration(RecursiveMatcher.contentCleanerRecursion(text));
-        __classPrivateFieldSet(this, _Utility_allConstant, Object.values(objectmatchDelcaration).flat().filter(e => e != null) ?? [], "f");
+        __classPrivateFieldSet(this, _Compile_allConstant, Object.values(objectmatchDelcaration).flat().filter(e => e != null) ?? [], "f");
     }
     addToAllConstant(...array) {
-        __classPrivateFieldSet(this, _Utility_allConstant, __classPrivateFieldGet(this, _Utility_allConstant, "f")?.concat(array) ?? array, "f");
+        __classPrivateFieldSet(this, _Compile_allConstant, __classPrivateFieldGet(this, _Compile_allConstant, "f")?.concat(array) ?? array, "f");
     }
     getfileDirarraySlice(start, end) {
         return this.fileDirArray.slice(start, end);
     }
     get allConstant() {
-        return __classPrivateFieldGet(this, _Utility_allConstant, "f");
+        return __classPrivateFieldGet(this, _Compile_allConstant, "f");
     }
     setMapFile(fileArray) {
         let ii = 1;
@@ -53,17 +54,14 @@ class Utility {
         const iterator = fileArray[Symbol.iterator]();
         for (const value of iterator) {
             switch (path?.basename(value)) {
-                case '1.configImport.js':
+                case '2.RendererSetting.js':
                     organisedArray[0] = value;
                     break;
-                case '2.RendererSetting.js':
+                case '3.cameraSetting.js':
                     organisedArray[1] = value;
                     break;
-                case '3.cameraSetting.js':
-                    organisedArray[2] = value;
-                    break;
                 case '4.loader.js':
-                    organisedArray[3] = value;
+                    organisedArray[2] = value;
                     break;
                 case 'animate.js':
                     organisedArray[fileArray.length - 2] = value;
@@ -73,7 +71,7 @@ class Utility {
                     break;
                 case undefined: break;
                 default:
-                    organisedArray[3 + ii] = value;
+                    organisedArray[2 + ii] = value;
                     ii++;
                     break;
             }
@@ -110,8 +108,8 @@ class Utility {
         };
     }
     getTotaldeclaration(text) {
-        const allVariable = text.match(__classPrivateFieldGet(this, _Utility_matchregexVariableDeclaration, "f"));
-        const allVariablewordConst = text.match(__classPrivateFieldGet(this, _Utility_matchregexConstantDelcaration, "f"));
+        const allVariable = text.match(__classPrivateFieldGet(this, _Compile_matchregexVariableDeclaration, "f"));
+        const allVariablewordConst = text.match(__classPrivateFieldGet(this, _Compile_matchregexConstantDelcaration, "f"));
         const allFunctionName = text.match(RecursiveMatcher.functionName);
         const allClassName = text.match(RecursiveMatcher.ClassName);
         return {
@@ -122,8 +120,8 @@ class Utility {
         };
     }
     getClassDeclaration(text) {
-        const allVariablewordConst = text.match(__classPrivateFieldGet(this, _Utility_matchregexConstantDelcaration, "f"));
-        const matchparamDeclaration = text.match(__classPrivateFieldGet(this, _Utility_matchparamDeclaration, "f"));
+        const allVariablewordConst = text.match(__classPrivateFieldGet(this, _Compile_matchregexConstantDelcaration, "f"));
+        const matchparamDeclaration = text.match(__classPrivateFieldGet(this, _Compile_matchparamDeclaration, "f"));
         return {
             paramClass: matchparamDeclaration,
             constant: allVariablewordConst,
@@ -189,7 +187,7 @@ class Utility {
     }
     async getComposerContent(fileArray) {
         let compiledContent = "import { ImageCache,ImagesCacheHandler } from '../../../_types/app/model/cache/cacheImageUtility.js'";
-        compiledContent += fs.readFileSync(fileArray[0], 'utf-8');
+        compiledContent += this.getImportEsmScript();
         compiledContent += '//----|Class_Content|----\n//No Class\n//&end';
         compiledContent += '\nclass Content {\n';
         const getAsset = this.getAssetPathConst();
@@ -201,14 +199,14 @@ class Utility {
             compiledContent += `\n}\n`;
         }
         compiledContent += `constructor(){\n`;
-        for (let i = 1; i < fileArray.length; i++) {
+        for (let i = 0; i < fileArray.length; i++) {
             const namefile = this.formatName(fileArray[i], 'file_');
             compiledContent += `\nthis.${namefile}()`;
         }
         compiledContent += '\n}\n';
         let totalConstant = [];
         let totalClass = '';
-        for (let i = 1; i < fileArray.length; i++) {
+        for (let i = 0; i < fileArray.length; i++) {
             const Raw = fs.readFileSync(fileArray[i], 'utf-8');
             const condition = (Raw.match(RecursiveMatcher.ClassStart) !== null);
             const contentRaw = (condition) ? await this.DeletorForClassPromise(Raw).then((dataObj) => {
@@ -295,8 +293,8 @@ class Utility {
         return new RegExp(`(?<!((\\_\\_)[A-z]\\w+(\\_\\_\\.)))(((const)((\\s?)+))(\\b${word}\\b)|(\\b${word}\\b))`, 'g');
     }
     cleanerCommunJsDeclaration(text) {
-        if (text.match(__classPrivateFieldGet(this, _Utility_regeximportStatementCommunjs, "f")) !== null) {
-            text = text.replace(__classPrivateFieldGet(this, _Utility_regeximportStatementCommunjs, "f"), '');
+        if (text.match(__classPrivateFieldGet(this, _Compile_regeximportStatementCommunjs, "f")) !== null) {
+            text = text.replace(__classPrivateFieldGet(this, _Compile_regeximportStatementCommunjs, "f"), '');
         }
         return text;
     }
@@ -329,7 +327,7 @@ class Utility {
             values.forEach((e) => {
                 textWithoutFunc = textWithoutFunc.replace(e, '#&@');
             });
-            const keys = textWithoutFunc.match(__classPrivateFieldGet(this, _Utility_getfunctionName, "f"));
+            const keys = textWithoutFunc.match(__classPrivateFieldGet(this, _Compile_getfunctionName, "f"));
             if ((values == null) || (keys == null)) {
                 reject(`no value or keys matched value:${values} keys:${keys}`);
             }
@@ -356,10 +354,10 @@ class Utility {
             replacingContent = this.cleanerCommunJsDeclaration(replacingContent);
             let totaltext = textToreplace.replace(tRegex, replacingContent);
             this.setAllConstant(totaltext);
-            const optionalNamespace = await this.doubleDeclarationHandler(__classPrivateFieldGet(this, _Utility_allConstant, "f"), endFile);
+            const optionalNamespace = await this.doubleDeclarationHandler(__classPrivateFieldGet(this, _Compile_allConstant, "f"), endFile);
             if (optionalNamespace !== null) {
                 let tempsContent = this.replaceContent(replacingContent, optionalNamespace.double, optionalNamespace.objNameSpace);
-                if (replacingContent.match(__classPrivateFieldGet(this, _Utility_namespaceObjectRegex, "f")) == null) {
+                if (replacingContent.match(__classPrivateFieldGet(this, _Compile_namespaceObjectRegex, "f")) == null) {
                     tempsContent = optionalNamespace.data + tempsContent;
                 }
                 totaltext = textToreplace.replace(tRegex, tempsContent);
@@ -452,7 +450,7 @@ class Utility {
         });
     }
     removeAllBlank(text) {
-        return text.replace(__classPrivateFieldGet(this, _Utility_regexremoveBlank, "f"), '\n');
+        return text.replace(__classPrivateFieldGet(this, _Compile_regexremoveBlank, "f"), '\n');
     }
     getAllExportName(content) {
         const alltheFunction = RecursiveMatcher.getAllFunctionContent(content);
@@ -462,7 +460,7 @@ class Utility {
             });
         }
         let arrayDeclaration = this.getTotaldeclaration(content).constant;
-        arrayDeclaration = content.match(__classPrivateFieldGet(this, _Utility_getfunctionName, "f"))?.concat(arrayDeclaration) ?? arrayDeclaration;
+        arrayDeclaration = content.match(__classPrivateFieldGet(this, _Compile_getfunctionName, "f"))?.concat(arrayDeclaration) ?? arrayDeclaration;
         return arrayDeclaration;
     }
     addimportScript(file) {
@@ -470,7 +468,7 @@ class Utility {
         if (!['configImport.js', 'resizeSetting.js'].includes(basenameFile)) {
             fs.promises.readFile(file, { encoding: 'utf-8' }).then(async (buffer) => {
                 const content = buffer.toString();
-                if (content.match(__classPrivateFieldGet(this, _Utility_regeximportStatementCommunjs, "f")) == null) {
+                if (content.match(__classPrivateFieldGet(this, _Compile_regeximportStatementCommunjs, "f")) == null) {
                     const text = this.getImportStript() + content;
                     console.log(chalk.green(`the import statement as been added to '${path.basename(file)}'`));
                     return fs.promises.writeFile(file, text);
@@ -498,8 +496,8 @@ class Utility {
     }
     getImportStript(jumpLine = true) {
         let importScript = 'const { ';
-        for (let index in __classPrivateFieldGet(this, _Utility_allConstant, "f")) {
-            importScript += `${__classPrivateFieldGet(this, _Utility_allConstant, "f")[index]},`;
+        for (let index in __classPrivateFieldGet(this, _Compile_allConstant, "f")) {
+            importScript += `${__classPrivateFieldGet(this, _Compile_allConstant, "f")[index]},`;
             importScript += (parseInt(index) % 3 == 0) ? '\n\t' : ' ';
         }
         importScript += `} = require('../../public/versionning/linkFile.js')`;
@@ -531,15 +529,11 @@ class Utility {
         return content;
     }
     getConfigUtilty() {
-        const configFile = PathUtility.getPathFromElement(__classPrivateFieldGet(this, _Utility_compilerDir, "f"), '1.Setting', '1.configImport.js');
+        const configFile = PathUtility.getPathFromElement(__classPrivateFieldGet(this, _Compile_compilerDir, "f"), 'compile_param.json');
         const contentConfig = fs.readFileSync(configFile, 'utf-8');
+        const json = JSON.parse(contentConfig);
         const elementDict = {};
-        const declarations = contentConfig.match(__classPrivateFieldGet(this, _Utility_regexDeclaration, "f"));
-        const importpath = contentConfig.match(__classPrivateFieldGet(this, _Utility_regexpathimport, "f"));
-        for (let i = 0; i < declarations.length; i++) {
-            elementDict[declarations[i].split(',')] = importpath[i];
-        }
-        return elementDict;
+        return json.dependencies;
     }
     getImportCommunJsScript() {
         let content = '';
@@ -550,6 +544,24 @@ class Utility {
             }
             else {
                 content += `const {${key}} = require('${value}')\n`;
+            }
+        }
+        return content;
+    }
+    getImportEsmScript() {
+        let content = '';
+        const configUtility = this.getConfigUtilty();
+        for (const [key, value] of Object.entries(configUtility)) {
+            switch (value?.type) {
+                case 'default':
+                    content += `\nimport * as ${key} from '${value?.src ?? value}' \n`;
+                    break;
+                case 'multi':
+                    content += `\nimport {${(value?.keys).join(',') ?? key}} from '${value?.src ?? value}' \n`;
+                    break;
+                default:
+                    content += `\nimport ${key} from '${value?.src ?? value}' \n`;
+                    break;
             }
         }
         return content;
@@ -571,5 +583,12 @@ class Utility {
         });
     }
 }
-_Utility_matchregexVariableDeclaration = new WeakMap(), _Utility_commentRemover = new WeakMap(), _Utility_matchregexConstantDelcaration = new WeakMap(), _Utility_matchparamDeclaration = new WeakMap(), _Utility_regeximportStatementCommunjs = new WeakMap(), _Utility_namespaceObjectRegex = new WeakMap(), _Utility_getfunctionName = new WeakMap(), _Utility_regexDeclaration = new WeakMap(), _Utility_regexpathimport = new WeakMap(), _Utility_regexremoveBlank = new WeakMap(), _Utility_allConstant = new WeakMap(), _Utility_compilerDir = new WeakMap();
-export default Utility;
+_Compile_matchregexVariableDeclaration = new WeakMap(), _Compile_commentRemover = new WeakMap(), _Compile_matchregexConstantDelcaration = new WeakMap(), _Compile_matchparamDeclaration = new WeakMap(), _Compile_regeximportStatementCommunjs = new WeakMap(), _Compile_namespaceObjectRegex = new WeakMap(), _Compile_getfunctionName = new WeakMap(), _Compile_regexDeclaration = new WeakMap(), _Compile_regexpathimport = new WeakMap(), _Compile_regexremoveBlank = new WeakMap(), _Compile_allConstant = new WeakMap(), _Compile_compilerDir = new WeakMap(), _Compile_instances = new WeakSet(), _Compile_jsonParser = function _Compile_jsonParser(err, data) {
+    if (err) {
+        throw err;
+    }
+    else {
+        console.log(JSON.parse(data));
+    }
+};
+export default Compile;

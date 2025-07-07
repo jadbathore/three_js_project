@@ -8,7 +8,7 @@ import PathUtility from './pathUtility.js';
  * @class Utility is use to do Some Utility work to the compiler here are all the methode use in se compilation phase
  * @constructor who need a array of file and a Map obj of the asset
  */
-export default class Utility {
+export default class Compile {
     /**
     *```
     /(?<=(\blet\b)(\s+))(([A-z]|[A-z]\w+)*)/g;
@@ -151,16 +151,13 @@ export default class Utility {
         for (const value of iterator) {
             switch(path?.basename(value))
             {
-                case'1.configImport.js':
-                    organisedArray[0] = value;
-                break;
-                case'2.RendererSetting.js':organisedArray[1] = value;break;
-                case'3.cameraSetting.js':organisedArray[2] = value;break;
-                case'4.loader.js':organisedArray[3] = value;break;
+                case'2.RendererSetting.js':organisedArray[0] = value;break;
+                case'3.cameraSetting.js':organisedArray[1] = value;break;
+                case'4.loader.js':organisedArray[2] = value;break;
                 case'animate.js': organisedArray[fileArray.length - 2] = value;break;
                 case'resizeSetting.js':organisedArray[fileArray.length - 1] = value;break;
                 case undefined: break;
-                default: organisedArray[3+ii] = value;
+                default: organisedArray[2+ii] = value;
                 ii++;
                 break;
             }
@@ -366,7 +363,7 @@ export default class Utility {
      */
     async getComposerContent(fileArray){
         let compiledContent = "import { ImageCache,ImagesCacheHandler } from '../../../_types/app/model/cache/cacheImageUtility.js'"
-        compiledContent += fs.readFileSync(fileArray[0],'utf-8');
+        compiledContent += this.getImportEsmScript();
         compiledContent += '//----|Class_Content|----\n//No Class\n//&end'
         compiledContent += '\nclass Content {\n';
         const getAsset = this.getAssetPathConst();
@@ -382,7 +379,7 @@ export default class Utility {
             }
         //-----constructor-----
         compiledContent+=`constructor(){\n`
-        for(let i = 1;i< fileArray.length;i++)
+        for(let i = 0;i< fileArray.length;i++)
         {
             const namefile = this.formatName(fileArray[i],'file_');
             compiledContent += `\nthis.${namefile}()`
@@ -394,7 +391,7 @@ export default class Utility {
          */
         let totalConstant = [];
         let totalClass = ''; 
-        for(let i = 1;i< fileArray.length;i++)
+        for(let i = 0;i< fileArray.length;i++)
             {
                 const Raw = fs.readFileSync(fileArray[i],'utf-8');
                 const condition = (Raw.match(RecursiveMatcher.ClassStart) !== null)
@@ -978,17 +975,12 @@ export default class Utility {
     * @returns array
     */
     getConfigUtilty(){
-        const configFile = PathUtility.getPathFromElement(this.#compilerDir,'1.Setting','1.configImport.js')  
+
+        const configFile = PathUtility.getPathFromElement(this.#compilerDir,'compile_param.json')  
         const contentConfig = fs.readFileSync(configFile,'utf-8')
+        const json = JSON.parse(contentConfig)
         const elementDict = {}
-        const declarations = contentConfig.match(this.#regexDeclaration)
-        const importpath = contentConfig.match(this.#regexpathimport)
-        for (let i=0;i<declarations.length;i++)
-        {
-            //@ts-ignore
-            elementDict[declarations[i].split(',')] = importpath[i]
-        }
-        return elementDict;
+        return json.dependencies;
     }
 
     /*
@@ -998,7 +990,7 @@ export default class Utility {
     */ 
     /**
      * @public formats a CommunJs script starting from the base of the configImport.js folder (which is in module-es)
-        using the import as a means of accessing the added external module such as three, or canon-es for example.
+        using the import as a means of accessing the added external module such as three, or canon-es for example.ƒ
      * @returns string
      */
     getImportCommunJsScript()
@@ -1012,6 +1004,26 @@ export default class Utility {
                 content += `const ${key} = require('${value}')\n`;
             } else {
                 content += `const {${key}} = require('${value}')\n`;
+            }
+        }
+        return content
+    }
+
+    getImportEsmScript()
+    {
+        let content = ''
+        const configUtility = this.getConfigUtilty()
+        for(const [key,value] of Object.entries(configUtility))
+        {
+            switch (value?.type){
+                case 'default' : 
+                    content += `\nimport * as ${key} from '${value?.src ?? value}' \n`
+                break;
+                case 'multi' : 
+                    content += `\nimport {${(value?.keys).join(',') ?? key}} from '${value?.src ?? value}' \n`
+                break;
+                default: content += `\nimport ${key} from '${value?.src ?? value}' \n`;
+                break;
             }
         }
         return content
@@ -1051,4 +1063,21 @@ export default class Utility {
                 }
             },)
     }
+
+    /**
+     * 
+     * @param {Error} err 
+     * @param {*} data 
+     * @throw {Error}
+     * 
+     */
+    #jsonParser(err,data)
+    {
+        if (err) {
+            throw err;
+        } else {
+            console.log(JSON.parse(data))
+        }
+    }
+
 }

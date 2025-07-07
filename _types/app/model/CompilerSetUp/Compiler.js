@@ -13,7 +13,7 @@ var _Compiler_observer, _Compiler_abortControllerList, _Compiler_subject, _Compi
 import chalk from 'chalk';
 import fs from 'fs';
 import path from 'path';
-import Utility from './Utility/Utility.js';
+import Compile from './Utility/Utility.js';
 import PathUtility from './Utility/pathUtility.js';
 import { loadConfigFile } from 'rollup/loadConfigFile';
 import { rollup, watch } from 'rollup';
@@ -43,7 +43,7 @@ export class Compiler {
         __classPrivateFieldSet(this, _Compiler_observer, observer, "f");
         __classPrivateFieldSet(this, _Compiler_subject, subject, "f");
         console.log(chalk.bgBlue(`compiler created for request :"${__classPrivateFieldGet(this, _Compiler_observer, "f").path}"`));
-        __classPrivateFieldSet(this, _Compiler_compilerUtility, new Utility(sceneName), "f");
+        __classPrivateFieldSet(this, _Compiler_compilerUtility, new Compile(sceneName), "f");
         __classPrivateFieldSet(this, _Compiler_sceneName, sceneName, "f");
     }
     get sceneName() {

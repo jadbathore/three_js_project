@@ -1,4 +1,4 @@
-export default class Utility {
+export default class Compile {
     constructor(compilerDir?: string);
     fileDirArray: string[];
     mapAsset: Map<any, any>;
@@ -35,8 +35,9 @@ export default class Utility {
     public getExportScript(constArray: any): string;
     public getImportStript(jumpLine?: boolean): string;
     public getAssetPathConst(): object;
-    public getConfigUtilty(): {};
+    public getConfigUtilty(): any;
     public getImportCommunJsScript(): string;
+    getImportEsmScript(): string;
     public compilerContentPromise(arrayFile: string[], typedata?: string): Promise<string>;
     #private;
 }

@@ -2,7 +2,7 @@ import chalk from 'chalk';
 import fs from 'fs';
 // @ts-ignore
 import path from 'path';
-import Utility from './Utility/Utility.js';
+import Compile from './Utility/Utility.js';
 import PathUtility from './Utility/pathUtility.js';
 // @ts-ignore
 import {loadConfigFile} from 'rollup/loadConfigFile'
@@ -51,7 +51,7 @@ export class Compiler {
     #subject
 
     /**
-     * @type {Utility}
+     * @type {Compile}
      */
     #compilerUtility
 
@@ -70,7 +70,7 @@ export class Compiler {
         this.#observer = observer;
         this.#subject = subject;
         console.log(chalk.bgBlue(`compiler created for request :"${this.#observer.path}"`))
-        this.#compilerUtility = new Utility(sceneName);
+        this.#compilerUtility = new Compile(sceneName);
         this.#sceneName = sceneName
     }
 

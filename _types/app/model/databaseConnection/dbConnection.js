@@ -93,7 +93,6 @@ export class ConnectionUtilityMongoDB {
                 }
             }),
             single: new mongoose.Schema({
-                versionName: String,
                 name: String,
                 date: { type: Date, default: Date.now },
                 typefiles: {

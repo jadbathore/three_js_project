@@ -131,6 +131,7 @@ export class ServerHandler {
     runServer(app) {
         rollupWatchConfig();
         app.use(compression());
+        express.static.mime.define({ 'application/wasm': ['wasm'] });
         app.enable('etag');
         app.set('view engine', 'ejs');
         app.set('views', PathUtility.getViewerFile());
