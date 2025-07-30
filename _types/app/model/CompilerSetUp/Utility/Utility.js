@@ -9,7 +9,7 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
     return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
 };
-var _Compile_instances, _Compile_matchregexVariableDeclaration, _Compile_commentRemover, _Compile_matchregexConstantDelcaration, _Compile_matchparamDeclaration, _Compile_regeximportStatementCommunjs, _Compile_namespaceObjectRegex, _Compile_getfunctionName, _Compile_regexDeclaration, _Compile_regexpathimport, _Compile_regexremoveBlank, _Compile_allConstant, _Compile_compilerDir, _Compile_jsonParser;
+var _Compile_matchregexVariableDeclaration, _Compile_commentRemover, _Compile_matchregexConstantDelcaration, _Compile_matchparamDeclaration, _Compile_regeximportStatementCommunjs, _Compile_namespaceObjectRegex, _Compile_getfunctionName, _Compile_regexDeclaration, _Compile_regexpathimport, _Compile_regexremoveBlank, _Compile_allConstant, _Compile_compilerDir;
 import chalk from 'chalk';
 import path, { basename } from 'path';
 import fs from 'fs';
@@ -17,7 +17,6 @@ import RecursiveMatcher from './RecursiveMatcher.js';
 import PathUtility from './pathUtility.js';
 class Compile {
     constructor(compilerDir) {
-        _Compile_instances.add(this);
         _Compile_matchregexVariableDeclaration.set(this, /(?<=(\blet\b)(\s+))(([A-z]|[A-z]\w+)*)/g);
         _Compile_commentRemover.set(this, /((\/\/).+|(\/[*](.*\n)+[*]\/))/g);
         _Compile_matchregexConstantDelcaration.set(this, /(?<=\b(const(\s)+?)\b)(([A-z]|[A-z0-9]+)*)/g);
@@ -128,7 +127,7 @@ class Compile {
         };
     }
     async getContentFile(fileArray) {
-        let compiledContent = `//generate with configImport.js\n${this.getImportCommunJsScript()}\n`;
+        let compiledContent = `${this.getImportCommunJsScript()}\n`;
         const getAsset = this.getAssetPathConst();
         for (let [key, values] of Object.entries(getAsset)) {
             compiledContent += `const ${key} = {\n`;
@@ -480,17 +479,17 @@ class Compile {
         let exportsScript = '';
         for (const [key, value] of Object.entries(this.getConfigUtilty())) {
             if (!key.includes(",")) {
-                exportsScript += `exports.${key} = ${key}\n`;
+                exportsScript += `globalThis.${__classPrivateFieldGet(this, _Compile_compilerDir, "f")}.${key} = ${key}\n`;
             }
             else {
                 const alldeclaration = key.split(',');
                 alldeclaration.forEach((element) => {
-                    exportsScript += `exports.${element} = ${element}\n`;
+                    exportsScript += `globalThis.${__classPrivateFieldGet(this, _Compile_compilerDir, "f")}.${element} = ${element}\n`;
                 });
             }
         }
         for (let i = 0; i < constArray.length; i++) {
-            exportsScript += `module.exports = {${constArray[i]}}\n`;
+            exportsScript += `globalThis.${__classPrivateFieldGet(this, _Compile_compilerDir, "f")}.${constArray[i]} = ${constArray[i]}\n`;
         }
         return exportsScript;
     }
@@ -532,18 +531,20 @@ class Compile {
         const configFile = PathUtility.getPathFromElement(__classPrivateFieldGet(this, _Compile_compilerDir, "f"), 'compile_param.json');
         const contentConfig = fs.readFileSync(configFile, 'utf-8');
         const json = JSON.parse(contentConfig);
-        const elementDict = {};
         return json.dependencies;
     }
     getImportCommunJsScript() {
         let content = '';
         const configUtility = this.getConfigUtilty();
         for (const [key, value] of Object.entries(configUtility)) {
-            if (!key.includes(',')) {
-                content += `const ${key} = require('${value}')\n`;
-            }
-            else {
-                content += `const {${key}} = require('${value}')\n`;
+            switch (value?.type) {
+                case 'multi':
+                    content += `\nconst {${(value?.keys)?.join(',') ?? key}} = require('${value?.src ?? value}')\n`;
+                    break;
+                case 'default':
+                default:
+                    content += `\nconst ${(value?.keys)?.join(',') ?? key} = require('${value?.src ?? value}')\n`;
+                    break;
             }
         }
         return content;
@@ -553,12 +554,10 @@ class Compile {
         const configUtility = this.getConfigUtilty();
         for (const [key, value] of Object.entries(configUtility)) {
             switch (value?.type) {
-                case 'default':
-                    content += `\nimport * as ${key} from '${value?.src ?? value}' \n`;
-                    break;
                 case 'multi':
-                    content += `\nimport {${(value?.keys).join(',') ?? key}} from '${value?.src ?? value}' \n`;
+                    content += `\nimport {${(value?.keys)?.join(',') ?? key}} from '${value?.src ?? value}' \n`;
                     break;
+                case 'default':
                 default:
                     content += `\nimport ${key} from '${value?.src ?? value}' \n`;
                     break;
@@ -583,12 +582,5 @@ class Compile {
         });
     }
 }
-_Compile_matchregexVariableDeclaration = new WeakMap(), _Compile_commentRemover = new WeakMap(), _Compile_matchregexConstantDelcaration = new WeakMap(), _Compile_matchparamDeclaration = new WeakMap(), _Compile_regeximportStatementCommunjs = new WeakMap(), _Compile_namespaceObjectRegex = new WeakMap(), _Compile_getfunctionName = new WeakMap(), _Compile_regexDeclaration = new WeakMap(), _Compile_regexpathimport = new WeakMap(), _Compile_regexremoveBlank = new WeakMap(), _Compile_allConstant = new WeakMap(), _Compile_compilerDir = new WeakMap(), _Compile_instances = new WeakSet(), _Compile_jsonParser = function _Compile_jsonParser(err, data) {
-    if (err) {
-        throw err;
-    }
-    else {
-        console.log(JSON.parse(data));
-    }
-};
+_Compile_matchregexVariableDeclaration = new WeakMap(), _Compile_commentRemover = new WeakMap(), _Compile_matchregexConstantDelcaration = new WeakMap(), _Compile_matchparamDeclaration = new WeakMap(), _Compile_regeximportStatementCommunjs = new WeakMap(), _Compile_namespaceObjectRegex = new WeakMap(), _Compile_getfunctionName = new WeakMap(), _Compile_regexDeclaration = new WeakMap(), _Compile_regexpathimport = new WeakMap(), _Compile_regexremoveBlank = new WeakMap(), _Compile_allConstant = new WeakMap(), _Compile_compilerDir = new WeakMap();
 export default Compile;

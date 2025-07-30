@@ -44,7 +44,7 @@ export const router = [
         method: RequestMethod.get,
         serverLogic: (req, res) => {
             res.render('test', {
-                title: 'scene 2'
+                title: 'test wasm'
             });
         }
     },

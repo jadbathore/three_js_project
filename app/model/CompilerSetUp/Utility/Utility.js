@@ -267,7 +267,7 @@ export default class Compile {
      */
     async getContentFile(fileArray)
     {
-        let compiledContent = `//generate with configImport.js\n${this.getImportCommunJsScript()}\n`;
+        let compiledContent = `${this.getImportCommunJsScript()}\n`;
         const getAsset = this.getAssetPathConst()
         for(let [key,values] of Object.entries(getAsset))
         {
@@ -306,7 +306,7 @@ export default class Compile {
                 }
                 
             }
-            compiledContent +=this.getExportScript(this.getAllExportName(compiledContent))
+            compiledContent += this.getExportScript(this.getAllExportName(compiledContent))
             return compiledContent.trim();
     }
 
@@ -439,7 +439,7 @@ export default class Compile {
      * @param {string[]} asset 
      * @returns string clean content
      */
-    async ContentCleaner(contentRaw,totalConstant,asset){
+    async ContentCleaner(contentRaw,totalConstant,asset) {
         asset.forEach((e)=>{
             const regex = new RegExp(`\\b(${e}[.]([A-z]|[A-z]\\w+))\\b`,'g')
             if(contentRaw.match(regex) !== null)
@@ -868,17 +868,17 @@ export default class Compile {
         {
             if(!key.includes(","))
             {
-                exportsScript += `exports.${key} = ${key}\n`
+                exportsScript += `globalThis.${this.#compilerDir}.${key} = ${key}\n`
             } else {
                 const alldeclaration = key.split(',')
                 alldeclaration.forEach((element)=>{
-                    exportsScript += `exports.${element} = ${element}\n`
+                    exportsScript += `globalThis.${this.#compilerDir}.${element} = ${element}\n`
                 })
             }
         }
         for(let i = 0; i < constArray.length; i++)
         {
-            exportsScript+=`module.exports = {${constArray[i]}}\n`
+            exportsScript+=`globalThis.${this.#compilerDir}.${constArray[i]} = ${constArray[i]}\n`
         }
         return exportsScript;
     }
@@ -975,11 +975,9 @@ export default class Compile {
     * @returns array
     */
     getConfigUtilty(){
-
         const configFile = PathUtility.getPathFromElement(this.#compilerDir,'compile_param.json')  
         const contentConfig = fs.readFileSync(configFile,'utf-8')
         const json = JSON.parse(contentConfig)
-        const elementDict = {}
         return json.dependencies;
     }
 
@@ -999,11 +997,13 @@ export default class Compile {
         const configUtility = this.getConfigUtilty()
         for(const [key,value] of Object.entries(configUtility))
         {
-            if(!key.includes(','))
-            {
-                content += `const ${key} = require('${value}')\n`;
-            } else {
-                content += `const {${key}} = require('${value}')\n`;
+            switch (value?.type){
+                case 'multi' : 
+                    content += `\nconst {${(value?.keys)?.join(',') ?? key}} = require('${value?.src ?? value}')\n`
+                break;
+                case 'default' : 
+                default: content += `\nconst ${(value?.keys)?.join(',') ?? key} = require('${value?.src ?? value}')\n`;
+                break;
             }
         }
         return content
@@ -1016,12 +1016,10 @@ export default class Compile {
         for(const [key,value] of Object.entries(configUtility))
         {
             switch (value?.type){
-                case 'default' : 
-                    content += `\nimport * as ${key} from '${value?.src ?? value}' \n`
-                break;
                 case 'multi' : 
-                    content += `\nimport {${(value?.keys).join(',') ?? key}} from '${value?.src ?? value}' \n`
+                    content += `\nimport {${(value?.keys)?.join(',') ?? key}} from '${value?.src ?? value}' \n`
                 break;
+                case 'default' : 
                 default: content += `\nimport ${key} from '${value?.src ?? value}' \n`;
                 break;
             }
@@ -1062,22 +1060,6 @@ export default class Compile {
                     reject(`typedata: ${typedata} non reconnu `)
                 }
             },)
-    }
-
-    /**
-     * 
-     * @param {Error} err 
-     * @param {*} data 
-     * @throw {Error}
-     * 
-     */
-    #jsonParser(err,data)
-    {
-        if (err) {
-            throw err;
-        } else {
-            console.log(JSON.parse(data))
-        }
     }
 
 }

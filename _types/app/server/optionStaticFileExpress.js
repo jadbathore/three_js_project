@@ -5,7 +5,7 @@ import PathUtility from '../model/CompilerSetUp/Utility/pathUtility.js';
 const optionServer = {
     dotfiles: 'ignore',
     etag: true,
-    extensions: ['htm', 'html', 'wasm'],
+    extensions: ['htm', 'html'],
     index: false,
     redirect: false,
     maxAge: '1d',

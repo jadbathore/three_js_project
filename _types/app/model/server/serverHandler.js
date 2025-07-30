@@ -106,15 +106,6 @@ export class ServerHandler {
         } while (iterator.valid());
     }
     serverWatcher(app) {
-        app.use((req, res, next) => {
-            if (req.path != '/.handler') {
-                this._proxy.route = req.path;
-                console.log(chalk.blue(`${req.method} on "${req.path}" at ${new Date(Date.now()).toString()}`));
-            }
-            else {
-            }
-            next();
-        });
         app.use('/.handler', async (req, res, next) => {
             const file = await this.getFile(this._proxy.route.route);
             res.send(file).status(200);

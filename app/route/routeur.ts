@@ -53,7 +53,7 @@ export const router:AppRouter[] = [
         serverLogic:(req,res)=>{
             res.render('test',
             {
-                title:'scene 2'
+                title:'test wasm'
             })
         }
     },
