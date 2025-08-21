@@ -16,7 +16,7 @@ English:
     makes the connection between rollup and compiling.js work with the watch option which will watch the changes made on compiling
 */
 export function rollupWatchConfig(){
-    loadConfigFile(PathUtility.getRollupFile(), {
+    loadConfigFile(PathUtility.rollupConfig, {
         format: 'es'
         //@ts-ignore
     }).then(async ({ options, warnings }) => {
@@ -58,8 +58,13 @@ export class Compiler {
 
     /**
      * @type {string}
-     */
+     */  
     #sceneName
+
+    
+    #cFile
+
+    #lFile
 
     /**
      * @param {LibFile.Observer} observer 
@@ -72,10 +77,28 @@ export class Compiler {
         console.log(chalk.bgBlue(`compiler created for request :"${this.#observer.path}"`))
         this.#compilerUtility = new Compile(sceneName);
         this.#sceneName = sceneName
+        this.#cFile = PathUtility.getcompilerFile()
+        this.#lFile = PathUtility.getlinkFile() 
     }
 
     get sceneName(){
         return this.#sceneName;
+    }
+
+    repopulate(){
+        // this.#subject.attach(this.#observer);
+        if(!fs.existsSync(PathUtility.versionDIR)) {
+            fs.promises.mkdir(PathUtility.versionDIR, { recursive: true })
+            .then((path) => console.log(chalk.green('Directory created successfully',path)))
+            .catch((err) => console.error('Error creating directory:', err));
+        }
+           this.#compilerUtility.repopulateComposer(this.#cFile);
+            this.#compilerUtility.repopulatelinkFile(this.#lFile);
+        // (async()=>{
+        //     this.#compilerUtility.repopulateComposer(this.#cFile)
+        //     this.#compilerUtility.repopulatelinkFile(this.#lFile)
+        // })();
+  
     }
 
     compile()
@@ -88,10 +111,11 @@ export class Compiler {
                 .then((path) => console.log(chalk.green('Directory created successfully',path)))
                 .catch((err) => console.error('Error creating directory:', err));
             }
-            const cFile = PathUtility.getcompilerFile()
-            const lFile = PathUtility.getlinkFile() 
-            this.#compilerUtility.repopulateComposer(cFile)
-            this.#compilerUtility.repopulatelinkFile(lFile)
+
+            // const cFile = PathUtility.getcompilerFile()
+            // const lFile = PathUtility.getlinkFile() 
+            this.#compilerUtility.repopulateComposer(this.#cFile)
+            this.#compilerUtility.repopulatelinkFile(this.#lFile)
             this.#abortControllerList = []
             for(const [key,value] of PathUtility.getMapFile(this.#sceneName))
                 {
@@ -107,14 +131,13 @@ export class Compiler {
                                         for await(const event of watcher)
                                         {
                                             this.#subject.notify(event)
-                                            
                                             const pathFileChanging = PathUtility.getPathFromElement(this.#sceneName,key,event.filename)
                                             switch(event.eventType)
                                             {
                                                 case 'change':
                                                     console.log(chalk.keyword('violet')(`the file ${event.filename} as been ${event.eventType} 🔮`))
-                                                    this.#compilerUtility.lazyComposerRemplacement(cFile,pathFileChanging);
-                                                    this.#compilerUtility.lazyRemplacement(lFile,pathFileChanging)
+                                                    this.#compilerUtility.lazyComposerRemplacement(this.#cFile,pathFileChanging);
+                                                    this.#compilerUtility.lazyRemplacement(this.#lFile,pathFileChanging)
                                                     this.#compilerUtility.addimportScript(pathFileChanging);
                                                 break;
                                                 case 'rename' : 
@@ -130,8 +153,8 @@ export class Compiler {
                                                         console.log(chalk.keyword('violet')(`the file ${event.filename} is now unwatch and delete 🔮`));
                                                     } else {
                                                         console.log(chalk.keyword('violet')(`the file ${event.filename} as been change 🔮`));
-                                                        this.#compilerUtility.lazyRemplacement(lFile,pathFileChanging);
-                                                        this.#compilerUtility.lazyComposerRemplacement(cFile,pathFileChanging)
+                                                        this.#compilerUtility.lazyRemplacement(this.#lFile,pathFileChanging);
+                                                        this.#compilerUtility.lazyComposerRemplacement(this.#cFile,pathFileChanging)
                                                         this.#compilerUtility.addimportScript(pathFileChanging)
         
                                                     }

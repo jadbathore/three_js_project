@@ -477,17 +477,6 @@ class Compile {
     }
     getExportScript(constArray) {
         let exportsScript = '';
-        for (const [key, value] of Object.entries(this.getConfigUtilty())) {
-            if (!key.includes(",")) {
-                exportsScript += `globalThis.${__classPrivateFieldGet(this, _Compile_compilerDir, "f")}.${key} = ${key}\n`;
-            }
-            else {
-                const alldeclaration = key.split(',');
-                alldeclaration.forEach((element) => {
-                    exportsScript += `globalThis.${__classPrivateFieldGet(this, _Compile_compilerDir, "f")}.${element} = ${element}\n`;
-                });
-            }
-        }
         for (let i = 0; i < constArray.length; i++) {
             exportsScript += `globalThis.${__classPrivateFieldGet(this, _Compile_compilerDir, "f")}.${constArray[i]} = ${constArray[i]}\n`;
         }
@@ -558,6 +547,8 @@ class Compile {
                     content += `\nimport {${(value?.keys)?.join(',') ?? key}} from '${value?.src ?? value}' \n`;
                     break;
                 case 'default':
+                    `\nimport * as ${key} from '${value?.src ?? value}' \n`;
+                    break;
                 default:
                     content += `\nimport ${key} from '${value?.src ?? value}' \n`;
                     break;

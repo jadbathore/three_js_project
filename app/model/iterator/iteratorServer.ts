@@ -23,16 +23,16 @@ export class IteratorServer implements Server.Iterator<AppRouter> {
         return this._collection.getItems()[this._index];
     }
 
+
+
     public addCompilerTuple(subject:LibFile.Subject): void {
         const item:AppRouter = this.current();
-        const oberserver:LibFile.Observer = new ObserverWatch (
-            item.pathServer
-        )
+        const oberserver:LibFile.Observer = new ObserverWatch(item.pathServer)
         const compiler:Compiler = new Compiler(oberserver,subject,item.scene)
         const proxy:LibFile.ProxyDirObserver = new proxyObserver(oberserver)
         this._collection.getItems()[this._index].CompilerTuple = [compiler,oberserver,proxy]
     }
-    
+
     public next(): void {
         this._index += this._reverse ? -1 : 1;
     }

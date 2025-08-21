@@ -7,7 +7,7 @@
   "scripts": {
     "test": "node ./app/test/js/test.js",
     "testTS": "node ./_types/app/test/ts/test.js",
-    "start": "node --watch app/server/server.js"
+    "start": "COMPILE_DIR=\"hello\" node --watch app/server/server.js"
   },
   "repository": {
     "type": "git",

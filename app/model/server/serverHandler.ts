@@ -11,6 +11,7 @@ import boxen from 'boxen'
 import compression from "compression";
 import { rollupWatchConfig } from "../CompilerSetUp/Compiler.js";
 import path from "path";
+import type http from "http"
 
 enum serverStatus {
     connect = "connect",
@@ -21,9 +22,11 @@ enum serverStatus {
 export class ServerHandler  {
     private static _socketHandlerInterface:Server.SocketHandler<AppRouter>;
     private static _iteratorAggregate: Server.Aggregator<AppRouter>;
-
+    private _server: http.Server<any, any>|https.Server = null;
+    private _app:express.Express;
     private _proxy: serverTarget|any;
     private _redisClient?:RedisClientType<any,any,any>
+
     private readonly _target:serverTarget = {
         route:""
     };
@@ -32,14 +35,16 @@ export class ServerHandler  {
     public constructor(
         data:AppRouter[],
         socketHandlerInterface:Server.SocketHandler<AppRouter>,
-        subject:LibFile.Subject
+        subject:LibFile.Subject,
+        app:Express
     )
     {
         ServerHandler._iteratorAggregate = new ServerRouteAggregate(data);
         ServerHandler._socketHandlerInterface = socketHandlerInterface;
         this.setRedisclient();
+        this._app = app
         this._proxy = new Proxy(this._target,this.serverProxyHandler());
-        this._subject = subject
+        this._subject = subject;
     }
 
     private  setRedisclient(){
@@ -65,25 +70,25 @@ export class ServerHandler  {
     {
         return {
             get:function(target:any, prop:keyof serverTarget):serverTarget|EventServer<serverStatus>
-                {
-                    if(prop){
-                        return target[prop]
-                    }
-                    return target
+            {
+                if(prop){
+                    return target[prop]
+                }
+                return target
             },
             set:function(target:any,prop:keyof serverTarget,newvalue:any,receiver:any)
             {
-                const routeKey = receiver[prop]?.route ?? receiver[prop];
+                const routeKey = receiver[prop]?.route ?? receiver[prop] ;
                 const routeType = (receiver[prop].route)? serverStatus.connect:serverStatus.firstConnection
-                if(routeKey  != newvalue){
+                if(routeKey  != newvalue || routeType == serverStatus.firstConnection){
                     ServerHandler.accessAppRouter(
                         receiver[prop]?.route ?? receiver[prop],
                         ServerHandler._socketHandlerInterface,
-                        serverStatus.disconnect,
+                        routeType,
                         newvalue
                     )
                 } else {
-                    if((target[prop]?.type) != serverStatus.firstConnection){
+                    if((target[prop]?.type)){
                         ServerHandler.accessAppRouter(
                             receiver[prop]?.route ?? receiver[prop],
                             ServerHandler._socketHandlerInterface,
@@ -119,6 +124,12 @@ export class ServerHandler  {
     ):void
     {
         switch(serverEvent){
+            case serverStatus.firstConnection:
+                ServerHandler.handleSocketType(
+                    socket.handleFirstConnection,
+                    ServerHandler._iteratorAggregate.getItem(targetNew)
+                )
+            break;
             case serverStatus.connect:
                 ServerHandler.handleSocketType(
                     socket.handleConnection,
@@ -135,7 +146,6 @@ export class ServerHandler  {
                     ServerHandler._iteratorAggregate.getItem(targetNew)
                 )
             break;
-            case serverStatus.firstConnection:break;
             default:throw new Error(`unknow type:"${serverEvent}"`)
         }
     }
@@ -147,7 +157,7 @@ export class ServerHandler  {
         if(item?.CompilerTuple ?? false){
             callback(item)
         }
-    }
+    } 
 
 
     private createRoute(app:Express){
@@ -163,17 +173,18 @@ export class ServerHandler  {
                 app[routeObj.method](routeObj.serverLogic);
             }
         } while (iterator.valid()) 
+        
     }
 
     private serverWatcher(app:Express){
-        // app.use((req,res,next)=>{
-        //     if(req.path != '/.handler'){
-        //         this._proxy.route = req.path;
-        //         console.log(chalk.blue(`${req.method} on "${req.path}" at ${new Date(Date.now()).toString()}`))
-        //     }
-        //     next();
-        // })
-
+        this._proxy.route = "/";
+        app.use((req,res,next)=>{
+            if(req.path != '/.handler'){
+                this._proxy.route = req.path;
+                console.log(chalk.blue(`${req.method} on "${req.path}" at ${new Date(Date.now()).toString()}`))
+            }
+            next();
+        })
         app.use('/.handler',async(req,res,next)=>{
             const file = await this.getFile(this._proxy.route.route);
             res.send(file).status(200)
@@ -184,30 +195,32 @@ export class ServerHandler  {
     private async setFile(key:string){
         const file = fs.readFileSync(PathUtility.dist);
         await this._redisClient.set(key,file)
+        return file.toString()
     }
 
     private async getFile(key:string):Promise<string>{
-        return await this._redisClient?.get(key) ?? fs.readFileSync(PathUtility.dist,'utf-8')
+        return await this._redisClient?.get(key) ?? await this.setFile(key);
     }
 
-    public runServer(app:Express) { 
-        rollupWatchConfig()
-        app.use(compression());
-        express.static.mime.define({ 'application/wasm': ['wasm'] });
 
-        app.enable('etag');
-        app.set('view engine','ejs')
-        app.set('views',PathUtility.getViewerFile())
-        app.use(express.static('app/public',optionServer))
-        //clé ssl sout forme de buffer si la clé existe sinon elle est null
+    public runServer(app:Express) { 
+        
+        this._app.use(compression());
+        express.static.mime.define({ 'application/wasm': ['wasm'] });
+        this._app.enable('etag');
+        this._app.set('view engine','ejs')
+        this._app.set('views',PathUtility.getViewerFile())
+        this._app.use(express.static('app/public',optionServer))
+        const port = process.env.EXPRESS_PORT || 3001;
         const key:Buffer|null = (fs.existsSync(PathUtility.keySLL))?fs.readFileSync(PathUtility.keySLL):null;
         const cert:Buffer|null = (fs.existsSync(PathUtility.certSLL))?fs.readFileSync(PathUtility.certSLL):null;
-        const server = (key && cert)? https.createServer({key: key, cert: cert }, app):app;
-        const port = process.env.EXPRESS_PORT || 3001;
-        this.serverWatcher(app);
-        this.createRoute(app);
-        server.listen(port,()=>{
-            const serverType = (server instanceof https.Server)?"https":"http";
+        const server:express.Express|https.Server<any,any> = (key && cert)?  https.createServer({key: key, cert: cert }, this._app):this._app;
+        this.createRoute(this._app);
+        this.serverWatcher(this._app);
+        rollupWatchConfig()
+
+        this._server = server.listen(port,()=>{
+            const serverType = (server instanceof https.Server)? "https":"http";
             const url = `${serverType}://localhost:${port}/`;
             console.log(chalk.greenBright(
                 boxen(`Server running on:\u001B]8;;${url}\u0007${port}\u001B]8;;\u0007`,
@@ -215,6 +228,13 @@ export class ServerHandler  {
                     padding: 1,
                 })
             ))
+        })
+    }
+
+    public shutDown(path:string){
+        this._server.close(()=>{
+            fs.copyFileSync("app/public/dist/compling.js",path)
+            process.exit(1);
         })
     }
 }

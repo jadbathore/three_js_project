@@ -3,7 +3,6 @@ export default class PathUtility {
     static getcompilerFile(): string;
     static getViewerFile(): string;
     static getlinkFile(): string;
-    static getRollupFile(): string;
     static initElement(element?: string): void;
     static getMapFile(directory?: string): Map<any, any>;
     static getarrayFile(directory?: string): string[];

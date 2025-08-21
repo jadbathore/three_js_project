@@ -86,12 +86,10 @@ export default class Compile {
      */
     constructor(compilerDir)
     {
-        
         let fileDirArray = PathUtility.getarrayFile(compilerDir);
         this.fileDirArray = this.setMapFile(fileDirArray);
         this.mapAsset = PathUtility.getMapAsset();
-        this.#compilerDir = compilerDir
-
+        this.#compilerDir = compilerDir;
     }
 
 
@@ -162,6 +160,7 @@ export default class Compile {
                 break;
             }
         }
+        // console.log(organisedArray)
         return organisedArray;
     }   
 
@@ -864,18 +863,18 @@ export default class Compile {
     getExportScript(constArray)
     {
         let exportsScript = ''
-        for(const [key,value] of Object.entries(this.getConfigUtilty()))
-        {
-            if(!key.includes(","))
-            {
-                exportsScript += `globalThis.${this.#compilerDir}.${key} = ${key}\n`
-            } else {
-                const alldeclaration = key.split(',')
-                alldeclaration.forEach((element)=>{
-                    exportsScript += `globalThis.${this.#compilerDir}.${element} = ${element}\n`
-                })
-            }
-        }
+        // for(const [key,value] of Object.entries(this.getConfigUtilty()))
+        // {
+        //     if(!key.includes(","))
+        //     {
+        //         exportsScript += `globalThis.${this.#compilerDir}.${key} = ${key}\n`
+        //     } else {
+        //         const alldeclaration = key.split(',')
+        //         alldeclaration.forEach((element)=>{
+        //             exportsScript += `globalThis.${this.#compilerDir}.${element} = ${element}\n`
+        //         })
+        //     }
+        // }
         for(let i = 0; i < constArray.length; i++)
         {
             exportsScript+=`globalThis.${this.#compilerDir}.${constArray[i]} = ${constArray[i]}\n`
@@ -1020,7 +1019,10 @@ export default class Compile {
                     content += `\nimport {${(value?.keys)?.join(',') ?? key}} from '${value?.src ?? value}' \n`
                 break;
                 case 'default' : 
-                default: content += `\nimport ${key} from '${value?.src ?? value}' \n`;
+                    `\nimport * as ${key} from '${value?.src ?? value}' \n`;
+                break;
+                default:
+                    content += `\nimport ${key} from '${value?.src ?? value}' \n`;
                 break;
             }
         }

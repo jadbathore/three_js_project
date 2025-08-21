@@ -54,10 +54,6 @@ export default class PathUtility {
         return this.linkFile;
     }
 
-    static getRollupFile()
-    {
-        return this.rollupConfig;
-    }
 
     /**
      * 

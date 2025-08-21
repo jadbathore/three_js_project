@@ -3,11 +3,13 @@ import { type Express } from "express";
 export declare class ServerHandler {
     private static _socketHandlerInterface;
     private static _iteratorAggregate;
+    private _server;
+    private _app;
     private _proxy;
     private _redisClient?;
     private readonly _target;
     private _subject;
-    constructor(data: AppRouter[], socketHandlerInterface: Server.SocketHandler<AppRouter>, subject: LibFile.Subject);
+    constructor(data: AppRouter[], socketHandlerInterface: Server.SocketHandler<AppRouter>, subject: LibFile.Subject, app: Express);
     private setRedisclient;
     private serverProxyHandler;
     private static accessAppRouter;
@@ -17,4 +19,5 @@ export declare class ServerHandler {
     private setFile;
     private getFile;
     runServer(app: Express): void;
+    shutDown(path: string): void;
 }

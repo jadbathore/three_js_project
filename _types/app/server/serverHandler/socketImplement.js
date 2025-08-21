@@ -5,6 +5,9 @@ export class Socket {
             console.log(event, path);
         });
     }
+    handleFirstConnection({ CompilerTuple: [compiler, oberserver] }) {
+        compiler.repopulate();
+    }
     handleDeconnection({ CompilerTuple: [compiler, oberserver, proxy] }) {
         compiler.stopCompiler();
         compiler.destructCompiler();

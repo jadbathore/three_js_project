@@ -28,9 +28,6 @@ class PathUtility {
     static getlinkFile() {
         return this.linkFile;
     }
-    static getRollupFile() {
-        return this.rollupConfig;
-    }
     static initElement(element) {
         __classPrivateFieldSet(this, _a, element, "f", _PathUtility_element);
     }

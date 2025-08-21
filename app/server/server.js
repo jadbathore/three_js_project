@@ -4,8 +4,15 @@ import { router } from '../../_types/app/route/routeur.js';
 import { Socket } from '../../_types/app/server/serverHandler/socketImplement.js';
 import express from 'express'
 
+const app = express()
+
 const socket = new Socket();
 const subject = new CompilerWatchSubject()
-const server = new ServerHandler(router,socket,subject)
-const app = express()
-server.runServer(app)
+const server = new ServerHandler(router,socket,subject,app)
+
+server.runServer()
+
+if(process.env.COMPILE_DIR){
+    process.on('SIGINT', () => server.shutDown(process.env.COMPILE_DIR));
+    process.on('SIGTERM', () => server.shutDown()); 
+}

@@ -128,6 +128,7 @@ declare namespace Server {
         CompilerTuple?: [COMPILER,LibFile.Observer,LibFile.ProxyDirObserver];
     }
     interface SocketHandler<T extends route<any,any,any,any,any>> {
+        handleFirstConnection({CompilerTuple:[compiler,oberserver]}:T):void;
         handleConnection({CompilerTuple:[compiler,oberserver]}:T):void;
         handleDeconnection({CompilerTuple:[compiler,oberserver]}:T):void;
     }
