@@ -49,6 +49,7 @@ export class Compiler {
         __classPrivateFieldSet(this, _Compiler_sceneName, sceneName, "f");
         __classPrivateFieldSet(this, _Compiler_cFile, PathUtility.getcompilerFile(), "f");
         __classPrivateFieldSet(this, _Compiler_lFile, PathUtility.getlinkFile(), "f");
+        __classPrivateFieldGet(this, _Compiler_subject, "f").attach(__classPrivateFieldGet(this, _Compiler_observer, "f"));
     }
     get sceneName() {
         return __classPrivateFieldGet(this, _Compiler_sceneName, "f");
@@ -63,13 +64,14 @@ export class Compiler {
         __classPrivateFieldGet(this, _Compiler_compilerUtility, "f").repopulatelinkFile(__classPrivateFieldGet(this, _Compiler_lFile, "f"));
     }
     compile() {
+        console.log("compilation has started for the request " + __classPrivateFieldGet(this, _Compiler_observer, "f").path);
         if (!__classPrivateFieldGet(this, _Compiler_abortControllerList, "f")) {
-            __classPrivateFieldGet(this, _Compiler_subject, "f").attach(__classPrivateFieldGet(this, _Compiler_observer, "f"));
             if (!fs.existsSync(PathUtility.versionDIR)) {
                 fs.promises.mkdir(PathUtility.versionDIR, { recursive: true })
                     .then((path) => console.log(chalk.green('Directory created successfully', path)))
                     .catch((err) => console.error('Error creating directory:', err));
             }
+            __classPrivateFieldGet(this, _Compiler_subject, "f").attach(__classPrivateFieldGet(this, _Compiler_observer, "f"));
             __classPrivateFieldGet(this, _Compiler_compilerUtility, "f").repopulateComposer(__classPrivateFieldGet(this, _Compiler_cFile, "f"));
             __classPrivateFieldGet(this, _Compiler_compilerUtility, "f").repopulatelinkFile(__classPrivateFieldGet(this, _Compiler_lFile, "f"));
             __classPrivateFieldSet(this, _Compiler_abortControllerList, [], "f");
@@ -129,12 +131,13 @@ export class Compiler {
             PathUtility.initElement();
         }
     }
-    stopCompiler() {
-        __classPrivateFieldGet(this, _Compiler_abortControllerList, "f").forEach((abortController) => {
-            abortController.abort();
-        });
-        console.log(chalk.bgBlue(`compiler on path "${__classPrivateFieldGet(this, _Compiler_observer, "f").path}" is stop`));
-        __classPrivateFieldSet(this, _Compiler_abortControllerList, null, "f");
+    stopCompiler(repolulate) {
+        if (__classPrivateFieldGet(this, _Compiler_abortControllerList, "f")) {
+            __classPrivateFieldGet(this, _Compiler_abortControllerList, "f").forEach((abortController) => {
+                abortController.abort();
+            });
+            console.log(chalk.bgBlue(`compiler on path "${__classPrivateFieldGet(this, _Compiler_observer, "f").path}" is stop`));
+        }
     }
     destructCompiler() {
         __classPrivateFieldGet(this, _Compiler_subject, "f").detach(__classPrivateFieldGet(this, _Compiler_observer, "f"));

@@ -6,7 +6,6 @@ export class Socket implements Server.SocketHandler<AppRouter> {
     public handleConnection({CompilerTuple:[compiler,oberserver,proxy]}:AppRouter):void
     {
         compiler.compile();
-
         proxy.ProxyBehavior((event,path)=>{
             console.log(event,path)
         })
@@ -14,6 +13,7 @@ export class Socket implements Server.SocketHandler<AppRouter> {
 
     public handleFirstConnection({ CompilerTuple: [compiler, oberserver] }: AppRouter): void {
         compiler.repopulate();
+        // compiler.compile()
     }
 
 

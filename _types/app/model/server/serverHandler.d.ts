@@ -16,6 +16,7 @@ export declare class ServerHandler {
     private static handleSocketType;
     private createRoute;
     private serverWatcher;
+    private initWatcher;
     private setFile;
     private getFile;
     runServer(app: Express): void;

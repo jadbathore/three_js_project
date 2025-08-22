@@ -42,7 +42,8 @@ export class ServerHandler {
                     .connect();
             }
             catch (e) {
-                console.log(chalk.red('redis client not connected err :', e));
+                (e instanceof AggregateError);
+                console.log((e instanceof AggregateError) ? chalk.yellow('redis is not connected you could use docker to have it !') : chalk.red('redis client err :', e));
                 this._redisClient = null;
             }
         })();
@@ -57,18 +58,29 @@ export class ServerHandler {
             },
             set: function (target, prop, newvalue, receiver) {
                 const routeKey = receiver[prop]?.route ?? receiver[prop];
-                const routeType = (receiver[prop].route) ? serverStatus.connect : serverStatus.firstConnection;
-                if (routeKey != newvalue || routeType == serverStatus.firstConnection) {
-                    ServerHandler.accessAppRouter(receiver[prop]?.route ?? receiver[prop], ServerHandler._socketHandlerInterface, routeType, newvalue);
-                }
-                else {
-                    if ((target[prop]?.type)) {
-                        ServerHandler.accessAppRouter(receiver[prop]?.route ?? receiver[prop], ServerHandler._socketHandlerInterface, routeType);
+                let type = function () {
+                    let routeType;
+                    switch (true) {
+                        case (!receiver[prop].route):
+                            routeType = serverStatus.firstConnection;
+                            ServerHandler.accessAppRouter(newvalue, ServerHandler._socketHandlerInterface, serverStatus.firstConnection);
+                            break;
+                        case (routeKey != newvalue):
+                            routeType = serverStatus.disconnect;
+                            ServerHandler.accessAppRouter(receiver[prop]?.route ?? receiver[prop], ServerHandler._socketHandlerInterface, serverStatus.disconnect, newvalue);
+                            break;
+                        default:
+                            routeType = serverStatus.connect;
+                            if (receiver[prop]?.type == serverStatus.disconnect) {
+                                console.log("reconnect");
+                                ServerHandler.accessAppRouter(receiver[prop]?.route ?? receiver[prop], ServerHandler._socketHandlerInterface, serverStatus.connect);
+                            }
                     }
-                }
+                    return routeType;
+                };
                 target[prop] = {
                     route: newvalue,
-                    type: routeType
+                    type: type()
                 };
                 return true;
             }
@@ -77,7 +89,7 @@ export class ServerHandler {
     static accessAppRouter(targetOld, socket, serverEvent, targetNew) {
         switch (serverEvent) {
             case serverStatus.firstConnection:
-                ServerHandler.handleSocketType(socket.handleFirstConnection, ServerHandler._iteratorAggregate.getItem(targetNew));
+                ServerHandler.handleSocketType(socket.handleFirstConnection, ServerHandler._iteratorAggregate.getItem(targetOld));
                 break;
             case serverStatus.connect:
                 ServerHandler.handleSocketType(socket.handleConnection, ServerHandler._iteratorAggregate.getItem(targetOld));
@@ -99,9 +111,6 @@ export class ServerHandler {
         do {
             const routeObj = iterator.current();
             if (routeObj.method != RequestMethod.middleWare) {
-                if (fs.existsSync(PathUtility.pathofElementWithPoint(routeObj.scene))) {
-                    iterator.addCompilerTuple(this._subject);
-                }
                 app[routeObj.method](routeObj.pathServer, routeObj.serverLogic);
             }
             else {
@@ -110,6 +119,20 @@ export class ServerHandler {
         } while (iterator.valid());
     }
     serverWatcher(app) {
+        app.use('/.handler', async (req, res, next) => {
+            const file = await this.getFile(this._proxy.route.route);
+            res.send(file).status(200);
+            next();
+        });
+    }
+    initWatcher(app) {
+        const iterator = ServerHandler._iteratorAggregate.getIterator();
+        do {
+            const routeObj = iterator.current();
+            if (fs.existsSync(PathUtility.pathofElementWithPoint(routeObj.scene))) {
+                iterator.addCompilerTuple(this._subject);
+            }
+        } while (iterator.valid());
         this._proxy.route = "/";
         app.use((req, res, next) => {
             if (req.path != '/.handler') {
@@ -118,19 +141,20 @@ export class ServerHandler {
             }
             next();
         });
-        app.use('/.handler', async (req, res, next) => {
-            const file = await this.getFile(this._proxy.route.route);
-            res.send(file).status(200);
-            next();
-        });
     }
     async setFile(key) {
+        console.log("get file" + key);
         const file = fs.readFileSync(PathUtility.dist);
         await this._redisClient.set(key, file);
         return file.toString();
     }
     async getFile(key) {
-        return await this._redisClient?.get(key) ?? await this.setFile(key);
+        if (this._redisClient) {
+            return await this._redisClient?.get(key) ?? await this.setFile(key);
+        }
+        else {
+            return fs.promises.readFile(PathUtility.dist, 'utf-8');
+        }
     }
     runServer(app) {
         this._app.use(compression());
@@ -143,6 +167,7 @@ export class ServerHandler {
         const key = (fs.existsSync(PathUtility.keySLL)) ? fs.readFileSync(PathUtility.keySLL) : null;
         const cert = (fs.existsSync(PathUtility.certSLL)) ? fs.readFileSync(PathUtility.certSLL) : null;
         const server = (key && cert) ? https.createServer({ key: key, cert: cert }, this._app) : this._app;
+        this.initWatcher(this._app);
         this.createRoute(this._app);
         this.serverWatcher(this._app);
         rollupWatchConfig();

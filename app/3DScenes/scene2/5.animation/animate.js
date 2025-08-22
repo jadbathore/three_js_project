@@ -16,8 +16,9 @@ requestAnimationFrame(()=>{
     renderer.render(scene,camera)
     // moonMesh.rotateY(0.02)
     // moonRotation.rotateY(0.00514)
-    this.file_animate_js()
+    this.file_animate()
 })
+
 
 
 

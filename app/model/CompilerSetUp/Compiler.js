@@ -76,9 +76,10 @@ export class Compiler {
         this.#subject = subject;
         console.log(chalk.bgBlue(`compiler created for request :"${this.#observer.path}"`))
         this.#compilerUtility = new Compile(sceneName);
-        this.#sceneName = sceneName
-        this.#cFile = PathUtility.getcompilerFile()
-        this.#lFile = PathUtility.getlinkFile() 
+        this.#sceneName = sceneName;
+        this.#cFile = PathUtility.getcompilerFile();
+        this.#lFile = PathUtility.getlinkFile(); 
+        this.#subject.attach(this.#observer);
     }
 
     get sceneName(){
@@ -86,32 +87,26 @@ export class Compiler {
     }
 
     repopulate(){
-        // this.#subject.attach(this.#observer);
         if(!fs.existsSync(PathUtility.versionDIR)) {
             fs.promises.mkdir(PathUtility.versionDIR, { recursive: true })
             .then((path) => console.log(chalk.green('Directory created successfully',path)))
             .catch((err) => console.error('Error creating directory:', err));
         }
-           this.#compilerUtility.repopulateComposer(this.#cFile);
-            this.#compilerUtility.repopulatelinkFile(this.#lFile);
-        // (async()=>{
-        //     this.#compilerUtility.repopulateComposer(this.#cFile)
-        //     this.#compilerUtility.repopulatelinkFile(this.#lFile)
-        // })();
-  
+        this.#compilerUtility.repopulateComposer(this.#cFile);
+        this.#compilerUtility.repopulatelinkFile(this.#lFile);
     }
 
     compile()
     {
+        console.log("compilation has started for the request " + this.#observer.path)
         if(!this.#abortControllerList) 
         {
-            this.#subject.attach(this.#observer);
             if(!fs.existsSync(PathUtility.versionDIR)) {
                 fs.promises.mkdir(PathUtility.versionDIR, { recursive: true })
                 .then((path) => console.log(chalk.green('Directory created successfully',path)))
                 .catch((err) => console.error('Error creating directory:', err));
             }
-
+            this.#subject.attach(this.#observer);
             // const cFile = PathUtility.getcompilerFile()
             // const lFile = PathUtility.getlinkFile() 
             this.#compilerUtility.repopulateComposer(this.#cFile)
@@ -182,12 +177,19 @@ export class Compiler {
             }
         }
         
-        stopCompiler(){
-            this.#abortControllerList.forEach((abortController)=>{
-                abortController.abort()
-            })
-            console.log(chalk.bgBlue(`compiler on path "${this.#observer.path}" is stop`));
-            this.#abortControllerList = null;
+        /**
+         * 
+         * @param {boolean} [repolulate]
+         */
+        stopCompiler(repolulate){
+            if(this.#abortControllerList){
+                this.#abortControllerList.forEach((abortController)=>{
+                    abortController.abort()
+                })
+                console.log(chalk.bgBlue(`compiler on path "${this.#observer.path}" is stop`));
+            } 
+            // this.repopulate()
+            // this.#abortControllerList = null;
         }
 
         destructCompiler(){

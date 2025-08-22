@@ -145,22 +145,24 @@ export default class Compile {
     {
         let ii = 1;
         const organisedArray = [];
-        const iterator = fileArray[Symbol.iterator]();
-        for (const value of iterator) {
-            switch(path?.basename(value))
+        const iterator = fileArray.map((value)=>{
+            let base = path?.basename(value);
+            return [base,value];
+        })[Symbol.iterator]();
+        for ( let [base,full]  of iterator ) {
+            switch(true)
             {
-                case'2.RendererSetting.js':organisedArray[0] = value;break;
-                case'3.cameraSetting.js':organisedArray[1] = value;break;
-                case'4.loader.js':organisedArray[2] = value;break;
-                case'animate.js': organisedArray[fileArray.length - 2] = value;break;
-                case'resizeSetting.js':organisedArray[fileArray.length - 1] = value;break;
+                case /(renderersetting)/gi.test(base):organisedArray[0] = full;break;
+                case /(camerasetting)/gi.test(base):organisedArray[1] = full;break;
+                case /(loader)/gi.test(base):organisedArray[2] = full;break;
+                case /(animate)/gi.test(base):organisedArray[fileArray.length - 2] = full;break;
+                case /(resizeSetting)/gi.test(base):organisedArray[fileArray.length - 1] = full;break;
                 case undefined: break;
-                default: organisedArray[2+ii] = value;
+                default: organisedArray[2+ii] = full;
                 ii++;
                 break;
             }
         }
-        // console.log(organisedArray)
         return organisedArray;
     }   
 
@@ -490,8 +492,8 @@ export default class Compile {
     formatName(pathfile,prefix,suffix){
         if (fs.lstatSync(pathfile).isFile())
         {
-            pathfile = (path.basename(pathfile).replace(".","_"));
-            return (prefix??'') + pathfile.split('.js').join('') + (suffix??'');
+            pathfile = path.basename(pathfile).split(".").join("").replace(/(c?js)/g,"");
+            return (prefix??'') + pathfile.replace(/[0-9]+/g,"") + (suffix??'');
         } else {
             throw new Error(`${pathfile} n'est pas un fichier`);
         }
@@ -750,7 +752,7 @@ export default class Compile {
             } else {
                 fs.appendFileSync(file,this.removeAllBlank(data))
             }
-        (composerContext)?console.log(chalk.green(`fichier compiler mise à jour ${new Date(Date.now()).toString()}`)):'';
+        (composerContext)?console.log(chalk.green(`fichier compiler mise à jour ${new Date(Date.now()).toString()} for scene : "${this.#compilerDir}"`)):'';
         })
         .catch((err)=>{
             console.log(`${err}\n${new Date(Date.now()).toString()}`)
@@ -786,7 +788,7 @@ export default class Compile {
                     } else {
                         fs.appendFileSync(file,data)
                     }
-                    (composerContext)?console.log(chalk.green(`fichier linkfile mise à jour ${new Date(Date.now()).toString()}`)):'';
+                    (composerContext)?console.log(chalk.green(`fichier linkfile mise à jour ${new Date(Date.now()).toString()} for scene : "${this.#compilerDir}"`)):'';
             })
             // .catch((err)=>{
 
@@ -863,21 +865,21 @@ export default class Compile {
     getExportScript(constArray)
     {
         let exportsScript = ''
-        // for(const [key,value] of Object.entries(this.getConfigUtilty()))
-        // {
-        //     if(!key.includes(","))
-        //     {
-        //         exportsScript += `globalThis.${this.#compilerDir}.${key} = ${key}\n`
-        //     } else {
-        //         const alldeclaration = key.split(',')
-        //         alldeclaration.forEach((element)=>{
-        //             exportsScript += `globalThis.${this.#compilerDir}.${element} = ${element}\n`
-        //         })
-        //     }
-        // }
+        for(const [key,value] of Object.entries(this.getConfigUtilty()))
+        {
+            if(!key.includes(","))
+            {
+                exportsScript += `globalThis.${key} = ${key}\n`
+            } else {
+                const alldeclaration = key.split(',')
+                alldeclaration.forEach((element)=>{
+                    exportsScript += `globalThis.${this.#compilerDir}.${element} = ${element}\n`
+                })
+            }
+        }
         for(let i = 0; i < constArray.length; i++)
         {
-            exportsScript+=`globalThis.${this.#compilerDir}.${constArray[i]} = ${constArray[i]}\n`
+            exportsScript+=`globalThis.${constArray[i]} = ${constArray[i]}\n`
         }
         return exportsScript;
     }
@@ -974,7 +976,7 @@ export default class Compile {
     * @returns array
     */
     getConfigUtilty(){
-        const configFile = PathUtility.getPathFromElement(this.#compilerDir,'compile_param.json')  
+        const configFile = PathUtility.getPathFromElement(this.#compilerDir,'compile_param.json');
         const contentConfig = fs.readFileSync(configFile,'utf-8')
         const json = JSON.parse(contentConfig)
         return json.dependencies;
@@ -1019,7 +1021,7 @@ export default class Compile {
                     content += `\nimport {${(value?.keys)?.join(',') ?? key}} from '${value?.src ?? value}' \n`
                 break;
                 case 'default' : 
-                    `\nimport * as ${key} from '${value?.src ?? value}' \n`;
+                    content += `\nimport * as ${key} from '${value?.src ?? value}' \n`;
                 break;
                 default:
                     content += `\nimport ${key} from '${value?.src ?? value}' \n`;

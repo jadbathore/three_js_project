@@ -1,17 +1,16 @@
 const { THREE,
-	OrbitControls, glb, gltf,
-	hdr, img, renderer,
-	scene, camera, orbit,
-	loader, earthGroup, geo,
-	earthMesh, lightMesh, couldsMat,
-	cloudMesh, __moon__, moonRotation,
-	moonMesh, fresnel, glowmesh,
-	star, sunLight, getFresnelMat,
-	getStarfield, } = require('../../../public/versionning/linkfile.js')
+	glb, gltf, img,
+	camera, orbit, loader,
+	earthGroup, geo, earthMesh,
+	lightMesh, couldsMat, cloudMesh,
+	fresnel, glowmesh, star,
+	sunLight, getFresnelMat, getStarfield,
+	} = require('../../public/versionning/linkFile.js')
 
 const earthGroup = new THREE.Group();
 earthGroup.rotation.z = -23.4 * Math.PI / 180
 scene.add(earthGroup);
+
 
 const geo = new THREE.IcosahedronGeometry(1,12);
 
@@ -19,7 +18,7 @@ const earthMesh = new THREE.Mesh(
     geo,
     new THREE.MeshPhongMaterial(
         {
-            bumpMap:loader.load(img.marsbump1k),
+            bumpMap:loader.load(img.github_repository),
             // specularMap:loader.load(img.marsmap1k),
             map:loader.load(img.mars_1k_color),
             bumpScale:7,
@@ -35,7 +34,7 @@ earthMesh.receiveShadow = true
 const lightMesh = new THREE.Mesh(
     geo,
     new THREE.MeshBasicMaterial({
-        map:loader.load(img.marsmap1k),
+        map:loader.load(img.github_repository),
         transparent:true,
         opacity:0.2,
         blendAlpha:20,

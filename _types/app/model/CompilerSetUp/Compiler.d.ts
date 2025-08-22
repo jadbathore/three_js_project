@@ -4,7 +4,7 @@ export class Compiler {
     get sceneName(): string;
     repopulate(): void;
     compile(): void;
-    stopCompiler(): void;
+    stopCompiler(repolulate?: boolean): void;
     destructCompiler(): void;
     #private;
 }
