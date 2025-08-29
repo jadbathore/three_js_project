@@ -1,11 +1,4 @@
-const { THREE,
-	glb, gltf, img,
-	camera, orbit, loader,
-	earthGroup, geo, earthMesh,
-	lightMesh, couldsMat, cloudMesh,
-	fresnel, glowmesh, star,
-	sunLight, getFresnelMat, getStarfield,
-	} = require('../../public/versionning/linkFile.js')
+
 
 const earthGroup = new THREE.Group();
 earthGroup.rotation.z = -23.4 * Math.PI / 180
@@ -20,7 +13,7 @@ const earthMesh = new THREE.Mesh(
         {
             bumpMap:loader.load(img.github_repository),
             // specularMap:loader.load(img.marsmap1k),
-            map:loader.load(img.mars_1k_color),
+            map:loader.load(img.github_repository),
             bumpScale:7,
             // shininess:13.0,
             // specular: 0xFFFFFF,
@@ -46,7 +39,7 @@ const lightMesh = new THREE.Mesh(
 earthGroup.add(lightMesh);
 
 const couldsMat = new THREE.MeshBasicMaterial({
-    map:loader.load(img.fair_clouds_8k),
+    map:loader.load(img.github_repository),
     transparent:true,
     opacity:0.1,
     blending: THREE.AdditiveBlending,

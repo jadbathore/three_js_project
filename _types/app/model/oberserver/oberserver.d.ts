@@ -20,7 +20,7 @@ export declare class ObserverWatch implements LibFile.Observer {
     get firstLayerproxyHandler(): ProxyHandler<EventFile[]>;
     get secondLayerproxyHandler(): ProxyHandler<EventProxy>;
 }
-export declare function proxyObserver(observer: LibFile.Observer, callBack?: (event: EventFile, path: String, selfProxy: EventFile[]) => void): EventFile[];
+export declare function proxyObserver(observer: LibFile.Observer, callBack?: (event: EventFile, path: string, selfProxy: EventFile[]) => void): EventFile[];
 export declare function proxyRevokeCall(proxy: EventFile[], observer: LibFile.Observer): {
     proxy: EventProxy;
     revoke: () => void;

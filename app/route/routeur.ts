@@ -2,6 +2,8 @@ import e from 'express';
 import PathUtility from '../model/CompilerSetUp/Utility/pathUtility.js';
 import { Compiler } from '../model/CompilerSetUp/Compiler.js';
 
+
+
 export enum RequestMethod {
     get = "get",
     post = 'post',
@@ -22,12 +24,14 @@ export const router:AppRouter[] = [
         pathServer:"/",
         scene:"scene1",
         method: RequestMethod.get,
-        serverLogic:(req,res)=>{
+        serverLogic:(req,res,next)=>{
             res.render('index',
             {
                 title:'scene 1'
-            })
+            });
+            // res.end()
         }
+        
     },
     {
         pathServer:"/hello",

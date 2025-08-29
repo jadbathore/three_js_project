@@ -21,7 +21,7 @@ class Compile {
         _Compile_commentRemover.set(this, /((\/\/).+|(\/[*](.*\n)+[*]\/))/g);
         _Compile_matchregexConstantDelcaration.set(this, /(?<=\b(const(\s)+?)\b)(([A-z]|[A-z0-9]+)*)/g);
         _Compile_matchparamDeclaration.set(this, /(?<=(\bthis[.]\b))((([A-z])|[A-z]\w+)*)(?=((\s?)+?)[=])/g);
-        _Compile_regeximportStatementCommunjs.set(this, /(\bconst\b)(([\s]+)?)(\{([\s\S]?)+\})([\s]+)[=]([\s]+)(\brequire\b)\(([\'].*[\'])\)/g);
+        _Compile_regeximportStatementCommunjs.set(this, /(((\bconst\b)|(\blet\b))((([\s]+)?)((\{([\s\S]?)+\})|.*)([\s]+)[=]([\s]+)|))?(\brequire\b)\(([\'\"].*[\'\"])\)(\.\w+)?\;?/g);
         _Compile_namespaceObjectRegex.set(this, /(\bconst\b)(\s?)+(((\_\_)([A-z]|[A-z]\w+)(\_\_)))(\s?)+(\=)(\s?)+(\{(\s?)+\})/g);
         _Compile_getfunctionName.set(this, /(?<=(\b(\t?)function\b((\s)+?)))(([A-z])|([A-z]\w+))(?=(((\s)?)+?)(\((\n*?)([^]*)(\n*?)\))((\n*)?)\{)/g);
         _Compile_regexDeclaration.set(this, /(?:(?=(?<=import.{.))[A-z,]*|(?!import.{.)((?<=import.*.as.)[A-z]\w+))/g);
@@ -295,7 +295,7 @@ class Compile {
         return new RegExp(`(?<!((\\_\\_)[A-z]\\w+(\\_\\_\\.)))(((const)((\\s?)+))(\\b${word}\\b)|(\\b${word}\\b))`, 'g');
     }
     cleanerCommunJsDeclaration(text) {
-        if (text.match(__classPrivateFieldGet(this, _Compile_regeximportStatementCommunjs, "f")) !== null) {
+        if (__classPrivateFieldGet(this, _Compile_regeximportStatementCommunjs, "f").test(text)) {
             text = text.replace(__classPrivateFieldGet(this, _Compile_regeximportStatementCommunjs, "f"), '');
         }
         return text;
@@ -434,7 +434,7 @@ class Compile {
         });
     }
     async repopulatelinkFile(file, composerContext = true) {
-        await this.compilerContentPromise(this.fileDirArray.slice(1, this.fileDirArray.length - 1), 'linkfile')
+        await this.compilerContentPromise(this.fileDirArray, 'linkfile')
             .then((data) => {
             this.setAllConstant(data);
             if (fs.existsSync(file)) {

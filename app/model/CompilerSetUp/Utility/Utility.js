@@ -35,10 +35,10 @@ export default class Compile {
     #matchparamDeclaration = /(?<=(\bthis[.]\b))((([A-z])|[A-z]\w+)*)(?=((\s?)+?)[=])/g
     /**
     *```
-    /(\bconst\b)(([\s]+)?)(\{([\s\S]?)+\})([\s]+)[=]([\s]+)(\brequire\b)\(([\'].*[\'])\)/g;
+    /(((\bconst\b)|(\blet\b))((([\s]+)?)((\{([\s\S]?)+\})|.*)([\s]+)[=]([\s]+)|))?(\brequire\b)\(([\'\"].*[\'\"])\)(\.\w+)?\;?/g;
     *```
     */
-    #regeximportStatementCommunjs = /(\bconst\b)(([\s]+)?)(\{([\s\S]?)+\})([\s]+)[=]([\s]+)(\brequire\b)\(([\'].*[\'])\)/g;
+    #regeximportStatementCommunjs = /(((\bconst\b)|(\blet\b))((([\s]+)?)((\{([\s\S]?)+\})|.*)([\s]+)[=]([\s]+)|))?(\brequire\b)\(([\'\"].*[\'\"])\)(\.\w+)?\;?/g;
     /**
     *```
     /(\bconst\b)(\s?)+(((\_\_)([A-z]|[A-z]\w+)(\_\_)))(\s?)+(\=)(\s?)+(\{(\s?)+\})/g;
@@ -527,7 +527,7 @@ export default class Compile {
      * @returns {string}
      */
     cleanerCommunJsDeclaration(text){
-        if(text.match(this.#regeximportStatementCommunjs) !== null)
+        if(this.#regeximportStatementCommunjs.test(text))
         {
             text = text.replace(this.#regeximportStatementCommunjs,'')
         }
@@ -773,7 +773,7 @@ export default class Compile {
      */
     async repopulatelinkFile(file,composerContext=true)
     {
-            await this.compilerContentPromise(this.fileDirArray.slice(1,this.fileDirArray.length-1),'linkfile')
+            await this.compilerContentPromise(this.fileDirArray,'linkfile')
             .then((data)=>{
                 this.setAllConstant(data)
                 if(fs.existsSync(file))

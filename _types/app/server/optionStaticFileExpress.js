@@ -7,7 +7,7 @@ const optionServer = {
     etag: true,
     extensions: ['htm', 'html'],
     index: false,
-    redirect: false,
+    redirect: true,
     maxAge: '1d',
 };
 if (threeTreeConfig.server.caching_Script) {

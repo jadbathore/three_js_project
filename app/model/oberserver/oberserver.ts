@@ -37,6 +37,9 @@ export class CompilerWatchSubject implements LibFile.Subject {
 
 }
 
+
+
+
 export class ObserverWatch implements LibFile.Observer {
     private _events:EventFile[]=[];
     private readonly _path:string;
@@ -122,7 +125,7 @@ export class ObserverWatch implements LibFile.Observer {
 
 
 
-export function proxyObserver(observer:LibFile.Observer,callBack?:(event:EventFile,path:String,selfProxy:EventFile[])=>void)
+export function proxyObserver(observer:LibFile.Observer,callBack?:(event:EventFile,path:string,selfProxy:EventFile[])=>void)
 {
     const _array:EventFile[] = []
     const ProxyObserver:EventFile[] = new Proxy<EventFile[]>(observer.events,observer.firstLayerproxyHandler)

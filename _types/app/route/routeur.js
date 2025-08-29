@@ -16,7 +16,7 @@ export const router = [
         pathServer: "/",
         scene: "scene1",
         method: RequestMethod.get,
-        serverLogic: (req, res) => {
+        serverLogic: (req, res, next) => {
             res.render('index', {
                 title: 'scene 1'
             });

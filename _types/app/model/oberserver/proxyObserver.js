@@ -15,6 +15,9 @@ export class proxyObserver {
             configurable: true
         });
     }
+    test() {
+        console.log("hello");
+    }
     proxyRevokeable(proxy) {
         const objRevokableProxy = { proxy: proxy, observer: this._observer };
         const secondLayerProxy = Proxy.revocable(objRevokableProxy, this._observer.secondLayerproxyHandler);

@@ -33794,7 +33794,7 @@ class OrbitControls extends EventDispatcher {
 
 }
 
-//----|Class_Content|----
+//&endClass
 //&end
 class Content {
 static glb = {
@@ -33824,7 +33824,8 @@ constructor(){
 this.file_RendererSetting();
 this.file_cameraSetting();
 this.file_loader();
-this.file_marsGroup();
+this.file_earthGroup();
+this.file_moon();
 this.file_fresnel();
 this.file_getStarField();
 this.file_sunlight();
@@ -33832,19 +33833,16 @@ this.file_animate();
 this.file_resizeSetting();
 }
 file_RendererSetting(){
-//----|2.RendererSetting.js|----
+//----|1.RendererSetting.cjs|----
 
 this.renderer = new WebGLRenderer({antialias:true});
 this.scene = new Scene();
 this.renderer.setSize(window.innerWidth,window.innerHeight);
 document.body.appendChild(this.renderer.domElement);
-
-
 //&end
 }
 file_cameraSetting(){
-//----|3.cameraSetting.js|----
-
+//----|2.cameraSetting.cjs|----
 this.camera = new PerspectiveCamera(
    45,
    window.innerWidth/window.innerHeight,
@@ -33853,33 +33851,31 @@ this.camera = new PerspectiveCamera(
 ); 
 this.camera.position.set(2,10,-5);
 this.orbit = new OrbitControls(this.camera,this.renderer.domElement);
+
 this.orbit.update();
 //&end
 }
 file_loader(){
 //----|4.loader.js|----
 this.loader = new TextureLoader();
-
 //&end
 }
-file_marsGroup(){
-//----|marsGroup.cjs|----
-
+file_earthGroup(){
+//----|earthGroup.cjs|----
 this.earthGroup = new Group();
 this.earthGroup.rotation.z = -23.4 * Math.PI / 180;
 this.scene.add(this.earthGroup);
-
 this.geo = new IcosahedronGeometry(1,12);
 this.earthMesh = new Mesh(
    this.geo,
    new MeshPhongMaterial(
        {
-           bumpMap:this.loader.load(Content.img.github_repository.url),
-           // specularMap:this.loader.load(Content.img.marsmap1k.url),
-           map:this.loader.load(Content.img.mars_1k_color.url),
+           bumpMap:this.loader.load(Content.img.earthbump.url),
+           specularMap:this.loader.load(Content.img.earthspecular.url),
+           map:this.loader.load(Content.img.earthmap1k.url),
            bumpScale:7,
-           // shininess:13.0,
-           // specular: 0xFFFFFF,
+           shininess:13.0,
+           specular: 0xFFFFFF,
            opacity:2,
        blending: AdditiveBlending,
        }
@@ -33890,7 +33886,7 @@ this.earthMesh.receiveShadow = true;
 this.lightMesh = new Mesh(
    this.geo,
    new MeshBasicMaterial({
-       map:this.loader.load(Content.img.github_repository.url),
+       lightMap:this.loader.load(Content.img.earth_nightmap.url),
        transparent:true,
        opacity:0.2,
        blendAlpha:20,
@@ -33910,20 +33906,82 @@ this.cloudMesh = new Mesh(
    this.geo,
    this.couldsMat
 );
-// this.cloudMesh.scale.setScalar(1.01)
-// this.earthGroup.add(this.cloudMesh);
+this.cloudMesh.scale.setScalar(1.01);
+this.earthGroup.add(this.cloudMesh);
+
+//&end
+}
+file_moon(){
+//----|moon.cjs|----
+this.moonRotation = new Object3D();
+this.scene.add(this.moonRotation);
+this.moonMesh = new Mesh(
+   new IcosahedronGeometry(0.27,12),
+   new MeshPhongMaterial({
+       map:this.loader.load(Content.img.moonmap4k.url),
+       bumpMap:this.loader.load(Content.img.moonbump4k.url),
+       bumpScale:4,
+   })
+); 
+this.moonRotation.add(this.moonMesh);
+this.moonMesh.position.x = 8;
+this.moonMesh.castShadow = true;
 //&end
 }
 file_fresnel(){
+//----|fresnel.cjs|----
 
-// this.fresnel = getFresnelMat();
-// this.glowmesh = new THREE.Mesh(this.geo,this.fresnel);
-// this.scene.add(this.glowmesh);
-// this.glowmesh.scale.setScalar(1.02)
+function getFresnelMat({rimHex = 0x0088ff,facingHax = 0x000000} = {})
+{
+   const uniforms = {
+       color1: {value: new Color(rimHex)},
+       color2: {value: new Color(facingHax)},
+       fresnelBias:{value:0.1},
+       fresnelScale:{value:1.0},
+       fresnelPower:{value:4.0},
+   };
+   const vs = `
+uniform float fresnelBias;
+uniform float fresnelScale;
+uniform float fresnelPower;
+varying float vReflectionFactor;
+void main() {
+vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
+vec4 worldPosition = modelMatrix * vec4( position, 1.0 );
+vec3 worldNormal = normalize( mat3( modelMatrix[0].xyz, modelMatrix[1].xyz, modelMatrix[2].xyz ) * normal );
+vec3 I = worldPosition.xyz - cameraPosition;
+vReflectionFactor = fresnelBias + fresnelScale * pow( 1.0 + dot( normalize( I ), worldNormal ), fresnelPower );
+gl_Position = projectionMatrix * mvPosition;
+}
+`;
+const fs = `
+uniform vec3 color1;
+uniform vec3 color2;
+varying float vReflectionFactor;
+void main() {
+float f = clamp( vReflectionFactor, 0.0, 1.0 );
+gl_FragColor = vec4(mix(color2, color1, vec3(f)), f);
+}
+`;
+const fresnelMat = new ShaderMaterial({
+uniforms: uniforms,
+vertexShader: vs,
+fragmentShader: fs,
+transparent: true,
+blending: AdditiveBlending,
+// wireframe: true,
+});
+return fresnelMat;
+}
+
+this.fresnel = getFresnelMat();
+this.glowmesh = new Mesh(this.geo,this.fresnel);
+this.scene.add(this.glowmesh);
+this.glowmesh.scale.setScalar(1.02);
 //&end
 }
 file_getStarField(){
-//----|getStarField.js|----
+//----|getStarField.cjs|----
 
 function getStarfield({numStar = 500} = {})
 {    
@@ -33971,8 +34029,7 @@ this.scene.add(this.star);
 //&end
 }
 file_sunlight(){
-//----|sunlight.js|----
-
+//----|sunlight.cjs|----
 this.sunLight = new DirectionalLight(0xFFFFFF);
 this.scene.add(this.sunLight);
 this.sunLight.position.set(10,0,0);
@@ -33987,10 +34044,10 @@ requestAnimationFrame(()=>{
    this.earthMesh.rotateY(0.002);
    this.lightMesh.rotateY(0.002);
    this.cloudMesh.rotateY(0.0025);
-   // this.glowmesh.rotateY(0.002)
+   this.glowmesh.rotateY(0.002);
    this.renderer.render(this.scene,this.camera);
-   // moonMesh.rotateY(0.02)
-   // moonRotation.rotateY(0.00514)
+   this.moonMesh.rotateY(0.02);
+   this.moonRotation.rotateY(0.00514);
    this.file_animate();
 });
 
@@ -33999,10 +34056,9 @@ requestAnimationFrame(()=>{
 //&end
 }
 file_resizeSetting(){
-//----|resizeSetting.js|----
-
+//----|resizeSetting.cjs|----
 window.addEventListener('resize',()=> {
-   this.camera.aspect= window.innerWidth / window.innerHeight;
+   this.camera.aspect = window.innerWidth / window.innerHeight;
    this.camera.updateProjectionMatrix();
    this.renderer.setSize(window.innerWidth,window.innerHeight);
 });

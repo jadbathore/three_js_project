@@ -1,3 +1,1 @@
-
-
 const loader = new THREE.TextureLoader();

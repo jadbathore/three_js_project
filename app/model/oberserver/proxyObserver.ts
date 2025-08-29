@@ -12,7 +12,6 @@ export class proxyObserver implements LibFile.ProxyDirObserver {
         this._observer = observer;
         //creation de la proxy de cette observer 
         this._firstLayerProxy = new Proxy(observer.events,observer.firstLayerproxyHandler);
-        
         this._proxy = this.proxyRevokeable(this._firstLayerProxy);
     }
 
@@ -35,6 +34,10 @@ export class proxyObserver implements LibFile.ProxyDirObserver {
                 writable: true,
                 configurable: true
         })   
+    }
+
+    public test(){
+        console.log("hello")
     }
 
 

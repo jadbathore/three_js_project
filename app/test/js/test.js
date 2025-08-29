@@ -7,12 +7,12 @@ import { CompilerWatchSubject, ObserverWatch } from '../../../_types/app/model/o
 // require('./init.cjs')
 
 // // import { instantiate } from '../../public/wasm_mod/pkg/wasm_mod.js';
-let subject = new CompilerWatchSubject();
-let observer = new ObserverWatch("/");
-let compiler = new Compiler(observer,subject,"scene1")
+// let subject = new CompilerWatchSubject();
+// let observer = new ObserverWatch("/");
+// let compiler = new Compiler(observer,subject,"scene1")
 
-compiler.repopulate();
-compiler.compile()
+// compiler.repopulate();
+// compiler.compile()
 
 // CompilerUtilityClass.repopulateComposer(PathUtility.getcompilerFile());
 // CompilerUtilityClass.repopulatelinkFile(PathUtility.getlinkFile());

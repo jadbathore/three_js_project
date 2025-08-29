@@ -64,16 +64,7 @@ export class Compiler {
         __classPrivateFieldGet(this, _Compiler_compilerUtility, "f").repopulatelinkFile(__classPrivateFieldGet(this, _Compiler_lFile, "f"));
     }
     compile() {
-        console.log("compilation has started for the request " + __classPrivateFieldGet(this, _Compiler_observer, "f").path);
         if (!__classPrivateFieldGet(this, _Compiler_abortControllerList, "f")) {
-            if (!fs.existsSync(PathUtility.versionDIR)) {
-                fs.promises.mkdir(PathUtility.versionDIR, { recursive: true })
-                    .then((path) => console.log(chalk.green('Directory created successfully', path)))
-                    .catch((err) => console.error('Error creating directory:', err));
-            }
-            __classPrivateFieldGet(this, _Compiler_subject, "f").attach(__classPrivateFieldGet(this, _Compiler_observer, "f"));
-            __classPrivateFieldGet(this, _Compiler_compilerUtility, "f").repopulateComposer(__classPrivateFieldGet(this, _Compiler_cFile, "f"));
-            __classPrivateFieldGet(this, _Compiler_compilerUtility, "f").repopulatelinkFile(__classPrivateFieldGet(this, _Compiler_lFile, "f"));
             __classPrivateFieldSet(this, _Compiler_abortControllerList, [], "f");
             for (const [key, value] of PathUtility.getMapFile(__classPrivateFieldGet(this, _Compiler_sceneName, "f"))) {
                 if (key !== undefined) {
@@ -85,13 +76,13 @@ export class Compiler {
                             const watcher = fs.promises.watch(PathUtility.getPathFromElement(__classPrivateFieldGet(this, _Compiler_sceneName, "f"), key), { signal });
                             for await (const event of watcher) {
                                 __classPrivateFieldGet(this, _Compiler_subject, "f").notify(event);
+                                __classPrivateFieldGet(this, _Compiler_observer, "f").addEvent(event);
                                 const pathFileChanging = PathUtility.getPathFromElement(__classPrivateFieldGet(this, _Compiler_sceneName, "f"), key, event.filename);
                                 switch (event.eventType) {
                                     case 'change':
                                         console.log(chalk.keyword('violet')(`the file ${event.filename} as been ${event.eventType} 🔮`));
                                         __classPrivateFieldGet(this, _Compiler_compilerUtility, "f").lazyComposerRemplacement(__classPrivateFieldGet(this, _Compiler_cFile, "f"), pathFileChanging);
                                         __classPrivateFieldGet(this, _Compiler_compilerUtility, "f").lazyRemplacement(__classPrivateFieldGet(this, _Compiler_lFile, "f"), pathFileChanging);
-                                        __classPrivateFieldGet(this, _Compiler_compilerUtility, "f").addimportScript(pathFileChanging);
                                         break;
                                     case 'rename':
                                         if (value.includes(event.filename)) {
@@ -106,7 +97,6 @@ export class Compiler {
                                                 console.log(chalk.keyword('violet')(`the file ${event.filename} as been change 🔮`));
                                                 __classPrivateFieldGet(this, _Compiler_compilerUtility, "f").lazyRemplacement(__classPrivateFieldGet(this, _Compiler_lFile, "f"), pathFileChanging);
                                                 __classPrivateFieldGet(this, _Compiler_compilerUtility, "f").lazyComposerRemplacement(__classPrivateFieldGet(this, _Compiler_cFile, "f"), pathFileChanging);
-                                                __classPrivateFieldGet(this, _Compiler_compilerUtility, "f").addimportScript(pathFileChanging);
                                             }
                                         }
                                         else {

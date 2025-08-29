@@ -14,14 +14,38 @@ type EventServer<T> = {
     type:T,
 }
 
-type serverTarget = {
-    route:string,
+type serverTarget<REQ> = {
+    route:REQ,
 }
 
 type Revokable<T>={
     proxy:T,
     revoke:()=>void
 }
+
+type requestedAction<T> = {
+    payload:string|null,
+    type:T
+}
+
+
+interface Error {
+    code:string
+}
+
+// Extend Express Request interface to add redirSelf
+declare namespace Express {
+    interface Request {
+        method:string;
+        action?:requestedAction<any>
+        path:string;
+        redir?: (location:string) => void;
+    }
+    interface Response {
+        setHeader(header:string,value:string):void;
+    }
+}
+
 
 declare namespace Compiler {
     type double = {
@@ -57,28 +81,19 @@ declare namespace Compiler {
 }
 
 declare namespace LibFile {
-    //Subject correspond à la classe qui gère les observers.
+
     interface Subject {
-        // Ajout d’un observer
         attach(observer:Observer):void;
-        //Détachement d’un observer
         detach(observer:Observer):void;
-        //Notification correspondant à l’appel de l’action sur tous les observers. 
         notify(event:EventFile):void;
-        //Élément de logique métier 
         addEventObserver(observer:Observer,eventPromise:EventPromise):void
     }
     
     interface Observer {
-        // Élément de logique métier permettant d’ajouter des événements : 
         addEvent(event:EventFile):void;
-        // Mettre à jour l’observer
         update(subject:Subject,event:EventFile):AsyncGenerator<any, any, unknown>;
-        // Obtenir les actions lier a l'observer
         get events():EventFile[];
-        // Obtenir le chemin correspondant à cet observer 
-        get path():String;
-        // d'avoir le proxy handler de cette observer (en readonly )
+        get path():string;
         get firstLayerproxyHandler():ProxyHandler<EventFile[]>;
         get secondLayerproxyHandler():ProxyHandler<EventProxy>;
     }
@@ -86,6 +101,7 @@ declare namespace LibFile {
     interface ProxyDirObserver {
         ProxyBehavior(callBack?:(event:EventFile,path:String)=>void):void;
         proxyRevoke():void;
+        test():void;
     }
 
 
@@ -111,6 +127,20 @@ declare namespace Cache {
 
 declare namespace Server {
 
+    type Port = number & {__brand:'Port'};
+    type CodeServer = number & {__brand:'CodeServer'}
+    interface Headers {
+        [key:string]:string;
+    }
+
+    type RequestArguments = {
+        path:string
+        host:string,
+        protocole:string,
+        method:string,
+        headers?:Headers,
+    }
+
     interface revocable<T extends Object>{
         proxy:typeof Proxy<T>,
         revoke:()=>void
@@ -127,9 +157,9 @@ declare namespace Server {
         )=> void;
         CompilerTuple?: [COMPILER,LibFile.Observer,LibFile.ProxyDirObserver];
     }
-    interface SocketHandler<T extends route<any,any,any,any,any>> {
-        handleFirstConnection({CompilerTuple:[compiler,oberserver]}:T):void;
-        handleConnection({CompilerTuple:[compiler,oberserver]}:T):void;
+    interface SocketHandler<T extends route<any,any,any,any,any>,R> {
+        handleReconnection({CompilerTuple:[compiler,oberserver]}:T):void;
+        handleConnection({CompilerTuple:[compiler,oberserver]}:T,request:R):void;
         handleDeconnection({CompilerTuple:[compiler,oberserver]}:T):void;
     }
     type OptionStatic = {
@@ -163,5 +193,13 @@ declare namespace Server {
 
     interface Strategy {
         doAlgorithm(...arguments:any[]): void;
+    }
+
+    interface ResponseData {
+        get headers():Server.Headers;
+        get code():Server.CodeServer;
+        get message():string;
+        get protocole():string;
+        get body():string;
     }
 }
