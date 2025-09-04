@@ -1,4 +1,4 @@
-
+require('../../../public/versionning/linkfile.cjs');
 
 function getStarfield({numStar = 500} = {})
 {    

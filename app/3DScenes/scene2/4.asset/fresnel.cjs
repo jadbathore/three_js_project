@@ -1,13 +1,4 @@
-const { THREE,
-	OrbitControls, glb, gltf,
-	hdr, img, renderer,
-	scene, camera, orbit,
-	loader, earthGroup, geo,
-	earthMesh, lightMesh, couldsMat,
-	cloudMesh, __moon__, moonRotation,
-	moonMesh, fresnel, glowmesh,
-	star, sunLight, getFresnelMat,
-	getStarfield, } = require('../../../public/versionning/linkFile.js')
+require('../../../public/versionning/linkFile.js');
 
 
 function getFresnelMat({rimHex = 0x0088ff,facingHax = 0x000000} = {})
@@ -61,7 +52,7 @@ blending: THREE.AdditiveBlending,
 return fresnelMat;
 }
 
-// const fresnel = getFresnelMat();
-// const glowmesh = new THREE.Mesh(geo,fresnel);
-// scene.add(glowmesh);
+const fresnel = getFresnelMat();
+const glowmesh = new THREE.Mesh(geo,fresnel);
+scene.add(glowmesh);
 // glowmesh.scale.setScalar(1.02)

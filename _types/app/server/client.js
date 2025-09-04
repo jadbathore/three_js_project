@@ -5,10 +5,10 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 import net from 'net';
-import { RequestParser, ResponseParser } from '../../app/model/server/headParser.js';
-import chalk from 'chalk';
+import { DataParser, RequestParser } from '../../app/model/server/headParser.js';
+import ws from 'ws';
 const _array = [];
-function oneCall(target, propertyKey, descriptor) {
+function oneCall(_, propertyKey, descriptor) {
     const orginalMethod = descriptor.value;
     descriptor.value = function (...args) {
         if (!_array.includes(propertyKey)) {
@@ -17,56 +17,117 @@ function oneCall(target, propertyKey, descriptor) {
         }
     };
 }
-export class TCPServerSingleTone {
-    constructor(port) {
+class SocketSingleTone {
+    setData(callBack) {
+        this._instanceClient.on('data', this.socketmountData((...args) => {
+            callBack(...args);
+        }));
+    }
+    setConnection(callBack) {
+        this.setEventCallBack(callBack, 'connection');
+    }
+    setClose(callBack) {
+        this.setEventCallBack(callBack, 'close');
+    }
+    setError(callBack) {
+        this.setEventCallBack(callBack, 'error');
+    }
+    setEnd(callBack) {
+        this.setEventCallBack(callBack, 'end');
+    }
+    setEventCallBack(callBack, event) {
+        this._instanceClient.on(event, this.socketmount((...args) => {
+            callBack(...args);
+        }));
+    }
+}
+__decorate([
+    oneCall
+], SocketSingleTone.prototype, "setConnection", null);
+__decorate([
+    oneCall
+], SocketSingleTone.prototype, "setClose", null);
+__decorate([
+    oneCall
+], SocketSingleTone.prototype, "setError", null);
+__decorate([
+    oneCall
+], SocketSingleTone.prototype, "setEnd", null);
+export class TCPServerSingleTone extends SocketSingleTone {
+    constructor(port, websocket) {
+        super();
         this._port = port;
-        this.end();
+        this._webSocketPort = websocket;
+        this._instanceWebSocket = this.createWebSocketConnection(this._webSocketPort);
+        this._instanceClient = this.createConnection(this._port);
     }
-    get instanceClient() {
-        if (!this._instanceClient) {
-            this._instanceClient = this.createConnection(this._port);
-        }
-        return this._instanceClient;
-    }
-    static getInstance(port) {
-        if (!TCPServerSingleTone._instance) {
-            TCPServerSingleTone._instance = new TCPServerSingleTone(port);
-        }
-        return TCPServerSingleTone._instance;
+    createWebSocketConnection(websocketPort) {
+        return new ws.Server({ port: websocketPort });
     }
     createConnection(port) {
         const client = net.createConnection({ port: port }, () => {
             const requestHeader = {
                 method: 'GET',
-                path: '/',
+                path: DataParser.tryPath('/'),
                 protocole: 'HTTP/1.1',
                 host: 'localhost',
                 headers: {
                     'Connection': 'Upgrade',
                     'Upgrade': 'tree-for-three',
-                    'key-tree': '1234',
-                }
+                    'key-tree': process.env.PASSWORD_TCP,
+                },
             };
             const requestParse = new RequestParser(requestHeader);
             client.write(requestParse.request);
         });
         return client;
     }
-    setData(callBack) {
-        this.instanceClient.on('data', (data) => {
-            const parser = new ResponseParser(data.toString());
-            callBack(parser, this._instanceClient);
-        });
+    static getInstance(port, webSocketPort) {
+        if (!TCPServerSingleTone._instance) {
+            TCPServerSingleTone._instance = new TCPServerSingleTone(port, webSocketPort);
+        }
+        return TCPServerSingleTone._instance;
     }
-    end() {
-        this.instanceClient.on('end', () => {
-            console.log(chalk.yellow('Server TCP end'));
-        });
+    socketmount(callback) {
+        const socket = () => {
+            callback(this._instanceClient, this._instanceWebSocket);
+        };
+        return socket;
+    }
+    socketmountData(callback) {
+        const socket = (data) => {
+            const dataParse = DataParser.responseOrRequest(data.toString());
+            callback(dataParse, this._instanceClient, this._instanceWebSocket);
+        };
+        return socket;
     }
 }
-__decorate([
-    oneCall
-], TCPServerSingleTone.prototype, "setData", null);
-__decorate([
-    oneCall
-], TCPServerSingleTone.prototype, "end", null);
+TCPServerSingleTone.UpgratedProtocole = 'THREE-FOR-THREE';
+export class SocketTree extends SocketSingleTone {
+    constructor(socket) {
+        super();
+        this._instanceClient = socket;
+    }
+    static getInstance(socket) {
+        if (!SocketTree._instance && socket) {
+            SocketTree._instance = new SocketTree(socket);
+        }
+        return SocketTree._instance;
+    }
+    writeToSocket(value) {
+        this._instanceClient.write(value);
+    }
+    socketmount(callback) {
+        const socket = () => {
+            callback(this._instanceClient);
+        };
+        return socket;
+    }
+    socketmountData(callback) {
+        const socket = (data) => {
+            const dataParse = DataParser.responseOrRequest(data.toString());
+            callback(dataParse, this._instanceClient);
+        };
+        return socket;
+    }
+}

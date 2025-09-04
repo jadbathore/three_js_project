@@ -21,6 +21,7 @@ const optionServer =
 if (threeTreeConfig.server.caching_Script){
     optionServer['setHeaders'] = (res,pathFile,stat) =>{
         switch (true) {
+            
             // must do like that (switch check before if it wasmFile add after check mime type 
             // each true but wasmfirst)
             case (pathFile == PathUtility.wasmFile):

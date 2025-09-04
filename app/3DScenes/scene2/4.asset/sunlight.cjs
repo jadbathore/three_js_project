@@ -1,4 +1,5 @@
-require('../../../public/versionning/linkfile.cjs');
+require('../../public/versionning/linkFile.js');
+
 
 const sunLight = new THREE.DirectionalLight(0xFFFFFF)
 scene.add(sunLight);

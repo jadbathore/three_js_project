@@ -1,3 +1,4 @@
+require('../../../public/versionning/linkfile.cjs');
 
 requestAnimationFrame(()=>{
     earthMesh.rotateY(0.002)

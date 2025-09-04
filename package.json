@@ -6,9 +6,10 @@
   "type": "module",
   "scripts": {
     "test": "node ./app/test/js/test.js",
-    "testTS": "node ./_types/app/test/ts/test.js",
-    "start": "COMPILE_DIR=\"hello\" node --watch app/server/server.js",
-    "starthotload": "node app/server/server-hotload.js"
+    "testTS": "PASSWORD_TCP=\"mdp123\" node ./_types/app/test/ts/test.js",
+    "start": "COMPILE_DIR=\"hello\" PASSWORD_TCP=\"mdp123\" node --watch app/server/server.js",
+    "starthotload": "node app/server/server-hotload.js",
+    "client": "PASSWORD_TCP=\"mdp123\" node ./_types/app/server/client-server.js"
   },
   "repository": {
     "type": "git",

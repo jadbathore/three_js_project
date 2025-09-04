@@ -1,36 +1,33 @@
 import { proxyObserver } from "../../model/oberserver/oberserver.js";
-import { responseAction } from "../../model/server/serverHandler.js";
+import { DataParser, RequestParser, ResponseParser } from "../../model/server/headParser.js";
 import { AppRouter } from "../../route/routeur.js";
+import { SocketTree } from "../../model/server/client.js";
 
-export class Socket implements Server.SocketHandler<AppRouter,Express.Request> {
+export class SocketImplement implements Server.SocketHandler<AppRouter> {
 
-    public handleConnection({CompilerTuple:[compiler,oberserver,proxy]}:AppRouter,request:Express.Request):void
+    private static instanceServer:SocketTree;
+    
+    constructor(socket:SocketTree)
     {
-        // console.log(" handleConnection",oberserver.path)
-        compiler.compile();
-        // console.log(request.action)
-         // = (location)=>{
-                //     req.action.payload = location;
-                //     req.action.type = responseAction.redirection
-                // }
-        // console.log(request)
-        proxyObserver(oberserver,(event,path)=>{
-            // request.path = path;
-            // request.redir(path)
-            // request.action = {
-            //     payload: oberserver.path,
-            //     type: responseAction.redirection
-            // }
-            console.log(event,path,request) 
+        SocketImplement.instanceServer = socket
+    }
 
-            // console.log(request.action)
-            // console.log(request)
-            // request.redir()
+    public handleConnection({CompilerTuple:[compiler,oberserver,proxy]}:AppRouter):void
+    {
+        compiler.compile();
+        proxyObserver(oberserver,(event,path)=>{
+            const responseArgs:Server.RequestArguments = {
+                path:DataParser.tryPath(path),
+                host:'localhost',
+                method:"RELOAD",
+                protocole:"TREE-FOR-THREE",
+                body:'Reload from Post Compile'
+            }
+            const requestParser = new RequestParser(responseArgs);
+            setTimeout(()=>{
+                SocketImplement.instanceServer.writeToSocket(requestParser.request)
+            },500)
         })
-        // proxy.ProxyBehavior((event,path)=>{
-        //     console.log("hello")
-        //     console.log(event,path)
-        // })
     }
 
     public handleReconnection({ CompilerTuple: [compiler, oberserver] }: AppRouter): void {
@@ -42,6 +39,17 @@ export class Socket implements Server.SocketHandler<AppRouter,Express.Request> {
     {
         compiler.stopCompiler()
         compiler.destructCompiler()
+        setTimeout(()=>{
+            const responseArgs:Server.RequestArguments = {
+                path:DataParser.tryPath(oberserver.path),
+                host:'localhost',
+                method:"RELOAD",
+                protocole:"TREE-FOR-THREE",
+                body:'Reload change compilation'
+            }
+            const requestParser = new RequestParser(responseArgs);
+            SocketImplement.instanceServer.writeToSocket(requestParser.request)
+        },500)
         // proxy.proxyRevoke()
     }
 }

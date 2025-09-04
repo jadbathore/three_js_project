@@ -94,26 +94,16 @@ export class Compiler {
         }
         this.#compilerUtility.repopulateComposer(this.#cFile);
         this.#compilerUtility.repopulatelinkFile(this.#lFile);
-           
-        // this.#compilerUtility.repopulateComposer(this.#cFile);
-        // this.#compilerUtility.repopulatelinkFile(this.#lFile);
     }
+
+    // async contentTorepolulate(){
+    //     await this.#compilerUtility.
+    // }
 
     compile()
     {
-        // console.log("compilation has started for the request " + this.#observer.path)
         if(!this.#abortControllerList) 
         {
-            // if(!fs.existsSync(PathUtility.versionDIR)) {
-            //     fs.promises.mkdir(PathUtility.versionDIR, { recursive: true })
-            //     .then((path) => console.log(chalk.green('Directory created successfully',path)))
-            //     .catch((err) => console.error('Error creating directory:', err));
-            // }
-            // this.#subject.attach(this.#observer);
-            // // const cFile = PathUtility.getcompilerFile()
-            // // const lFile = PathUtility.getlinkFile() 
-            // this.#compilerUtility.repopulateComposer(this.#cFile)
-            // this.#compilerUtility.repopulatelinkFile(this.#lFile)
             this.#abortControllerList = []
             for(const [key,value] of PathUtility.getMapFile(this.#sceneName))
                 {
@@ -130,7 +120,6 @@ export class Compiler {
                                         {
                                             this.#subject.notify(event)
                                             this.#observer.addEvent(event)
-                                            // console.log(this.#observer.events)
                                             const pathFileChanging = PathUtility.getPathFromElement(this.#sceneName,key,event.filename)
                                             switch(event.eventType)
                                             {
@@ -138,7 +127,6 @@ export class Compiler {
                                                     console.log(chalk.keyword('violet')(`the file ${event.filename} as been ${event.eventType} 🔮`))
                                                     this.#compilerUtility.lazyComposerRemplacement(this.#cFile,pathFileChanging);
                                                     this.#compilerUtility.lazyRemplacement(this.#lFile,pathFileChanging)
-                                                    // this.#compilerUtility.addimportScript(pathFileChanging);
                                                 break;
                                                 case 'rename' : 
                                                 //if the file is remove

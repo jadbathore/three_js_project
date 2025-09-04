@@ -9,15 +9,6 @@ type EventProxy = {
     observer:LibFile.Observer,
 }
 
-type EventServer<T> = {
-    route:string,
-    type:T,
-}
-
-type serverTarget<REQ> = {
-    route:REQ,
-}
-
 type Revokable<T>={
     proxy:T,
     revoke:()=>void
@@ -128,17 +119,38 @@ declare namespace Cache {
 declare namespace Server {
 
     type Port = number & {__brand:'Port'};
-    type CodeServer = number & {__brand:'CodeServer'}
+    type CodeServer = number & {__brand:'CodeServer'};
+    type Path = string & {__brand:'Path'};
+
+    type InstanceClientCallBack<T extends [...any]> = (...args:T)=>void & {__brand:'InstanceClientCallBack'};
+    type InstanceClientCallBackData<T extends [Server.ResponseData|Server.RequestData,...any] > = (...args:T)=>void & {__brand:'InstanceClientCallBack'};
+    type serverTarget = { route:string };
+    type EventServer<T> = serverTarget & { type:T };
+    type webSocketEvent = { event:string , payload:string}
+
     interface Headers {
         [key:string]:string;
     }
 
-    type RequestArguments = {
-        path:string
+    interface handlerCode {
+        [index:string]:()=>void
+    }
+
+    type CommArgument = {
+        body?:string,
+        headers?:Server.Headers,
+        protocole:string
+    }
+
+    type RequestArguments = CommArgument & {
+        path:Server.Path
         host:string,
-        protocole:string,
         method:string,
-        headers?:Headers,
+    }
+
+    type ResponseArguments = CommArgument & {
+        code:Server.CodeServer,
+        message:string
     }
 
     interface revocable<T extends Object>{
@@ -157,9 +169,9 @@ declare namespace Server {
         )=> void;
         CompilerTuple?: [COMPILER,LibFile.Observer,LibFile.ProxyDirObserver];
     }
-    interface SocketHandler<T extends route<any,any,any,any,any>,R> {
+    interface SocketHandler<T extends route<any,any,any,any,any>> {
         handleReconnection({CompilerTuple:[compiler,oberserver]}:T):void;
-        handleConnection({CompilerTuple:[compiler,oberserver]}:T,request:R):void;
+        handleConnection({CompilerTuple:[compiler,oberserver]}:T):void;
         handleDeconnection({CompilerTuple:[compiler,oberserver]}:T):void;
     }
     type OptionStatic = {
@@ -195,11 +207,22 @@ declare namespace Server {
         doAlgorithm(...arguments:any[]): void;
     }
 
-    interface ResponseData {
+    interface Data {
         get headers():Server.Headers;
+        get protocole():string;
+        get body():string
+    }
+
+    interface ResponseData extends Data {
         get code():Server.CodeServer;
         get message():string;
-        get protocole():string;
-        get body():string;
+        get response():string
+    }
+
+    interface RequestData extends Data {
+        get path():Server.Path
+        get host():string;
+        get methods():string;
+        get request():string
     }
 }

@@ -1,4 +1,4 @@
-require('../../../public/versionning/linkfile.cjs').scene2;
+require('../../../public/versionning/linkfile.cjs');
 
 const renderer = new THREE.WebGLRenderer({antialias:true})
 const scene = new THREE.Scene()

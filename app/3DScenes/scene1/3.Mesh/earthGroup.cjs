@@ -1,3 +1,5 @@
+require('../../../public/versionning/linkfile.cjs');
+
 const earthGroup = new THREE.Group();
 
 earthGroup.rotation.z = -23.4 * Math.PI / 180

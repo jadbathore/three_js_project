@@ -1,5 +1,4 @@
-
-
+require('../../../public/versionning/linkfile.cjs');
 
 function getFresnelMat({rimHex = 0x0088ff,facingHax = 0x000000} = {})
 {

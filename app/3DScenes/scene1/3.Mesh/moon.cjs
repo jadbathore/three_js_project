@@ -1,3 +1,5 @@
+require('../../../public/versionning/linkfile.cjs');
+
 const moonRotation = new THREE.Object3D();
 scene.add(moonRotation);
 const moonMesh = new THREE.Mesh(
@@ -9,5 +11,6 @@ const moonMesh = new THREE.Mesh(
     })
 ) 
 moonRotation.add(moonMesh);
+
 moonMesh.position.x = 8
 moonMesh.castShadow = true;

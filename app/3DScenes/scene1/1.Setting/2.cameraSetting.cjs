@@ -1,3 +1,5 @@
+require('../../../public/versionning/linkfile.cjs');
+
 const camera = new THREE.PerspectiveCamera(
     45,
     window.innerWidth/window.innerHeight,
@@ -5,6 +7,7 @@ const camera = new THREE.PerspectiveCamera(
     1000
 ) 
 camera.position.set(2,10,-5);
+
 const orbit = new OrbitControls(camera,renderer.domElement)
- 
+
 orbit.update();
