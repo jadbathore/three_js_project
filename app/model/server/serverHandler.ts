@@ -14,10 +14,12 @@ import http from "http"
 
 import { DataParser, RequestParser, ResponseParser } from "./headParser.js";
 import { Socket } from "dgram";
-import { CallBackServer, CallBackServerData, SocketTree } from "./client.js";
+import { SocketTree, TLSServerSingleTone } from "./client.js";
+import type {CallBackSimpleSocket, CallBackSimpleSocketData,httpsServerArgs,SimpleSocketImplementTupleData,SimpleSocketImplementTuple} from "./client.js";
 import internal from "stream";
 import { SocketImplement } from "../../server/serverHandler/socketImplement.js";
 import { responseHandler } from "./headHandler.js";
+import { TLSSocket } from "tls";
 
 
 enum serverStatus {
@@ -31,7 +33,7 @@ export class ServerHandler
     private static _socketHandlerInterface:Server.SocketHandler<AppRouter>;
     private static _iteratorAggregate: Server.Aggregator<AppRouter>;
 
-    private _server:http.Server|https.Server<any,any>;
+    private _server:http.Server|TLSServerSingleTone;
     private _app:Express;
     private static _proxy: Server.serverTarget|any;
     private _redisClient?:RedisClientType<any,any,any>
@@ -58,8 +60,9 @@ export class ServerHandler
         this._app = this.setApp(app)
         this._server = this.setServer(this._app);
         this.upgradeServeur()
-
     }
+
+
 
     private  setRedisclient(){
         (async ()=>{
@@ -238,15 +241,33 @@ export class ServerHandler
         return app;
     }
 
-    private setServer(app:Express):http.Server|https.Server<any,any>
+    private setServer(app:Express):http.Server|TLSServerSingleTone
     {
-        const key:Buffer|null = (fs.existsSync(PathUtility.keySLL))?fs.readFileSync(PathUtility.keySLL):null;
-        const cert:Buffer|null = (fs.existsSync(PathUtility.certSLL))?fs.readFileSync(PathUtility.certSLL):null;
-        const server =  (key && cert)?  https.createServer({key: key, cert: cert },app):http.createServer(app);
-        return server
+        const key:Buffer|null = PathUtility.getKeyBuffer()
+        const cert:Buffer|null = PathUtility.getCertBuffer()
+        const httpServer:http.Server = http.createServer(app);
+        if (key && cert){
+            const certification:Server.httpsCertificate = {key: key, cert: cert }
+            const serverArguments:httpsServerArgs = {
+                port:this._port,
+                server:httpServer,
+                host:'localhost',
+                certificate:certification
+            }
+            const instanceTls = TLSServerSingleTone.getInstance(serverArguments)
+            return instanceTls
+        } 
+        return httpServer;
     }
 
-    private dataCallBack(data:Server.RequestData|Server.ResponseData,instance:internal.Duplex)
+    private setCallBacks<S extends internal.Duplex|TLSSocket>(iterfaceServer:Server.Socket<SimpleSocketImplementTupleData<S>,SimpleSocketImplementTuple<S>>)
+    {
+        iterfaceServer.setData(this.dataCallBack as CallBackSimpleSocketData<S>)
+        iterfaceServer.setEnd(this.endCallBack as CallBackSimpleSocket<S>)
+        iterfaceServer.setError(this.errorCallBack)
+    }
+
+    private dataCallBack<T extends internal.Duplex|TLSSocket>(data:Server.RequestData|Server.ResponseData,instance:T):void
     {
         if(DataParser.isRequestData(data)){
             const responseArgs:Server.ResponseArguments = {
@@ -262,12 +283,24 @@ export class ServerHandler
         }
     }
 
-    private endCallBack(instance:internal.Duplex){
-        console.log(chalk.bgYellow('connection to TCP ended'))
+    private endCallBack<T extends internal.Duplex|TLSSocket>(instance:T):void
+    {
+        const clientProtocole:string = (instance instanceof TLSSocket)?'TLS':'TCP';
+        console.log(chalk.bgYellow(`connection to ${clientProtocole} ended`))
     }
 
-    public upgradeServeur(){
-        this._server.on('upgrade',(req,socket,head)=>{
+    private errorCallBack(error:Error)
+    {
+        console.log(error.message)
+    }
+
+    private upgradeServeur(){
+        if(this._server instanceof TLSServerSingleTone){
+            /*------handle-https-------*/
+            this.setCallBacks<TLSSocket>(this._server)
+        } else {
+            /*------handle-http--------*/
+            this._server.on('upgrade',(req,socket,head)=>{
             const {upgrade:upgrade,'key-tree':treeKey} = req.headers;
             if (upgrade === 'tree-for-three' && treeKey == process.env.PASSWORD_TCP) {
                 const instance = SocketTree.getInstance(socket);
@@ -285,40 +318,33 @@ export class ServerHandler
                 instance.writeToSocket(responseParser.response);
                 console.log(chalk.bgGreen('Serveur Has been upgraded'))
                 ServerHandler._socketHandlerInterface = new SocketImplement(instance);
-                instance.setData(this.dataCallBack as CallBackServerData)
-                instance.setEnd(this.endCallBack as CallBackServer)
-        } else {
-            console.log(chalk.bgRed('Something went wrong during the upgrade'))
-            socket.end('HTTP/1.1 400 Bad Request\r\n\r\n');
+                this.setCallBacks<internal.Duplex>(instance)
+            } else {
+                console.log(chalk.bgRed('Something went wrong during the upgrade'))
+                socket.end('HTTP/1.1 400 Bad Request\r\n\r\n');
+            }
+            })
         }
-        })
+    }
+
+    private startServerCallBack<T extends ()=>void>(port:Server.Port):T
+    {
+        const callback = () => {
+            const serverType = (this._server instanceof http.Server)? "http":"https";
+            const url = `${serverType}://localhost:${port}/`;
+            console.log(chalk.greenBright(
+                boxen(`Server running on:\u001B]8;;${url}\u0007${port}\u001B]8;;\u0007`,
+                {
+                    padding: 1,
+                })
+            ))
+        }
+        return callback as T
     }
 
     public run() { 
         this.tryPort(this._port).then((port_correction:Server.Port)=>{
-            this._server.listen(port_correction,()=>{
-                const serverType = (this._server instanceof https.Server)? "https":"http";
-                const url = `${serverType}://localhost:${port_correction}/`;
-                console.log(chalk.greenBright(
-                    boxen(`Server running on:\u001B]8;;${url}\u0007${port_correction}\u001B]8;;\u0007`,
-                    {
-                        padding: 1,
-                    })
-                ))
-            })
+                this._server.listen(port_correction,this.startServerCallBack(port_correction))
         });
-
-    }
-
-    public restartServer(){
-        this._server.close()
-        this.run()
-    }
-
-    public shutDown(path:string){
-        this._server.close(()=>{
-            fs.copyFileSync("app/public/dist/compling.js",path)
-            process.exit(1);
-        })
     }
 }

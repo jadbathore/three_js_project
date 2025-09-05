@@ -1,41 +1,44 @@
 import net from 'net';
 import http from 'http';
-import { TLSSocket } from 'tls';
+import tls, { TLSSocket } from 'tls';
 import ws from 'ws';
 import internal from 'stream';
 export type webSocketServer = ws.Server<typeof ws, typeof http.IncomingMessage>;
 type TupleData = [Server.ResponseData | Server.RequestData, net.Socket | internal.Duplex, ...any];
 type TupleInstance = [net.Socket | internal.Duplex, ...any];
-declare abstract class SocketSingleTone<A extends TupleData, B extends TupleInstance> {
+declare abstract class SocketSingleTone<A extends TupleData, B extends TupleInstance> implements Server.Socket<TupleData, TupleInstance> {
     protected abstract _instanceClient: net.Socket | internal.Duplex | TLSSocket;
     setData(callBack: (...A: A) => void): void;
     setConnection(callBack: (...args: B) => void): void;
     setClose(callBack: (...args: B) => void): void;
-    setError(callBack: (...args: B) => void): void;
+    setError(callBack: (error: Error) => void): void;
     setEnd(callBack: (...args: B) => void): void;
     protected setEventCallBack(callBack: (...args: B) => void, event: string): void;
     protected abstract socketmountData<T extends (data: Buffer<ArrayBufferLike>) => void>(callback: (...args: A) => void): T;
     protected abstract socketmount<T extends () => void>(callback: (...args: B) => void): T;
 }
-declare abstract class SimpleSocket<S extends internal.Duplex | TLSSocket> extends SocketSingleTone<[Server.ResponseData | Server.RequestData, S], [S]> {
+type Simple = internal.Duplex | TLSSocket;
+export type SimpleSocketImplementTupleData<S extends Simple> = [Server.ResponseData | Server.RequestData, S];
+export type SimpleSocketImplementTuple<S extends Simple> = [S];
+export type CallBackSimpleSocketData<S extends Simple> = (...args: SimpleSocketImplementTupleData<S>) => void;
+export type CallBackSimpleSocket<S extends Simple> = (...args: SimpleSocketImplementTuple<S>) => void;
+declare abstract class SimpleSocket<S extends Simple> extends SocketSingleTone<SimpleSocketImplementTupleData<S>, SimpleSocketImplementTuple<S>> implements Server.Socket<SimpleSocketImplementTupleData<S>, SimpleSocketImplementTuple<S>> {
     protected abstract _instanceClient: S;
-    protected constructor(websocketPort: Server.Port);
-    protected socketmount<T extends () => void>(callback: (...args: [S]) => void): T;
-    protected socketmountData<T extends (data: Buffer<ArrayBufferLike>) => void>(callback: (...args: [Server.ResponseData | Server.RequestData, S]) => void): T;
+    constructor();
+    protected socketmount<T extends () => void>(callback: CallBackSimpleSocket<S>): T;
+    protected socketmountData<T extends (data: Buffer<ArrayBufferLike>) => void>(callback: CallBackSimpleSocketData<S>): T;
 }
-declare abstract class WebSocketHolder<S extends net.Socket | TLSSocket> extends SocketSingleTone<[
-    Server.ResponseData | Server.RequestData,
-    S,
-    webSocketServer
-], [
-    S,
-    webSocketServer
-]> {
+type WebHolder = net.Socket | TLSSocket;
+type WebSocketHolderSocketImplementTupleData<S extends WebHolder> = [Server.ResponseData | Server.RequestData, S, webSocketServer];
+type WebSocketHolderSocketImplementTuple<S extends WebHolder> = [S, webSocketServer];
+type CallBackWebSocketHolderData<S extends WebHolder> = (...args: WebSocketHolderSocketImplementTupleData<S>) => void;
+type CallBackWebSocketHolder<S extends WebHolder> = (...args: WebSocketHolderSocketImplementTuple<S>) => void;
+declare abstract class WebSocketHolder<S extends WebHolder> extends SocketSingleTone<WebSocketHolderSocketImplementTupleData<S>, WebSocketHolderSocketImplementTuple<S>> implements Server.Socket<WebSocketHolderSocketImplementTupleData<S>, WebSocketHolderSocketImplementTuple<S>> {
     protected _instanceWebSocket: webSocketServer;
     protected abstract _instanceClient: S;
-    protected constructor(websocketPort: Server.Port);
-    protected socketmount<T extends () => void>(callback: (...args: [S, webSocketServer]) => void): T;
-    protected socketmountData<T extends (data: Buffer<ArrayBufferLike>) => void>(callback: (...args: [Server.ResponseData | Server.RequestData, S, webSocketServer]) => void): T;
+    constructor(websocketPort: Server.Port);
+    protected socketmount<T extends () => void>(callback: CallBackWebSocketHolder<S>): T;
+    protected socketmountData<T extends (data: Buffer<ArrayBufferLike>) => void>(callback: CallBackWebSocketHolderData<S>): T;
     protected createWebSocketConnection(websocketPort: Server.Port): webSocketServer;
 }
 export declare class SocketTree extends SimpleSocket<internal.Duplex> {
@@ -45,13 +48,6 @@ export declare class SocketTree extends SimpleSocket<internal.Duplex> {
     static getInstance(socket?: internal.Duplex): SocketTree;
     writeToSocket(value: string): void;
 }
-export declare class SocketTLS extends SimpleSocket<TLSSocket> {
-    protected _instanceClient: TLSSocket;
-    private static _instance;
-    private constructor();
-    static get instance(): SocketTLS;
-    private createConnection;
-}
 export declare class TCPServerSingleTone extends WebSocketHolder<net.Socket> {
     static readonly UpgratedProtocole: string;
     private static _instance;
@@ -60,13 +56,41 @@ export declare class TCPServerSingleTone extends WebSocketHolder<net.Socket> {
     private createConnection;
     static getInstance(port: Server.Port, webSocketPort: Server.Port): TCPServerSingleTone;
 }
-export declare class TLSServerSingleTone extends WebSocketHolder<TLSSocket> {
-    protected _instanceClient: TLSSocket;
+declare const TLSClientSingleTone_base: (abstract new (...args: any[]) => {
+    createConnection(port: Server.Port, host: string): TLSSocket;
+    setData(callBack: (...A: SimpleSocketImplementTupleData<tls.TLSSocket> | WebSocketHolderSocketImplementTupleData<tls.TLSSocket>) => void): void;
+    setConnection(callBack: (...args: SimpleSocketImplementTuple<tls.TLSSocket> | WebSocketHolderSocketImplementTuple<tls.TLSSocket>) => void): void;
+    setClose(callBack: (...args: SimpleSocketImplementTuple<tls.TLSSocket> | WebSocketHolderSocketImplementTuple<tls.TLSSocket>) => void): void;
+    setError(callBack: (Error: Error) => void): void;
+    setEnd(callBack: (...args: SimpleSocketImplementTuple<tls.TLSSocket> | WebSocketHolderSocketImplementTuple<tls.TLSSocket>) => void): void;
+}) & (abstract new (websocketPort: Server.Port) => WebSocketHolder<tls.TLSSocket>);
+export declare class TLSClientSingleTone extends TLSClientSingleTone_base {
+    private static _instance;
+    protected _instanceClient: tls.TLSSocket;
+    private constructor();
+    static getInstance(port: Server.Port, host: string, webSocketPort: Server.Port): TLSClientSingleTone;
+}
+export type httpsServerArgs = {
+    port: Server.Port;
+    server: http.Server;
+    host: string;
+    certificate: Server.httpsCertificate;
+};
+declare const TLSServerSingleTone_base: (abstract new (...args: any[]) => {
+    createConnection(port: Server.Port, host: string): TLSSocket;
+    setData(callBack: (...A: SimpleSocketImplementTupleData<tls.TLSSocket> | WebSocketHolderSocketImplementTupleData<tls.TLSSocket>) => void): void;
+    setConnection(callBack: (...args: SimpleSocketImplementTuple<tls.TLSSocket> | WebSocketHolderSocketImplementTuple<tls.TLSSocket>) => void): void;
+    setClose(callBack: (...args: SimpleSocketImplementTuple<tls.TLSSocket> | WebSocketHolderSocketImplementTuple<tls.TLSSocket>) => void): void;
+    setError(callBack: (Error: Error) => void): void;
+    setEnd(callBack: (...args: SimpleSocketImplementTuple<tls.TLSSocket> | WebSocketHolderSocketImplementTuple<tls.TLSSocket>) => void): void;
+}) & (abstract new () => SimpleSocket<tls.TLSSocket>);
+export declare class TLSServerSingleTone extends TLSServerSingleTone_base implements Server.HttpsServerSocket<SimpleSocketImplementTupleData<TLSSocket>, SimpleSocketImplementTuple<TLSSocket>> {
     private static _instance;
     private _instanceTlsServer;
+    protected _instanceClient: TLSSocket;
     private constructor();
+    static getInstance({ port: port, server: http, host: host, certificate: certificate }: httpsServerArgs): TLSServerSingleTone;
     private createServeur;
-    private createConnection;
-    listenServer(callBack: () => void): void;
+    listen(port: Server.Port, callBack: () => void): void;
 }
 export {};

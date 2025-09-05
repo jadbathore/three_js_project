@@ -8,7 +8,6 @@ import net from 'net';
 import { DataParser, RequestParser } from './headParser.js';
 import tls from 'tls';
 import ws from 'ws';
-import internal from 'stream';
 const _array = [];
 function oneCall(_, propertyKey, descriptor) {
     const orginalMethod = descriptor.value;
@@ -32,7 +31,7 @@ class SocketSingleTone {
         this.setEventCallBack(callBack, 'close');
     }
     setError(callBack) {
-        this.setEventCallBack(callBack, 'error');
+        this._instanceClient.on('error', callBack);
     }
     setEnd(callBack) {
         this.setEventCallBack(callBack, 'end');
@@ -56,7 +55,7 @@ __decorate([
     oneCall
 ], SocketSingleTone.prototype, "setEnd", null);
 class SimpleSocket extends SocketSingleTone {
-    constructor(websocketPort) { super(); }
+    constructor() { super(); }
     socketmount(callback) {
         const socket = () => {
             callback(this._instanceClient);
@@ -93,24 +92,36 @@ class WebSocketHolder extends SocketSingleTone {
         return new ws.Server({ port: websocketPort });
     }
 }
-function Logger(Base) {
-    return class extends Base {
+function httpsMixin(Base) {
+    class Https extends Base {
         constructor(...args) {
-            super();
-            this._instanceClient = new internal.PassThrough();
+            super(...args);
         }
-        log(msg) {
-            console.log("[LOG]", msg);
+        createConnection(port, host) {
+            const options = {
+                host: host,
+                port: port,
+                servername: host,
+                rejectUnauthorized: false,
+            };
+            const socket = tls.connect(options, () => {
+                console.log('TLS connected');
+                const requestArgs = {
+                    method: 'GET',
+                    path: DataParser.tryPath("/"),
+                    host: 'localhost',
+                    protocole: "HTTP/1.1",
+                    headers: {
+                        Connection: 'close'
+                    }
+                };
+                const requestParse = new RequestParser(requestArgs);
+                socket.write(requestParse.request);
+            });
+            return socket;
         }
-    };
-}
-class Test extends Logger((SimpleSocket)) {
-    constructor() {
-        super();
     }
-    test() {
-        this.log();
-    }
+    return Https;
 }
 export class SocketTree extends SimpleSocket {
     constructor(socket) {
@@ -125,41 +136,6 @@ export class SocketTree extends SimpleSocket {
     }
     writeToSocket(value) {
         this._instanceClient.write(value);
-    }
-}
-export class SocketTLS extends SimpleSocket {
-    constructor() {
-        super();
-        this._instanceClient = this.createConnection();
-    }
-    static get instance() {
-        if (!SocketTLS._instance) {
-            SocketTLS._instance = new SocketTLS();
-        }
-        return SocketTLS._instance;
-    }
-    createConnection() {
-        const options = {
-            host: 'localhost',
-            port: 3000,
-            servername: 'localhost',
-            rejectUnauthorized: false,
-        };
-        const socket = tls.connect(options, () => {
-            console.log('TLS connected');
-            const requestArgs = {
-                method: 'GET',
-                path: DataParser.tryPath("/"),
-                host: 'localhost',
-                protocole: "HTTP/1.1",
-                headers: {
-                    Connection: 'close'
-                }
-            };
-            const requestParse = new RequestParser(requestArgs);
-            socket.write(requestParse.request);
-        });
-        return socket;
     }
 }
 export class TCPServerSingleTone extends WebSocketHolder {
@@ -193,50 +169,40 @@ export class TCPServerSingleTone extends WebSocketHolder {
     }
 }
 TCPServerSingleTone.UpgratedProtocole = 'THREE-FOR-THREE';
-export class TLSServerSingleTone extends WebSocketHolder {
-    constructor(port, httpsServer, websocket) {
-        super(websocket);
-        this._instanceTlsServer = this.createServeur(httpsServer, port);
+export class TLSClientSingleTone extends httpsMixin((WebSocketHolder)) {
+    constructor(port, host, webSocketPort) {
+        super(webSocketPort);
+        this._instanceClient = this.createConnection(port, host);
     }
-    createServeur(httpServer, port) {
-        const options = {
-            host: 'localhost',
-            port: port,
-            servername: 'localhost',
-            rejectUnauthorized: false,
-        };
-        const tlsServer = tls.createServer(options, (tlsSocket) => {
+    static getInstance(port, host, webSocketPort) {
+        if (!TLSClientSingleTone._instance) {
+            TLSClientSingleTone._instance = new TLSClientSingleTone(port, host, webSocketPort);
+        }
+        return TLSClientSingleTone._instance;
+    }
+}
+export class TLSServerSingleTone extends httpsMixin((SimpleSocket)) {
+    constructor(port, httpServer, host, certificate) {
+        super();
+        this._instanceClient = this.createConnection(port, host);
+        this._instanceTlsServer = this.createServeur(httpServer, certificate);
+    }
+    static getInstance({ port: port, server: http, host: host, certificate: certificate }) {
+        if (!TLSServerSingleTone._instance) {
+            TLSServerSingleTone._instance = new TLSServerSingleTone(port, http, host, certificate);
+        }
+        return TLSServerSingleTone._instance;
+    }
+    createServeur(httpServer, certificate) {
+        const tlsServer = tls.createServer(certificate, (tlsSocket) => {
             httpServer.emit('connection', tlsSocket);
         });
         return tlsServer;
     }
-    createConnection(port) {
-        const options = {
-            host: 'localhost',
-            port: port,
-            servername: 'localhost',
-            rejectUnauthorized: false,
-        };
-        const socket = tls.connect(options, () => {
-            console.log('TLS connected');
-            const requestArgs = {
-                method: 'GET',
-                path: DataParser.tryPath("/"),
-                host: 'localhost',
-                protocole: "HTTP/1.1",
-                headers: {
-                    Connection: 'close'
-                }
-            };
-            const requestParse = new RequestParser(requestArgs);
-            socket.write(requestParse.request);
-        });
-        return socket;
-    }
-    listenServer(callBack) {
-        this._instanceTlsServer.listen(callBack);
+    listen(port, callBack) {
+        this._instanceTlsServer.listen(port, callBack);
     }
 }
 __decorate([
     oneCall
-], TLSServerSingleTone.prototype, "listenServer", null);
+], TLSServerSingleTone.prototype, "listen", null);

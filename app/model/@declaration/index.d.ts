@@ -225,4 +225,22 @@ declare namespace Server {
         get methods():string;
         get request():string
     }
+
+    interface Socket<A extends any[],B extends any[]> {
+        setData(callBack:(...A:A)=>void):void;
+        setConnection(callBack:(...args:B)=>void):void;
+        setClose(callBack:(...args:B)=>void):void;
+        setError(callBack:(Error:Error)=>void):void;
+        setEnd(callBack:(...args:B)=>void):void;
+    }
+
+    interface HttpsServerSocket<A extends any[],B extends any[]> extends Socket<A,B> 
+    {
+        listen(port:Server.Port,callBack:()=>void):void
+    }
+
+    type httpsCertificate = {
+        key:Buffer,
+        cert:Buffer
+    }
 }

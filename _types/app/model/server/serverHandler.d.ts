@@ -24,10 +24,11 @@ export declare class ServerHandler {
     private tryPort;
     private setApp;
     private setServer;
+    private setCallBacks;
     private dataCallBack;
     private endCallBack;
-    upgradeServeur(): void;
+    private errorCallBack;
+    private upgradeServeur;
+    private startServerCallBack;
     run(): void;
-    restartServer(): void;
-    shutDown(path: string): void;
 }

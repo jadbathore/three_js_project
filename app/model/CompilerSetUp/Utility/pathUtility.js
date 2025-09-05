@@ -39,6 +39,20 @@ export default class PathUtility {
         return replace?.split(' ')?.filter((e)=>e!='') ?? pathFile;
     }
 
+    /**
+     * @returns {Buffer|null}
+     */
+    static getKeyBuffer(){
+        return (fs.existsSync(PathUtility.keySLL))? fs.readFileSync(PathUtility.keySLL) : null;
+    }
+
+    /**
+     * @returns {Buffer|null}
+     */
+    static getCertBuffer(){
+        return (fs.existsSync(PathUtility.certSLL))? fs.readFileSync(PathUtility.certSLL) : null;
+    }
+
     static getcompilerFile()
     {
         return this.compilerFile;

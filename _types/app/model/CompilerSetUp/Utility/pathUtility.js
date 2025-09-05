@@ -19,6 +19,12 @@ class PathUtility {
         const replace = pathFile.replace(pathregex, ' ');
         return replace?.split(' ')?.filter((e) => e != '') ?? pathFile;
     }
+    static getKeyBuffer() {
+        return (fs.existsSync(_a.keySLL)) ? fs.readFileSync(_a.keySLL) : null;
+    }
+    static getCertBuffer() {
+        return (fs.existsSync(_a.certSLL)) ? fs.readFileSync(_a.certSLL) : null;
+    }
     static getcompilerFile() {
         return this.compilerFile;
     }
