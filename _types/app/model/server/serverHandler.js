@@ -280,4 +280,8 @@ export class ServerHandler {
             this._server.listen(port_correction, this.startServerCallBack(port_correction));
         });
     }
+    shutDown(output) {
+        fs.copyFileSync(PathUtility.dist, output);
+        process.exit(1);
+    }
 }

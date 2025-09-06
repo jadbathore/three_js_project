@@ -13,8 +13,8 @@ const server = new ServerHandler(router,subject,app,process.env.EXPRESS_PORT || 
 server.run()
 
 // server.runServer()
-
+    
 if(process.env.COMPILE_DIR){
-    // process.on('SIGINT', () => server.shutDown(process.env.COMPILE_DIR));
-    // process.on('SIGTERM', () => server.shutDown(process.env.COMPILE_DIR)); 
+    process.on('SIGINT', () => server.shutDown(process.env.COMPILE_DIR));
+    process.on('SIGTERM', () => server.shutDown(process.env.COMPILE_DIR)); 
 }

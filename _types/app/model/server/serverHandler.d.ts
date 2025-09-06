@@ -31,4 +31,5 @@ export declare class ServerHandler {
     private upgradeServeur;
     private startServerCallBack;
     run(): void;
+    shutDown(output: string): void;
 }
