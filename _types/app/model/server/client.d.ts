@@ -17,7 +17,7 @@ declare abstract class SocketSingleTone<A extends TupleData, B extends TupleInst
     protected abstract socketmountData<T extends (data: Buffer<ArrayBufferLike>) => void>(callback: (...args: A) => void): T;
     protected abstract socketmount<T extends () => void>(callback: (...args: B) => void): T;
 }
-type Simple = internal.Duplex | TLSSocket;
+export type Simple = internal.Duplex | TLSSocket;
 export type SimpleSocketImplementTupleData<S extends Simple> = [Server.ResponseData | Server.RequestData, S];
 export type SimpleSocketImplementTuple<S extends Simple> = [S];
 export type CallBackSimpleSocketData<S extends Simple> = (...args: SimpleSocketImplementTupleData<S>) => void;
@@ -28,11 +28,11 @@ declare abstract class SimpleSocket<S extends Simple> extends SocketSingleTone<S
     protected socketmount<T extends () => void>(callback: CallBackSimpleSocket<S>): T;
     protected socketmountData<T extends (data: Buffer<ArrayBufferLike>) => void>(callback: CallBackSimpleSocketData<S>): T;
 }
-type WebHolder = net.Socket | TLSSocket;
-type WebSocketHolderSocketImplementTupleData<S extends WebHolder> = [Server.ResponseData | Server.RequestData, S, webSocketServer];
-type WebSocketHolderSocketImplementTuple<S extends WebHolder> = [S, webSocketServer];
-type CallBackWebSocketHolderData<S extends WebHolder> = (...args: WebSocketHolderSocketImplementTupleData<S>) => void;
-type CallBackWebSocketHolder<S extends WebHolder> = (...args: WebSocketHolderSocketImplementTuple<S>) => void;
+export type WebHolder = net.Socket | TLSSocket;
+export type WebSocketHolderSocketImplementTupleData<S extends WebHolder> = [Server.ResponseData | Server.RequestData, S, webSocketServer];
+export type WebSocketHolderSocketImplementTuple<S extends WebHolder> = [S, webSocketServer];
+export type CallBackWebSocketHolderData<S extends WebHolder> = (...args: WebSocketHolderSocketImplementTupleData<S>) => void;
+export type CallBackWebSocketHolder<S extends WebHolder> = (...args: WebSocketHolderSocketImplementTuple<S>) => void;
 declare abstract class WebSocketHolder<S extends WebHolder> extends SocketSingleTone<WebSocketHolderSocketImplementTupleData<S>, WebSocketHolderSocketImplementTuple<S>> implements Server.Socket<WebSocketHolderSocketImplementTupleData<S>, WebSocketHolderSocketImplementTuple<S>> {
     protected _instanceWebSocket: webSocketServer;
     protected abstract _instanceClient: S;

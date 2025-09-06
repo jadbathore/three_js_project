@@ -11,19 +11,9 @@ import { Connection } from 'mongoose'
 
 export type webSocketServer = ws.Server<typeof ws, typeof http.IncomingMessage>
 
-// type ServerTupleData = [Server.RequestData|Server.ResponseData,internal.Duplex];
-// type ServerTuple = [internal.Duplex];
-type ClientTupleData = [Server.RequestData|Server.ResponseData, net.Socket, webSocketServer];
-type ClientTuple = [net.Socket, webSocketServer];
-
 type TupleData = [Server.ResponseData|Server.RequestData,net.Socket|internal.Duplex,...any];
 type TupleInstance = [net.Socket|internal.Duplex,...any]
 
-// export type CallBackClient = Server.InstanceClientCallBack<ClientTuple>
-// export type CallBackClientData = Server.InstanceClientCallBackData<ClientTupleData>
-
-// export type CallBackServer = Server.InstanceClientCallBack<ServerTuple>
-// export type CallBackServerData = Server.InstanceClientCallBack<ServerTupleData>
 
 const _array:string[] = []
 
@@ -85,7 +75,7 @@ abstract class SocketSingleTone<
     protected  abstract socketmount<T extends ()=>void>(callback:(...args:B)=>void):T
 }
 
-type Simple = internal.Duplex|TLSSocket;
+export type Simple = internal.Duplex|TLSSocket;
 export type SimpleSocketImplementTupleData<S extends Simple> = [Server.ResponseData|Server.RequestData,S];
 export type SimpleSocketImplementTuple<S extends Simple> = [S];
 export type CallBackSimpleSocketData<S extends Simple> = (...args:SimpleSocketImplementTupleData<S>)=>void;
@@ -116,11 +106,11 @@ implements Server.Socket<SimpleSocketImplementTupleData<S>,SimpleSocketImplement
     }
 }
 
-type WebHolder = net.Socket|TLSSocket;
-type WebSocketHolderSocketImplementTupleData<S extends WebHolder > = [Server.ResponseData|Server.RequestData,S,webSocketServer];
-type WebSocketHolderSocketImplementTuple<S extends WebHolder > = [S,webSocketServer];
-type CallBackWebSocketHolderData<S extends WebHolder> = (...args:WebSocketHolderSocketImplementTupleData<S>)=>void;
-type CallBackWebSocketHolder<S extends WebHolder> = (...args:WebSocketHolderSocketImplementTuple<S>)=>void;
+export type WebHolder = net.Socket|TLSSocket;
+export type WebSocketHolderSocketImplementTupleData<S extends WebHolder > = [Server.ResponseData|Server.RequestData,S,webSocketServer];
+export type WebSocketHolderSocketImplementTuple<S extends WebHolder > = [S,webSocketServer];
+export type CallBackWebSocketHolderData<S extends WebHolder> = (...args:WebSocketHolderSocketImplementTupleData<S>)=>void;
+export type CallBackWebSocketHolder<S extends WebHolder> = (...args:WebSocketHolderSocketImplementTuple<S>)=>void;
 
 abstract class WebSocketHolder<S extends WebHolder>
 extends SocketSingleTone<WebSocketHolderSocketImplementTupleData<S>,WebSocketHolderSocketImplementTuple<S>> 

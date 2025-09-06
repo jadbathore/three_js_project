@@ -1,5 +1,5 @@
 export default class PathUtility {
-    static "__#159763@#element": string | null;
+    static "__#2@#element": string | null;
     static getKeyBuffer(): Buffer | null;
     static getCertBuffer(): Buffer | null;
     static getcompilerFile(): string;

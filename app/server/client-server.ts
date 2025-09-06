@@ -1,25 +1,13 @@
 import chalk from "chalk";
-import { DataParser, RequestParser, ResponseParser } from "../model/server/headParser.js";
+import { DataParser } from "../model/server/headParser.js";
 import { TLSClientSingleTone, TCPServerSingleTone } from "../model/server/client.js";
 import net from 'net'
-import type { webSocketServer } from "../model/server/client.js";
-import internal from "stream";
+import type { webSocketServer,WebHolder, WebSocketHolderSocketImplementTupleData ,WebSocketHolderSocketImplementTuple,CallBackWebSocketHolderData,CallBackWebSocketHolder} from "../model/server/client.js";
 import { responseHandler } from "../model/server/headHandler.js";
 import PathUtility from "../model/CompilerSetUp/Utility/pathUtility.js";
+import { TLSSocket } from "tls";
 
-
-let clientInstance:TCPServerSingleTone|TLSClientSingleTone;
-const key = PathUtility.getKeyBuffer()
-const perm = PathUtility.getCertBuffer()
-if(key && perm){
-    clientInstance = TLSClientSingleTone.getInstance(3000 as Server.Port,'localhost',8080 as Server.Port);
-} else {
-    clientInstance =  TCPServerSingleTone.getInstance(3000 as Server.Port,8080 as Server.Port);
-}
-// const instance = TCPServerSingleTone.getInstance(3000 as Server.Port,8080 as Server.Port);
-
-
-function dataCallBack(dataParse:Server.ResponseData|Server.RequestData,client:net.Socket,webSocket:webSocketServer):void
+function dataCallBack<T extends WebHolder>(dataParse:Server.ResponseData|Server.RequestData,client:T,webSocket:webSocketServer):void
 {
     if(!DataParser.isRequestData(dataParse)) {
         /*------handle-response------*/ 
@@ -36,11 +24,30 @@ function dataCallBack(dataParse:Server.ResponseData|Server.RequestData,client:ne
     }
 }
 
-clientInstance.setData(dataCallBack)
-
-clientInstance.setEnd(()=>{
-    
-    console.log(chalk.bgYellow('Serveur TCP Ended'))
+function endCallBack<T extends WebHolder>(client:T,webSocket:webSocketServer){ 
+    const protocole:string = (client instanceof TLSSocket)?'TLS':'TCP';
+    console.log(chalk.bgYellow(`Serveur ${protocole} Ended`))
     process.exit(1)
-})
+}
 
+function errorCallback(error:Error){
+    console.log(error.message)
+}
+
+function setCallBacks<T extends WebHolder>(interfaceClient:Server.Socket<WebSocketHolderSocketImplementTupleData<T>,WebSocketHolderSocketImplementTuple<T>>)
+{
+    interfaceClient.setData(dataCallBack as CallBackWebSocketHolderData<T>)
+    interfaceClient.setEnd(endCallBack as CallBackWebSocketHolder<T>)
+    interfaceClient.setError(errorCallback)
+}
+
+let clientInstance:TCPServerSingleTone|TLSClientSingleTone;
+const key = PathUtility.getKeyBuffer()
+const perm = PathUtility.getCertBuffer()
+if(key && perm){
+    clientInstance = TLSClientSingleTone.getInstance(3000 as Server.Port,'localhost',8080 as Server.Port);
+    setCallBacks<TLSSocket>(clientInstance)
+} else {
+    clientInstance =  TCPServerSingleTone.getInstance(3000 as Server.Port,8080 as Server.Port);
+    setCallBacks<net.Socket>(clientInstance)
+}

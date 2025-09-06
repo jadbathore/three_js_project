@@ -15,7 +15,7 @@ import http from "http"
 import { DataParser, RequestParser, ResponseParser } from "./headParser.js";
 import { Socket } from "dgram";
 import { SocketTree, TLSServerSingleTone } from "./client.js";
-import type {CallBackSimpleSocket, CallBackSimpleSocketData,httpsServerArgs,SimpleSocketImplementTupleData,SimpleSocketImplementTuple} from "./client.js";
+import type {CallBackSimpleSocket, CallBackSimpleSocketData,httpsServerArgs,SimpleSocketImplementTupleData,SimpleSocketImplementTuple,Simple} from "./client.js";
 import internal from "stream";
 import { SocketImplement } from "../../server/serverHandler/socketImplement.js";
 import { responseHandler } from "./headHandler.js";
@@ -260,14 +260,14 @@ export class ServerHandler
         return httpServer;
     }
 
-    private setCallBacks<S extends internal.Duplex|TLSSocket>(iterfaceServer:Server.Socket<SimpleSocketImplementTupleData<S>,SimpleSocketImplementTuple<S>>)
+    private setCallBacks<S extends Simple>(iterfaceServer:Server.Socket<SimpleSocketImplementTupleData<S>,SimpleSocketImplementTuple<S>>)
     {
         iterfaceServer.setData(this.dataCallBack as CallBackSimpleSocketData<S>)
         iterfaceServer.setEnd(this.endCallBack as CallBackSimpleSocket<S>)
         iterfaceServer.setError(this.errorCallBack)
     }
 
-    private dataCallBack<T extends internal.Duplex|TLSSocket>(data:Server.RequestData|Server.ResponseData,instance:T):void
+    private dataCallBack<T extends Simple>(data:Server.RequestData|Server.ResponseData,instance:T):void
     {
         if(DataParser.isRequestData(data)){
             const responseArgs:Server.ResponseArguments = {
@@ -283,7 +283,7 @@ export class ServerHandler
         }
     }
 
-    private endCallBack<T extends internal.Duplex|TLSSocket>(instance:T):void
+    private endCallBack<T extends Simple>(instance:T):void
     {
         const clientProtocole:string = (instance instanceof TLSSocket)?'TLS':'TCP';
         console.log(chalk.bgYellow(`connection to ${clientProtocole} ended`))
